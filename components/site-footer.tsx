@@ -21,7 +21,7 @@ export function SiteFooter({
   const address = lang === "ko" ? settings.addressKo : settings.addressEn;
   const hours = lang === "ko" ? settings.hoursKo : settings.hoursEn;
   return (
-    <footer className="mt-16 border-t border-line bg-white">
+    <footer className="mt-16 border-t border-line bg-white pb-24 lg:pb-0">
       <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 md:grid-cols-4">
         <div>
           <p className="text-sm font-semibold">{name || "K-BUS HUB"}</p>

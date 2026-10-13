@@ -42,7 +42,7 @@ export function ListingCard({
       className="h-full w-full object-cover"
     />
   ) : (
-    <BusArt variant={vehicle.class} label={photoLabel} />
+    <BusArt variant={vehicle.class} label={photoLabel} fill />
   );
 
   return (

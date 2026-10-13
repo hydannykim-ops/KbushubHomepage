@@ -1,13 +1,15 @@
 export function BusArt({
   variant,
   label,
+  fill = false,
 }: {
   variant: "county" | "medium" | "large" | "generic";
   label: string;
+  fill?: boolean;
 }) {
   const width = variant === "county" ? 168 : variant === "medium" ? 214 : variant === "large" ? 260 : 214;
   return (
-    <div className="flex h-full min-h-52 flex-col items-center justify-center bg-[#e7edf3] px-6 py-8">
+    <div className={`flex min-h-52 flex-col items-center justify-center bg-[#e7edf3] px-6 py-8 ${fill ? "h-full" : ""}`}>
       <svg viewBox="0 0 320 128" className="h-36 w-full max-w-xs" role="img" aria-label={label}>
         <g transform={`translate(${(320 - width) / 2} 16)`}>
           <path d={`M18 78 V46 H${width - 28} L${width - 8} 62 V78 Z`} fill="#f7f9fb" stroke="#10243f" strokeWidth="2" />
