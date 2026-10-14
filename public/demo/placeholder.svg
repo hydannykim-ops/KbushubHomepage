@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-label="Demo placeholder">
+  <rect width="800" height="500" fill="#e7edf4"/>
+  <rect x="70" y="150" width="660" height="220" rx="18" fill="#d5deea"/>
+  <rect x="110" y="190" width="180" height="90" rx="8" fill="#f7f9fb"/>
+  <rect x="310" y="190" width="180" height="90" rx="8" fill="#f7f9fb"/>
+  <circle cx="230" cy="390" r="36" fill="#9aa8ba"/>
+  <circle cx="560" cy="390" r="36" fill="#9aa8ba"/>
+  <text x="400" y="90" text-anchor="middle" fill="#0b1f3a" font-family="sans-serif" font-size="32" font-weight="700">K-BUS HUB</text>
+  <text x="400" y="460" text-anchor="middle" fill="#5c6b82" font-family="sans-serif" font-size="22">DEMO PLACEHOLDER</text>
+</svg>

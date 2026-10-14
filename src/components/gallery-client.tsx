@@ -1,0 +1,86 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import type { Lang, PhotoCategory, VehiclePhoto } from "@/lib/domain/types";
+import { copy } from "@/lib/i18n";
+import { photoLabel } from "@/lib/labels";
+
+const categories: Array<PhotoCategory | "all"> = ["all", "exterior", "interior", "dashboard", "engine", "tires", "defect"];
+
+export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: Lang }) {
+  const text = copy(lang);
+  const [category, setCategory] = useState<PhotoCategory | "all">("all");
+  const visible = useMemo(
+    () => photos.filter((photo) => category === "all" || photo.category === category).sort((a, b) => a.sortOrder - b.sortOrder),
+    [photos, category],
+  );
+  const [index, setIndex] = useState(0);
+  const current = visible[Math.min(index, Math.max(visible.length - 1, 0))];
+
+  return (
+    <div>
+      <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
+        {categories.map((item) => (
+          <button
+            key={item}
+            type="button"
+            className={`shrink-0 rounded-full border px-3 py-1 text-sm ${category === item ? "border-primary bg-primary text-white" : "border-line bg-white"}`}
+            onClick={() => {
+              setCategory(item);
+              setIndex(0);
+            }}
+          >
+            {item === "all" ? text.all : photoLabel(item, lang)}
+          </button>
+        ))}
+      </div>
+      {!current ? (
+        <div className="flex aspect-[16/10] items-center justify-center rounded-lg border border-line bg-white text-sm text-muted">{text.photoNone}</div>
+      ) : (
+        <figure className="overflow-hidden rounded-lg border border-line bg-white">
+          <div className="relative aspect-[16/10] bg-[#e7edf4]">
+            {current.placeholder ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src="/demo/placeholder.svg" alt={lang === "ko" ? current.altKo : current.altEn} className="h-full w-full object-cover" />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={`/api/media/photo/${current.id}`} alt={lang === "ko" ? current.altKo : current.altEn} className="h-full w-full object-cover" />
+            )}
+          </div>
+          <figcaption className="flex items-center justify-between gap-3 px-3 py-2 text-sm text-muted">
+            <span>{current.placeholder ? text.placeholderNote : photoLabel(current.category, lang)}</span>
+            <span>
+              <button type="button" className="px-2" onClick={() => setIndex((value) => (value - 1 + visible.length) % visible.length)} aria-label="previous">
+                ‹
+              </button>
+              {Math.min(index, visible.length - 1) + 1} / {visible.length}
+              <button type="button" className="px-2" onClick={() => setIndex((value) => (value + 1) % visible.length)} aria-label="next">
+                ›
+              </button>
+            </span>
+          </figcaption>
+        </figure>
+      )}
+      {visible.length > 1 ? (
+        <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-6">
+          {visible.map((photo, photoIndex) => (
+            <button
+              key={photo.id}
+              type="button"
+              className={`overflow-hidden rounded border ${photo.id === current?.id ? "border-primary" : "border-line"}`}
+              onClick={() => setIndex(photoIndex)}
+            >
+              {photo.placeholder ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src="/demo/placeholder.svg" alt="" className="aspect-[16/10] w-full object-cover" />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={`/api/media/photo/${photo.id}`} alt="" className="aspect-[16/10] w-full object-cover" />
+              )}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
