@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DataProblem, VehicleCard, sortHref } from "@/components/catalog";
+import { MakerModelPicker } from "@/components/maker-model-picker";
 import { copy } from "@/lib/i18n";
 import { parseVehicleQuery } from "@/lib/domain/filters";
 import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
@@ -31,9 +32,6 @@ export default async function VehiclesPage({
   } catch {
     return <DataProblem lang={lang} code="upstream" />;
   }
-  const all = await site.repo.listPublic({}, ctx.mode);
-  const makers = [...new Set(all.items.map((vehicle) => vehicle.maker))];
-
   return (
     <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8">
       <div>
@@ -43,22 +41,12 @@ export default async function VehiclesPage({
       <form action={`/${lang}/vehicles`} method="get" className="grid gap-3 rounded-lg border border-line bg-white p-4 md:grid-cols-4">
         <input type="hidden" name="mode" value={ctx.mode} />
         {ctx.ref ? <input type="hidden" name="ref" value={ctx.ref} /> : null}
+        <div className="md:col-span-4">
+          <MakerModelPicker lang={lang} allowEmpty defaultMaker={query.maker ?? ""} defaultModel={query.model ?? ""} />
+        </div>
         <label className="grid gap-1 text-sm font-medium">
           {text.keyword}
           <input name="q" defaultValue={query.q ?? ""} className="rounded-md border border-line px-3 py-2 font-normal" />
-        </label>
-        <label className="grid gap-1 text-sm font-medium">
-          {text.maker}
-          <input name="maker" list="makers" defaultValue={query.maker ?? ""} className="rounded-md border border-line px-3 py-2 font-normal" />
-          <datalist id="makers">
-            {makers.map((maker) => (
-              <option key={maker} value={maker} />
-            ))}
-          </datalist>
-        </label>
-        <label className="grid gap-1 text-sm font-medium">
-          {text.model}
-          <input name="model" defaultValue={query.model ?? ""} className="rounded-md border border-line px-3 py-2 font-normal" />
         </label>
         <label className="grid gap-1 text-sm font-medium">
           {text.classLabel}

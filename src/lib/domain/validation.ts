@@ -10,6 +10,7 @@ import type {
   Transmission,
   VehicleClass,
 } from "./types";
+import { knownMakerModel } from "./vehicle-catalog";
 
 export type FieldErrors = Record<string, string>;
 
@@ -846,20 +847,26 @@ export type DealerListingInput = {
 };
 
 export function parseDealerListing(body: unknown, lang: Lang): { ok: true; data: DealerListingInput } | { ok: false; errors: FieldErrors } {
-  const schema = z.object({
-    vehicleClass: z.enum(classes),
-    maker: z.string().trim().min(1, text(lang, "제조사를 입력해 주세요.", "Enter the maker.")).max(80),
-    model: z.string().trim().min(1, text(lang, "모델을 입력해 주세요.", "Enter the model.")).max(80),
-    modelYear: optionalInt(1980, 2035),
-    mileageKm: optionalInt(0, 5_000_000),
-    seats: optionalInt(1, 80),
-    transmission: z.enum(transmissions),
-    fuel: z.enum(fuels),
-    location: optionalText(120),
-    domesticPriceKrw: optionalInt(0, 5_000_000_000),
-    descriptionKo: optionalText(8000),
-    descriptionEn: optionalText(8000),
-  });
+  const schema = z
+    .object({
+      vehicleClass: z.enum(classes),
+      maker: z.string().trim().min(1, text(lang, "제조사를 선택해 주세요.", "Choose a maker.")).max(80),
+      model: z.string().trim().min(1, text(lang, "모델을 선택해 주세요.", "Choose a model.")).max(80),
+      modelYear: optionalInt(1980, 2035),
+      mileageKm: optionalInt(0, 5_000_000),
+      seats: optionalInt(1, 80),
+      transmission: z.enum(transmissions),
+      fuel: z.enum(fuels),
+      location: optionalText(120),
+      domesticPriceKrw: optionalInt(0, 5_000_000_000),
+      descriptionKo: optionalText(8000),
+      descriptionEn: optionalText(8000),
+    })
+    .superRefine((value, ctx) => {
+      if (!knownMakerModel(value.maker, value.model)) {
+        ctx.addIssue({ code: "custom", path: ["model"], message: text(lang, "목록에서 제조사와 모델을 선택해 주세요.", "Choose a maker and model from the list.") });
+      }
+    });
   const parsed = schema.safeParse(body);
   if (!parsed.success) return { ok: false, errors: fieldErrors(parsed.error) };
   return { ok: true, data: parsed.data };

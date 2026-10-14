@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { MakerModelPicker } from "@/components/maker-model-picker";
 import type { AdminVehicle, Agent, Inquiry, InquiryStatus } from "@/lib/domain/types";
 import type { QuoteInput } from "@/lib/domain/validation";
 import { inquiryStatusLabel } from "@/lib/labels";
@@ -23,6 +24,10 @@ export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
       onSubmit={async (event) => {
         event.preventDefault();
         const form = new FormData(event.currentTarget);
+        if (!inputValue(form, "maker") || !inputValue(form, "model")) {
+          setError("제조사와 모델을 선택해 주세요.");
+          return;
+        }
         const payload = {
           stockNo: inputValue(form, "stockNo"),
           status: inputValue(form, "status"),
@@ -104,8 +109,7 @@ export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
           <option value="large">대형</option>
         </select>
       </Label>
-      <Label text="제조사"><input name="maker" required defaultValue={v?.maker ?? ""} className={field} /></Label>
-      <Label text="모델"><input name="model" required defaultValue={v?.model ?? ""} className={field} /></Label>
+      <MakerModelPicker lang="ko" required defaultMaker={v?.maker ?? ""} defaultModel={v?.model ?? ""} />
       <Label text="세부 모델"><input name="trim" defaultValue={v?.trim ?? ""} className={field} /></Label>
       <Label text="연식"><input name="modelYear" defaultValue={v?.modelYear ?? ""} className={field} /></Label>
       <Label text="최초 등록일"><input name="firstRegisteredOn" type="date" defaultValue={v?.firstRegisteredOn ?? ""} className={field} /></Label>

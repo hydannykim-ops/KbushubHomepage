@@ -227,7 +227,7 @@ export function buildSeed(): DemoState {
       stockNo: "DEMO-L-02",
       status: "available",
       vehicleClass: "large",
-      maker: "자일대우",
+      maker: "대우",
       model: "FX",
       modelYear: 2018,
       mileageKm: 99000,

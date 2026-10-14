@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { DataProblem } from "@/components/catalog";
 import { Consent, EnhanceForm, Field, Honeypot, SubmitBanner } from "@/components/forms";
+import { MakerModelPicker } from "@/components/maker-model-picker";
 import { copy } from "@/lib/i18n";
 import { parseLang } from "@/lib/request-context";
 import { loadSite } from "@/lib/site-load";
@@ -29,7 +30,7 @@ export default async function WantedPage({
         <SubmitBanner lang={lang} submitted={sp.get("submitted") ?? undefined} error={sp.get("error") ?? undefined} />
         <EnhanceForm action="/api/requests/wanted" lang={lang}>
           <input type="hidden" name="lang" value={lang} />
-          <Field label={text.model} name="model" required defaultValue={sp.get("model") ?? ""} />
+          <MakerModelPicker lang={lang} required defaultModel={sp.get("model") ?? ""} />
           <Field label={text.budget} name="budgetAmount" type="number" />
           <label className="grid gap-1 text-sm font-medium">
             {text.currency}

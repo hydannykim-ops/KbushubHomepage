@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { MakerModelPicker } from "@/components/maker-model-picker";
 import type { Lang } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
 
@@ -110,10 +111,16 @@ export function DealerListingForm({ lang }: { lang: Lang }) {
         setPending(true);
         setMessage(null);
         const form = event.currentTarget;
+        const payload = new FormData(form);
+        if (!String(payload.get("maker") ?? "").trim() || !String(payload.get("model") ?? "").trim()) {
+          setPending(false);
+          setMessage({ ok: false, text: text.pickMakerModel });
+          return;
+        }
         const response = await fetch("/api/listings", {
           method: "POST",
           headers: { accept: "application/json" },
-          body: new FormData(form),
+          body: payload,
         });
         const data = (await response.json()) as { ok?: boolean; code?: string; errors?: Record<string, string> };
         setPending(false);
@@ -141,14 +148,7 @@ export function DealerListingForm({ lang }: { lang: Lang }) {
           <option value="large">{text.classLarge}</option>
         </select>
       </label>
-      <label className="grid gap-1 text-sm font-medium">
-        {text.maker}
-        <input name="maker" required className={field} />
-      </label>
-      <label className="grid gap-1 text-sm font-medium">
-        {text.model}
-        <input name="model" required className={field} />
-      </label>
+      <MakerModelPicker lang={lang} required />
       <label className="grid gap-1 text-sm font-medium">
         {text.modelYear}
         <input name="modelYear" className={field} />

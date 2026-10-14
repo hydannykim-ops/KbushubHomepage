@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DataProblem, VehicleCard } from "@/components/catalog";
+import { MakerModelPicker } from "@/components/maker-model-picker";
 import { copy } from "@/lib/i18n";
 import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
 import { loadSite } from "@/lib/site-load";
@@ -41,18 +42,11 @@ export default async function HomePage({
           <p className="text-xs font-semibold tracking-[0.2em] text-primary">K-BUS HUB</p>
           <h1 className="mt-3 text-4xl font-semibold leading-tight tracking-tight md:text-5xl">{text.heroTitle}</h1>
           <p className="mt-5 max-w-xl text-base leading-7 text-muted">{text.heroBody}</p>
-          <form action={`/${lang}/vehicles`} method="get" className="mt-8 grid gap-3 border border-line bg-white p-4 sm:grid-cols-2">
+          <form action={`/${lang}/vehicles`} method="get" className="mt-8 grid gap-3 border border-line bg-white p-4">
             <input type="hidden" name="mode" value={ctx.mode} />
             {ctx.ref ? <input type="hidden" name="ref" value={ctx.ref} /> : null}
+            <MakerModelPicker lang={lang} allowEmpty />
             <label className="grid gap-1 text-sm font-medium">
-              {text.maker}
-              <input name="maker" className="border border-line bg-white px-3 py-2 font-normal" />
-            </label>
-            <label className="grid gap-1 text-sm font-medium">
-              {text.model}
-              <input name="model" className="border border-line bg-white px-3 py-2 font-normal" />
-            </label>
-            <label className="grid gap-1 text-sm font-medium sm:col-span-2">
               {text.classLabel}
               <select name="class" className="border border-line bg-white px-3 py-2 font-normal" defaultValue="">
                 <option value="">{text.all}</option>
@@ -61,7 +55,7 @@ export default async function HomePage({
                 <option value="large">{text.classLarge}</option>
               </select>
             </label>
-            <button className="bg-primary px-4 py-3 font-semibold text-white sm:col-span-2">{text.search}</button>
+            <button className="bg-primary px-4 py-3 font-semibold text-white">{text.search}</button>
           </form>
         </div>
         <div className="relative min-h-72 overflow-hidden border border-line bg-white lg:min-h-[28rem]">

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DataProblem } from "@/components/catalog";
 import { Consent, EnhanceForm, Field, Honeypot, SubmitBanner } from "@/components/forms";
+import { MakerModelPicker } from "@/components/maker-model-picker";
 import { DealerListingForm } from "@/components/member-forms";
 import { getSession } from "@/lib/auth/session";
 import { copy } from "@/lib/i18n";
@@ -35,7 +36,7 @@ export default async function SellPage({
         <SubmitBanner lang={lang} submitted={sp.get("submitted") ?? undefined} error={sp.get("error") ?? undefined} />
         <EnhanceForm action="/api/requests/sell" lang={lang}>
           <input type="hidden" name="lang" value={lang} />
-          <Field label={text.model} name="model" required defaultValue="" />
+          <MakerModelPicker lang={lang} required />
           <Field label={text.modelYear} name="modelYear" />
           <Field label={text.mileage} name="mileageKm" />
           <Field label={text.location} name="location" required />
