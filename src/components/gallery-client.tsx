@@ -43,7 +43,7 @@ export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: 
         <figure className="overflow-hidden border border-line bg-white">
           <div className="relative aspect-[16/10] bg-[#f3f5f8]">
             {current.placeholder ? (
-              <MediaSlot label={photoLabel(current.category, lang)} hint={text.placeholderNote} />
+              <MediaSlot label={photoLabel(current.category, lang)} hint={text.mediaCoverHint} />
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={`/api/media/photo/${current.id}`} alt={lang === "ko" ? current.altKo : current.altEn} className="h-full w-full object-cover" />
@@ -73,7 +73,7 @@ export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: 
               onClick={() => setIndex(photoIndex)}
             >
               {photo.placeholder ? (
-                <span className="flex aspect-[16/10] items-center justify-center bg-[#f3f5f8] text-[10px] font-semibold text-muted">{photoLabel(photo.category, lang)}</span>
+                <span className="flex aspect-[16/10] items-center justify-center bg-[#f3f5f8] px-1 text-center text-xs font-semibold text-foreground">{photoLabel(photo.category, lang)}</span>
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={`/api/media/photo/${photo.id}`} alt="" className="aspect-[16/10] w-full object-cover" />
