@@ -1,6 +1,6 @@
 import "server-only";
-import { randomUUID } from "node:crypto";
-import { toPublicVehicle } from "../domain/access";
+import { randomBytes, randomUUID } from "node:crypto";
+import { toOwnedListing, toPublicVehicle } from "../domain/access";
 import { filterVehicles, type FilterResult } from "../domain/filters";
 import { quoteLineKeys } from "../domain/money";
 import { generateReferralCode } from "../domain/referral";
@@ -10,6 +10,7 @@ import type {
   AgentReferral,
   AssignmentHistory,
   Inquiry,
+  Member,
   PhotoCategory,
   Quote,
   QuoteLine,
@@ -21,13 +22,15 @@ import type {
   VehicleRequest,
 } from "../domain/types";
 import { extensionFor, type ImageType } from "../domain/uploads";
-import type { InquiryInput, InquiryUpdate, PartnerInput, QuoteInput, SellInput, SettingsInput, VehicleInput, WantedInput } from "../domain/validation";
+import type { DealerListingInput, InquiryInput, InquiryUpdate, PartnerInput, QuoteInput, SellInput, SettingsInput, SignupInput, VehicleInput, WantedInput } from "../domain/validation";
 import { createAnonClient, createServiceClient, createSupabaseServer } from "../supabase/clients";
 import { DataAccessError } from "./errors";
 import { StoreError } from "../demo/store";
 
 const publicColumns =
   "id, stock_no, status, vehicle_class, maker, model, trim, model_year, first_registered_on, mileage_km, seats, transmission, fuel, engine_model, displacement_cc, steering, long_body, length_mm, width_mm, height_mm, previous_use_ko, previous_use_en, location, maintenance_ko, maintenance_en, defects_ko, defects_en, description_ko, description_en, photographed_on, stock_checked_on, featured, domestic_price_krw, export_price_amount, export_price_currency, export_price_terms_ko, export_price_terms_en, video_url, created_at, updated_at, vehicle_photos(id, vehicle_id, category, storage_path, content_type, sort_order, is_cover, alt_ko, alt_en)";
+
+const adminColumns = `${publicColumns}, owner_id, listing_source, seller_name, seller_email, seller_company`;
 
 function fail(error: unknown, context: string): never {
   const code = error && typeof error === "object" && "code" in error ? String((error as { code?: unknown }).code ?? "unknown") : "unknown";
@@ -59,6 +62,19 @@ function emptyInternal(): VehicleInternal {
     agentFee: null,
     feeCurrency: null,
     note: null,
+  };
+}
+
+function mapMember(row: Record<string, unknown>): Member {
+  const role = row.role === "dealer" ? "dealer" : "customer";
+  return {
+    id: String(row.user_id),
+    role,
+    name: String(row.name ?? ""),
+    email: String(row.email ?? ""),
+    phone: text(row.phone),
+    company: text(row.company),
+    createdAt: String(row.created_at ?? new Date().toISOString()),
   };
 }
 
@@ -141,6 +157,11 @@ function mapVehicle(row: Record<string, unknown>, includeInternal: boolean): Adm
     updatedAt: String(row.updated_at),
     demo: false,
     internal: includeInternal ? mapInternal(internalRow ?? null) : emptyInternal(),
+    ownerId: text(row.owner_id),
+    listingSource: row.listing_source === "dealer" ? "dealer" : "company",
+    sellerName: text(row.seller_name),
+    sellerEmail: text(row.seller_email),
+    sellerCompany: text(row.seller_company),
   };
 }
 
@@ -322,7 +343,7 @@ function mapRequest(row: Record<string, unknown>, files: VehicleRequest["files"]
 
 async function loadAdmin(id: string): Promise<AdminVehicle | null> {
   const service = createServiceClient();
-  const result = await service.from("vehicles").select(`${publicColumns}, vehicle_internal(*)`).eq("id", id).maybeSingle();
+  const result = await service.from("vehicles").select(`${adminColumns}, vehicle_internal(*)`).eq("id", id).maybeSingle();
   if (result.error) fail(result.error, "admin_vehicle");
   return result.data ? mapVehicle(result.data as Record<string, unknown>, true) : null;
 }
@@ -363,21 +384,21 @@ export function createSupabaseRepository() {
     },
     async listPublic(query: VehicleQuery, mode: TradeMode): Promise<FilterResult> {
       const anon = createAnonClient();
-      const result = await anon.from("vehicles").select(publicColumns).neq("status", "hidden");
+      const result = await anon.from("vehicles").select(publicColumns).in("status", ["available", "reserved", "sold"]);
       if (result.error) fail(result.error, "public_list");
       const vehicles = (result.data ?? []).map((row) => mapVehicle(row as Record<string, unknown>, false));
       return filterVehicles(vehicles, query, mode);
     },
     async getPublicByStockNo(stockNo: string) {
       const anon = createAnonClient();
-      const result = await anon.from("vehicles").select(publicColumns).eq("stock_no", stockNo).maybeSingle();
+      const result = await anon.from("vehicles").select(publicColumns).eq("stock_no", stockNo).in("status", ["available", "reserved", "sold"]).maybeSingle();
       if (result.error) fail(result.error, "public_vehicle");
       if (!result.data) return null;
       return toPublicVehicle(mapVehicle(result.data as Record<string, unknown>, false));
     },
     async listAdminVehicles(): Promise<AdminVehicle[]> {
       const service = createServiceClient();
-      const result = await service.from("vehicles").select(`${publicColumns}, vehicle_internal(*)`).order("created_at", { ascending: false });
+      const result = await service.from("vehicles").select(`${adminColumns}, vehicle_internal(*)`).order("created_at", { ascending: false });
       if (result.error) fail(result.error, "admin_list");
       return (result.data ?? []).map((row) => mapVehicle(row as Record<string, unknown>, true));
     },
@@ -460,14 +481,17 @@ export function createSupabaseRepository() {
       const removed = await service.from("vehicle_photos").delete().eq("id", photoId);
       if (removed.error) fail(removed.error, "photo_delete");
     },
-    async readPhoto(photoId: string, asAdmin: boolean) {
+    async readPhoto(photoId: string, viewer: { admin: boolean; ownerId: string | null }) {
       const service = createServiceClient();
-      const found = await service.from("vehicle_photos").select("storage_path, content_type, vehicle_id, vehicles(status)").eq("id", photoId).maybeSingle();
+      const found = await service.from("vehicle_photos").select("storage_path, content_type, vehicle_id, vehicles(status, owner_id)").eq("id", photoId).maybeSingle();
       if (found.error) fail(found.error, "photo_read");
       if (!found.data?.storage_path || !found.data.content_type) return null;
-      const vehicle = found.data.vehicles as { status?: string } | { status?: string }[] | null;
-      const status = Array.isArray(vehicle) ? vehicle[0]?.status : vehicle?.status;
-      if (status === "hidden" && !asAdmin) return null;
+      const vehicle = found.data.vehicles as { status?: string; owner_id?: string | null } | { status?: string; owner_id?: string | null }[] | null;
+      const row = Array.isArray(vehicle) ? vehicle[0] : vehicle;
+      const status = row?.status;
+      const ownerId = row?.owner_id ?? null;
+      const owns = Boolean(viewer.ownerId) && ownerId === viewer.ownerId;
+      if ((status === "hidden" || status === "review") && !viewer.admin && !owns) return null;
       const downloaded = await service.storage.from("vehicle-photos").download(found.data.storage_path);
       if (downloaded.error || !downloaded.data) return null;
       return { bytes: Buffer.from(await downloaded.data.arrayBuffer()), contentType: found.data.content_type };
@@ -478,7 +502,7 @@ export function createSupabaseRepository() {
       let stockNo = input.stockNo;
       if (input.stockNo) {
         const vehicle = await service.from("vehicles").select("id, stock_no, status").eq("stock_no", input.stockNo).maybeSingle();
-        if (vehicle.data && vehicle.data.status !== "hidden") {
+        if (vehicle.data && vehicle.data.status !== "hidden" && vehicle.data.status !== "review") {
           vehicleId = vehicle.data.id;
           stockNo = vehicle.data.stock_no;
         }
@@ -782,6 +806,140 @@ export function createSupabaseRepository() {
         .single();
       if (updated.error) fail(updated.error, "request_update");
       return mapRequest(updated.data as Record<string, unknown>, []);
+    },
+    async getMember(id: string): Promise<Member | null> {
+      const service = createServiceClient();
+      const result = await service.from("member_profiles").select("user_id, role, name, email, phone, company, created_at").eq("user_id", id).maybeSingle();
+      if (result.error) fail(result.error, "member_get");
+      return result.data ? mapMember(result.data as Record<string, unknown>) : null;
+    },
+    async signupMember(input: SignupInput): Promise<Member> {
+      const service = createServiceClient();
+      const created = await service.auth.admin.createUser({
+        email: input.email,
+        password: input.password,
+        email_confirm: true,
+      });
+      if (created.error || !created.data.user) {
+        const message = created.error?.message.toLowerCase() ?? "";
+        if (created.error?.status === 422 || message.includes("already") || message.includes("registered") || message.includes("exists")) {
+          throw new StoreError("duplicate_email");
+        }
+        fail(created.error, "member_signup");
+      }
+      const userId = created.data.user.id;
+      const inserted = await service.from("member_profiles").insert({
+        user_id: userId,
+        role: input.role,
+        name: input.name,
+        email: input.email,
+        phone: input.phone,
+        company: input.company,
+      });
+      if (inserted.error) {
+        await service.auth.admin.deleteUser(userId);
+        if (inserted.error.code === "23505") throw new StoreError("duplicate_email");
+        fail(inserted.error, "member_profile");
+      }
+      return {
+        id: userId,
+        role: input.role,
+        name: input.name,
+        email: input.email,
+        phone: input.phone,
+        company: input.company,
+        createdAt: new Date().toISOString(),
+      };
+    },
+    async verifyMember(email: string, password: string): Promise<Member | null> {
+      const anon = createAnonClient();
+      const signed = await anon.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+      if (signed.error || !signed.data.user) return null;
+      const service = createServiceClient();
+      const profile = await service.from("member_profiles").select("user_id, role, name, email, phone, company, created_at").eq("user_id", signed.data.user.id).maybeSingle();
+      await anon.auth.signOut();
+      if (!profile.data) return null;
+      return mapMember(profile.data as Record<string, unknown>);
+    },
+    async listOwned(ownerId: string) {
+      const service = createServiceClient();
+      const result = await service.from("vehicles").select(adminColumns).eq("owner_id", ownerId).order("created_at", { ascending: false });
+      if (result.error) fail(result.error, "owned_list");
+      return (result.data ?? []).map((row) => toOwnedListing(mapVehicle(row as Record<string, unknown>, false)));
+    },
+    async createDealerListing(
+      owner: Member,
+      input: DealerListingInput,
+      files: { front: Buffer; frontSide: Buffer; rear: Buffer; extras: Array<{ bytes: Buffer; contentType: ImageType }> },
+      types: { front: ImageType; frontSide: ImageType; rear: ImageType },
+    ) {
+      if (owner.role !== "dealer") throw new StoreError("dealer_only");
+      const service = createServiceClient();
+      let stockNo = "";
+      for (let attempt = 0; attempt < 6; attempt += 1) {
+        const candidate = `DLR-${randomBytes(3).toString("hex").toUpperCase()}`;
+        const exists = await service.from("vehicles").select("id").eq("stock_no", candidate).maybeSingle();
+        if (exists.error) fail(exists.error, "dealer_stock");
+        if (!exists.data) {
+          stockNo = candidate;
+          break;
+        }
+      }
+      if (!stockNo) stockNo = `DLR-${randomUUID().slice(0, 8).toUpperCase()}`;
+      const id = randomUUID();
+      const inserted = await service.from("vehicles").insert({
+        id,
+        stock_no: stockNo,
+        status: "review",
+        vehicle_class: input.vehicleClass,
+        maker: input.maker,
+        model: input.model,
+        model_year: input.modelYear,
+        mileage_km: input.mileageKm,
+        seats: input.seats,
+        transmission: input.transmission,
+        fuel: input.fuel,
+        location: input.location,
+        description_ko: input.descriptionKo,
+        description_en: input.descriptionEn,
+        domestic_price_krw: input.domesticPriceKrw,
+        owner_id: owner.id,
+        listing_source: "dealer",
+        seller_name: owner.name,
+        seller_email: owner.email,
+        seller_company: owner.company,
+        featured: false,
+      }).select("id").single();
+      if (inserted.error) fail(inserted.error, "dealer_vehicle");
+      const internal = await service.from("vehicle_internal").insert({ vehicle_id: id });
+      if (internal.error) fail(internal.error, "dealer_internal");
+      const shots: Array<{ bytes: Buffer; contentType: ImageType; category: PhotoCategory; cover: boolean; label: string }> = [
+        { bytes: files.front, contentType: types.front, category: "front", cover: true, label: "정면" },
+        { bytes: files.frontSide, contentType: types.frontSide, category: "front_side", cover: false, label: "정측면" },
+        { bytes: files.rear, contentType: types.rear, category: "rear", cover: false, label: "후면" },
+        ...files.extras.map((extra) => ({ bytes: extra.bytes, contentType: extra.contentType, category: "exterior" as const, cover: false, label: "추가 사진" })),
+      ];
+      for (const [index, shot] of shots.entries()) {
+        const photoId = randomUUID();
+        const storagePath = `${id}/${photoId}.${extensionFor(shot.contentType)}`;
+        const uploaded = await service.storage.from("vehicle-photos").upload(storagePath, shot.bytes, { contentType: shot.contentType, upsert: false });
+        if (uploaded.error) fail(uploaded.error, "dealer_photo_upload");
+        const photo = await service.from("vehicle_photos").insert({
+          id: photoId,
+          vehicle_id: id,
+          category: shot.category,
+          storage_path: storagePath,
+          content_type: shot.contentType,
+          sort_order: index,
+          is_cover: shot.cover,
+          alt_ko: shot.label,
+          alt_en: shot.label,
+        });
+        if (photo.error) fail(photo.error, "dealer_photo_row");
+      }
+      const vehicle = await loadAdmin(id);
+      if (!vehicle) throw new DataAccessError("upstream");
+      return toOwnedListing(vehicle);
     },
     async readPrivateFile(fileId: string) {
       const service = createServiceClient();

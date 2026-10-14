@@ -66,6 +66,11 @@ function base(partial: Pick<AdminVehicle, "id" | "stockNo" | "status" | "vehicle
     updatedAt: partial.createdAt,
     demo: true,
     internal: emptyInternal(),
+    ownerId: null,
+    listingSource: "company",
+    sellerName: null,
+    sellerEmail: null,
+    sellerCompany: null,
     ...partial,
   };
 }
@@ -361,6 +366,7 @@ export function buildSeed(): DemoState {
     quotes: [],
     agents,
     requests: [],
+    members: [],
     history: [
       {
         id: "hist-demo-1",

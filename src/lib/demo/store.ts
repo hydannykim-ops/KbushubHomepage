@@ -1,7 +1,7 @@
-import { randomUUID } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { toPublicVehicle, visibleReferrals } from "../domain/access";
+import { toOwnedListing, toPublicVehicle, visibleReferrals } from "../domain/access";
 import { filterVehicles, type FilterResult } from "../domain/filters";
 import { quoteLineKeys } from "../domain/money";
 import { generateReferralCode } from "../domain/referral";
@@ -12,6 +12,7 @@ import type {
   AssignmentHistory,
   Inquiry,
   InquiryStatus,
+  Member,
   PhotoCategory,
   Quote,
   QuoteLine,
@@ -21,7 +22,8 @@ import type {
   VehicleQuery,
   VehicleRequest,
 } from "../domain/types";
-import type { InquiryInput, InquiryUpdate, PartnerInput, QuoteInput, SellInput, SettingsInput, VehicleInput, WantedInput } from "../domain/validation";
+import type { DealerListingInput, InquiryInput, InquiryUpdate, PartnerInput, QuoteInput, SellInput, SettingsInput, SignupInput, VehicleInput, WantedInput } from "../domain/validation";
+import { hashPassword, verifyPassword } from "../domain/password";
 import { extensionFor, type ImageType } from "../domain/uploads";
 import { buildSeed } from "./seed";
 import type { DemoState } from "./state";
@@ -88,6 +90,11 @@ function applyVehicleInput(current: AdminVehicle | null, input: VehicleInput, id
     updatedAt: nowIso(),
     demo: true,
     internal: input.internal,
+    ownerId: current?.ownerId ?? null,
+    listingSource: current?.listingSource ?? "company",
+    sellerName: current?.sellerName ?? null,
+    sellerEmail: current?.sellerEmail ?? null,
+    sellerCompany: current?.sellerCompany ?? null,
   };
 }
 
@@ -99,7 +106,16 @@ export function createDemoStore(dir: string) {
   async function read(): Promise<DemoState> {
     try {
       const raw = await readFile(file, "utf8");
-      return JSON.parse(raw) as DemoState;
+      const state = JSON.parse(raw) as DemoState;
+      state.members ??= [];
+      for (const vehicle of state.vehicles ?? []) {
+        vehicle.ownerId ??= null;
+        vehicle.listingSource ??= "company";
+        vehicle.sellerName ??= null;
+        vehicle.sellerEmail ??= null;
+        vehicle.sellerCompany ??= null;
+      }
+      return state;
     } catch (error) {
       const code = (error as NodeJS.ErrnoException).code;
       if (code === "ENOENT") {
@@ -235,12 +251,14 @@ export function createDemoStore(dir: string) {
         if (vehicle.photos.length && !vehicle.photos.some((item) => item.isCover)) vehicle.photos[0].isCover = true;
       });
     },
-    async readPhoto(photoId: string, asAdmin: boolean): Promise<{ bytes: Buffer; contentType: string } | null> {
+    async readPhoto(photoId: string, viewer: { admin: boolean; ownerId: string | null }): Promise<{ bytes: Buffer; contentType: string } | null> {
       const state = await read();
       for (const vehicle of state.vehicles) {
         const photo = vehicle.photos.find((item) => item.id === photoId);
         if (!photo || photo.placeholder || !photo.path || !photo.contentType) continue;
-        if (vehicle.status === "hidden" && !asAdmin) return null;
+        const restricted = vehicle.status === "hidden" || vehicle.status === "review";
+        const owns = Boolean(viewer.ownerId) && vehicle.ownerId === viewer.ownerId;
+        if (restricted && !viewer.admin && !owns) return null;
         const bytes = await readFile(path.join(dir, photo.path));
         return { bytes, contentType: photo.contentType };
       }
@@ -249,7 +267,12 @@ export function createDemoStore(dir: string) {
     async createInquiry(input: InquiryInput, referral: { firstReferralCode: string | null; submitReferralCode: string | null }): Promise<Inquiry> {
       return update((state) => {
         const vehicle = input.stockNo
-          ? state.vehicles.find((item) => item.stockNo.toLowerCase() === input.stockNo!.toLowerCase() && item.status !== "hidden")
+          ? state.vehicles.find(
+              (item) =>
+                item.stockNo.toLowerCase() === input.stockNo!.toLowerCase() &&
+                item.status !== "hidden" &&
+                item.status !== "review",
+            )
           : undefined;
         const agent = state.agents.find((item) => item.status === "approved" && item.referralCode === referral.firstReferralCode);
         const inquiry: Inquiry = {
@@ -502,6 +525,144 @@ export function createDemoStore(dir: string) {
         request.staffMemo = patch.staffMemo;
         request.updatedAt = nowIso();
         return clone(request);
+      });
+    },
+    async getMember(id: string): Promise<Member | null> {
+      const member = (await read()).members.find((item) => item.id === id);
+      if (!member) return null;
+      return { id: member.id, role: member.role, name: member.name, email: member.email, phone: member.phone, company: member.company, createdAt: member.createdAt };
+    },
+    async signupMember(input: SignupInput): Promise<Member> {
+      return update((state) => {
+        if (state.members.some((member) => member.email === input.email)) throw new StoreError("duplicate_email");
+        const member = {
+          id: randomUUID(),
+          role: input.role,
+          name: input.name,
+          email: input.email,
+          phone: input.phone,
+          company: input.company,
+          passwordHash: hashPassword(input.password),
+          createdAt: nowIso(),
+        };
+        state.members.push(member);
+        return { id: member.id, role: member.role, name: member.name, email: member.email, phone: member.phone, company: member.company, createdAt: member.createdAt };
+      });
+    },
+    async verifyMember(email: string, password: string): Promise<Member | null> {
+      const member = (await read()).members.find((item) => item.email === email.trim().toLowerCase());
+      if (!member || !verifyPassword(password, member.passwordHash)) return null;
+      return { id: member.id, role: member.role, name: member.name, email: member.email, phone: member.phone, company: member.company, createdAt: member.createdAt };
+    },
+    async listOwned(ownerId: string) {
+      return (await read()).vehicles.filter((vehicle) => vehicle.ownerId === ownerId).map((vehicle) => toOwnedListing(clone(vehicle)));
+    },
+    async createDealerListing(
+      owner: Member,
+      input: DealerListingInput,
+      files: { front: Buffer; frontSide: Buffer; rear: Buffer; extras: Array<{ bytes: Buffer; contentType: ImageType }> },
+      types: { front: ImageType; frontSide: ImageType; rear: ImageType },
+    ) {
+      if (owner.role !== "dealer") throw new StoreError("dealer_only");
+      await mkdir(uploadDir, { recursive: true });
+      return update(async (state) => {
+        let stockNo = "";
+        for (let attempt = 0; attempt < 6; attempt += 1) {
+          const candidate = `DLR-${randomBytes(3).toString("hex").toUpperCase()}`;
+          if (!state.vehicles.some((vehicle) => vehicle.stockNo === candidate)) {
+            stockNo = candidate;
+            break;
+          }
+        }
+        if (!stockNo) stockNo = `DLR-${randomUUID().slice(0, 8).toUpperCase()}`;
+        const id = randomUUID();
+        const createdAt = nowIso();
+        const photos: VehiclePhoto[] = [];
+        const writePhoto = async (bytes: Buffer, contentType: ImageType, category: PhotoCategory, cover: boolean, label: string) => {
+          const photoId = randomUUID();
+          const relative = path.join("uploads", `${photoId}.${extensionFor(contentType)}`);
+          await writeFile(path.join(dir, relative), bytes);
+          photos.push({
+            id: photoId,
+            vehicleId: id,
+            category,
+            placeholder: false,
+            storage: "file",
+            path: relative,
+            contentType,
+            sortOrder: photos.length,
+            isCover: cover,
+            altKo: label,
+            altEn: label,
+          });
+        };
+        await writePhoto(files.front, types.front, "front", true, "정면");
+        await writePhoto(files.frontSide, types.frontSide, "front_side", false, "정측면");
+        await writePhoto(files.rear, types.rear, "rear", false, "후면");
+        for (const extra of files.extras) {
+          await writePhoto(extra.bytes, extra.contentType, "exterior", false, "추가 사진");
+        }
+        const vehicle: AdminVehicle = {
+          id,
+          stockNo,
+          status: "review",
+          vehicleClass: input.vehicleClass,
+          maker: input.maker,
+          model: input.model,
+          trim: null,
+          modelYear: input.modelYear,
+          firstRegisteredOn: null,
+          mileageKm: input.mileageKm,
+          seats: input.seats,
+          transmission: input.transmission,
+          fuel: input.fuel,
+          engineModel: null,
+          displacementCc: null,
+          steering: "unknown",
+          longBody: null,
+          lengthMm: null,
+          widthMm: null,
+          heightMm: null,
+          previousUseKo: null,
+          previousUseEn: null,
+          location: input.location,
+          maintenanceKo: null,
+          maintenanceEn: null,
+          defectsKo: null,
+          defectsEn: null,
+          descriptionKo: input.descriptionKo,
+          descriptionEn: input.descriptionEn,
+          photographedOn: null,
+          stockCheckedOn: null,
+          featured: false,
+          domesticPriceKrw: input.domesticPriceKrw,
+          exportPriceAmount: null,
+          exportPriceCurrency: null,
+          exportPriceTermsKo: null,
+          exportPriceTermsEn: null,
+          videoUrl: null,
+          photos,
+          createdAt,
+          updatedAt: createdAt,
+          demo: true,
+          internal: {
+            purchaseCost: null,
+            purchaseCurrency: null,
+            actualSaleAmount: null,
+            saleCurrency: null,
+            extraCosts: null,
+            agentFee: null,
+            feeCurrency: null,
+            note: null,
+          },
+          ownerId: owner.id,
+          listingSource: "dealer",
+          sellerName: owner.name,
+          sellerEmail: owner.email,
+          sellerCompany: owner.company,
+        };
+        state.vehicles.push(vehicle);
+        return toOwnedListing(clone(vehicle));
       });
     },
     async readPrivateFile(fileId: string): Promise<{ bytes: Buffer; contentType: string } | null> {

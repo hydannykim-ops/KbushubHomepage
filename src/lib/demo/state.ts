@@ -3,11 +3,14 @@ import type {
   Agent,
   AssignmentHistory,
   Inquiry,
+  Member,
   Quote,
   SiteSettings,
   VehicleInternal,
   VehicleRequest,
 } from "../domain/types";
+
+export type StoredMember = Member & { passwordHash: string };
 
 export type DemoState = {
   settings: SiteSettings;
@@ -17,6 +20,7 @@ export type DemoState = {
   agents: Agent[];
   requests: VehicleRequest[];
   history: AssignmentHistory[];
+  members: StoredMember[];
 };
 
 export type { VehicleInternal };

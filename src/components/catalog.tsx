@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MediaSlot } from "./media-slot";
 import { GalleryClient } from "./gallery-client";
 import { formatKm, priceView, showText } from "@/lib/domain/money";
 import type { Lang, PublicVehicle, TradeMode, VehiclePhoto, VehicleQuery } from "@/lib/domain/types";
@@ -24,25 +25,19 @@ export function DataProblem({ lang, code }: { lang: Lang; code: "misconfigured" 
   );
 }
 
-function PhotoFrame({ vehicle, lang, large = false }: { vehicle: PublicVehicle; lang: Lang; large?: boolean }) {
+function PhotoFrame({ vehicle, lang }: { vehicle: PublicVehicle; lang: Lang }) {
   const text = copy(lang);
   const cover = vehicle.photos.find((photo) => photo.isCover) ?? vehicle.photos[0];
   return (
-    <div className={`relative overflow-hidden bg-[#e7edf4] ${large ? "aspect-[16/10]" : "aspect-[16/10]"}`}>
+    <div className="relative aspect-[16/10] overflow-hidden bg-[#f3f5f8]">
       {cover && !cover.placeholder ? (
         // Access-checked photos are optimized in the media route.
         // eslint-disable-next-line @next/next/no-img-element
         <img src={`/api/media/photo/${cover.id}`} alt={lang === "ko" ? cover.altKo : cover.altEn} className="h-full w-full object-cover" />
-      ) : cover?.placeholder ? (
-        <div className="flex h-full flex-col items-center justify-center gap-2 p-4 text-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/demo/placeholder.svg" alt="" className="h-full w-full object-cover" />
-          <span className="sr-only">{text.placeholderNote}</span>
-        </div>
       ) : (
-        <div className="flex h-full items-center justify-center text-sm text-muted">{text.photoNone}</div>
+        <MediaSlot label={text.mediaCover} hint={cover?.placeholder ? text.placeholderNote : text.mediaCoverHint} />
       )}
-      <span className="absolute left-3 top-3 rounded bg-white px-2 py-1 text-xs font-semibold">{statusLabel(vehicle.status, lang)}</span>
+      <span className="absolute left-3 top-3 bg-white px-2 py-1 text-xs font-semibold">{statusLabel(vehicle.status, lang)}</span>
     </div>
   );
 }
@@ -61,25 +56,22 @@ export function VehicleCard({
   const text = copy(lang);
   const price = priceView(vehicle, mode, lang);
   return (
-    <article className="overflow-hidden rounded-lg border border-line bg-white shadow-sm">
+    <article className="overflow-hidden border border-line bg-white">
       <Link href={href} className="block">
         <PhotoFrame vehicle={vehicle} lang={lang} />
         <div className="space-y-2 p-4">
-          <p className="text-xs text-muted">
+          <p className="text-xs tracking-wide text-muted">
             {text.stockNo} {vehicle.stockNo}
           </p>
-          <h2 className="text-lg font-bold">
+          <h2 className="text-lg font-semibold leading-snug">
             {vehicle.maker} {vehicle.model}
             {vehicle.trim ? ` ${vehicle.trim}` : ""}
           </h2>
           <p className="text-sm text-muted">
-            {vehicle.modelYear ?? text.unknown} · {vehicle.seats ?? text.unknown}
+            {vehicle.modelYear ?? text.unknown} · {formatKm(vehicle.mileageKm, lang)} · {vehicle.seats ?? text.unknown}
             {lang === "ko" ? "인승" : " seats"}
           </p>
-          <p className="text-sm text-muted">
-            {formatKm(vehicle.mileageKm, lang)} · {transmissionLabel(vehicle.transmission, lang)}
-          </p>
-          <p className="text-xl font-bold tabular-nums">{price.primary}</p>
+          <p className="pt-1 text-2xl font-semibold tabular-nums tracking-tight">{price.primary}</p>
           {price.basis ? <p className="text-sm text-muted">{price.basis}</p> : null}
         </div>
       </Link>
@@ -90,7 +82,11 @@ export function VehicleCard({
 export function Gallery({ photos, lang }: { photos: VehiclePhoto[]; lang: Lang }) {
   const text = copy(lang);
   if (!photos.length) {
-    return <div className="flex aspect-[16/10] items-center justify-center rounded-lg border border-line bg-white text-muted">{text.photoNone}</div>;
+    return (
+      <div className="aspect-[16/10] overflow-hidden border border-line bg-white">
+        <MediaSlot label={text.mediaCover} hint={text.photoNone} />
+      </div>
+    );
   }
   return <GalleryClient photos={photos} lang={lang} />;
 }

@@ -23,7 +23,7 @@ export function readSession(token: string | undefined, secret: string, now = Dat
     const parsed = JSON.parse(Buffer.from(body, "base64url").toString("utf8")) as Session;
     if (!parsed?.sub || !parsed.role || !parsed.email || typeof parsed.exp !== "number") return null;
     if (parsed.exp < now) return null;
-    if (parsed.role !== "admin" && parsed.role !== "agent") return null;
+    if (parsed.role !== "admin" && parsed.role !== "agent" && parsed.role !== "customer" && parsed.role !== "dealer") return null;
     return parsed;
   } catch {
     return null;

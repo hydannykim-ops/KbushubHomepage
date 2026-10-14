@@ -17,8 +17,8 @@ const classes = ["county", "medium", "large"] as const;
 const transmissions = ["manual", "automatic", "unknown"] as const;
 const fuels = ["diesel", "gasoline", "lpg", "cng", "electric", "hybrid", "unknown"] as const;
 const steerings = ["lhd", "rhd", "unknown"] as const;
-const statuses = ["available", "reserved", "sold", "hidden"] as const;
-const photoCategories = ["exterior", "interior", "dashboard", "engine", "tires", "defect"] as const;
+const statuses = ["available", "reserved", "sold", "hidden", "review"] as const;
+const photoCategories = ["front", "front_side", "rear", "exterior", "interior", "dashboard", "engine", "tires", "defect"] as const;
 const inquiryKinds = ["purchase", "visit", "quote", "video", "general"] as const;
 const inquiryStatuses = ["new", "consulting", "quoted", "negotiating", "contracted", "closed"] as const;
 const modes = ["domestic", "export"] as const;
@@ -778,3 +778,89 @@ export function parsePhotoPatch(body: unknown): { ok: true; data: { category?: P
 }
 
 export const supportedCurrencies = currencies;
+
+export type SignupInput = {
+  role: "customer" | "dealer";
+  name: string;
+  email: string;
+  password: string;
+  phone: string | null;
+  company: string | null;
+  consent: boolean;
+  companyWebsite: string;
+};
+
+export function parseSignup(body: unknown, lang: Lang): { ok: true; data: SignupInput } | { ok: false; errors: FieldErrors } {
+  const schema = z
+    .object({
+      role: z.enum(["customer", "dealer"]),
+      name: z.string().trim().min(1, text(lang, "이름을 입력해 주세요.", "Enter your name.")).max(80),
+      email: z.string().trim().max(120),
+      password: z.string().min(8, text(lang, "비밀번호는 8자 이상으로 해 주세요.", "Use at least 8 characters.")).max(80),
+      phone: z.string().trim().max(40).optional().or(z.literal("")),
+      company: z.string().trim().max(80).optional().or(z.literal("")),
+      consent: z.union([z.boolean(), z.string()]),
+      companyWebsite: z.string().optional(),
+    })
+    .superRefine((value, ctx) => {
+      if (!z.email().safeParse(value.email).success) {
+        ctx.addIssue({ code: "custom", path: ["email"], message: text(lang, "이메일 형식을 확인해 주세요.", "Check the email format.") });
+      }
+      if (value.role === "dealer" && !(value.company ?? "").trim()) {
+        ctx.addIssue({ code: "custom", path: ["company"], message: text(lang, "판매 사업자는 상호를 입력해 주세요.", "Enter the business name.") });
+      }
+      const consent = value.consent === true || value.consent === "true" || value.consent === "on";
+      if (!consent) ctx.addIssue({ code: "custom", path: ["consent"], message: text(lang, "안내를 확인하고 동의해 주세요.", "Please confirm the notice.") });
+      if ((value.companyWebsite ?? "").trim()) ctx.addIssue({ code: "custom", path: ["form"], message: "invalid" });
+    });
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) return { ok: false, errors: fieldErrors(parsed.error) };
+  return {
+    ok: true,
+    data: {
+      role: parsed.data.role,
+      name: parsed.data.name,
+      email: parsed.data.email.trim().toLowerCase(),
+      password: parsed.data.password,
+      phone: parsed.data.phone?.trim() || null,
+      company: parsed.data.role === "dealer" ? parsed.data.company?.trim() || null : parsed.data.company?.trim() || null,
+      consent: true,
+      companyWebsite: "",
+    },
+  };
+}
+
+export type DealerListingInput = {
+  vehicleClass: VehicleClass;
+  maker: string;
+  model: string;
+  modelYear: number | null;
+  mileageKm: number | null;
+  seats: number | null;
+  transmission: Transmission;
+  fuel: Fuel;
+  location: string | null;
+  domesticPriceKrw: number | null;
+  descriptionKo: string | null;
+  descriptionEn: string | null;
+};
+
+export function parseDealerListing(body: unknown, lang: Lang): { ok: true; data: DealerListingInput } | { ok: false; errors: FieldErrors } {
+  const schema = z.object({
+    vehicleClass: z.enum(classes),
+    maker: z.string().trim().min(1, text(lang, "제조사를 입력해 주세요.", "Enter the maker.")).max(80),
+    model: z.string().trim().min(1, text(lang, "모델을 입력해 주세요.", "Enter the model.")).max(80),
+    modelYear: optionalInt(1980, 2035),
+    mileageKm: optionalInt(0, 5_000_000),
+    seats: optionalInt(1, 80),
+    transmission: z.enum(transmissions),
+    fuel: z.enum(fuels),
+    location: optionalText(120),
+    domesticPriceKrw: optionalInt(0, 5_000_000_000),
+    descriptionKo: optionalText(8000),
+    descriptionEn: optionalText(8000),
+  });
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) return { ok: false, errors: fieldErrors(parsed.error) };
+  return { ok: true, data: parsed.data };
+}

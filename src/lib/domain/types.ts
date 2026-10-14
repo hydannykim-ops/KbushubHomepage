@@ -1,11 +1,13 @@
 export type Lang = "ko" | "en";
 export type TradeMode = "domestic" | "export";
-export type SaleStatus = "available" | "reserved" | "sold" | "hidden";
+export type SaleStatus = "available" | "reserved" | "sold" | "hidden" | "review";
 export type VehicleClass = "county" | "medium" | "large";
 export type Transmission = "manual" | "automatic" | "unknown";
 export type Fuel = "diesel" | "gasoline" | "lpg" | "cng" | "electric" | "hybrid" | "unknown";
 export type Steering = "lhd" | "rhd" | "unknown";
-export type PhotoCategory = "exterior" | "interior" | "dashboard" | "engine" | "tires" | "defect";
+export type PhotoCategory = "front" | "front_side" | "rear" | "exterior" | "interior" | "dashboard" | "engine" | "tires" | "defect";
+export type MemberRole = "customer" | "dealer";
+export type ListingSource = "company" | "dealer";
 export type InquiryKind = "purchase" | "visit" | "quote" | "video" | "general";
 export type InquiryStatus = "new" | "consulting" | "quoted" | "negotiating" | "contracted" | "closed";
 export type MoneyStatus = "amount" | "zero" | "unknown";
@@ -42,7 +44,7 @@ export type VehicleInternal = {
 export type PublicVehicle = {
   id: string;
   stockNo: string;
-  status: Exclude<SaleStatus, "hidden">;
+  status: Exclude<SaleStatus, "hidden" | "review">;
   vehicleClass: VehicleClass;
   maker: string;
   model: string;
@@ -87,6 +89,26 @@ export type PublicVehicle = {
 export type AdminVehicle = Omit<PublicVehicle, "status"> & {
   status: SaleStatus;
   internal: VehicleInternal;
+  ownerId: string | null;
+  listingSource: ListingSource;
+  sellerName: string | null;
+  sellerEmail: string | null;
+  sellerCompany: string | null;
+};
+
+export type Member = {
+  id: string;
+  role: MemberRole;
+  name: string;
+  email: string;
+  phone: string | null;
+  company: string | null;
+  createdAt: string;
+};
+
+export type OwnedListing = Omit<PublicVehicle, "status"> & {
+  status: SaleStatus;
+  listingSource: ListingSource;
 };
 
 export type SiteSettings = {
@@ -248,12 +270,13 @@ export type VehicleQuery = {
   sort?: SortKey;
 };
 
-export type SessionRole = "admin" | "agent";
+export type SessionRole = "admin" | "agent" | "customer" | "dealer";
 
 export type Session = {
   sub: string;
   role: SessionRole;
   email: string;
+  name?: string;
   agentId?: string;
   referralCode?: string;
   exp: number;

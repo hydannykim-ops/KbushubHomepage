@@ -1,11 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { MediaSlot } from "@/components/media-slot";
 import type { Lang, PhotoCategory, VehiclePhoto } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
-import { photoLabel } from "@/lib/labels";
+import { photoCategoryList, photoLabel } from "@/lib/labels";
 
-const categories: Array<PhotoCategory | "all"> = ["all", "exterior", "interior", "dashboard", "engine", "tires", "defect"];
+const categories: Array<PhotoCategory | "all"> = ["all", ...photoCategoryList];
 
 export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: Lang }) {
   const text = copy(lang);
@@ -24,7 +25,7 @@ export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: 
           <button
             key={item}
             type="button"
-            className={`shrink-0 rounded-full border px-3 py-1 text-sm ${category === item ? "border-primary bg-primary text-white" : "border-line bg-white"}`}
+            className={`shrink-0 border px-3 py-1 text-sm ${category === item ? "border-primary bg-primary text-white" : "border-line bg-white"}`}
             onClick={() => {
               setCategory(item);
               setIndex(0);
@@ -35,13 +36,14 @@ export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: 
         ))}
       </div>
       {!current ? (
-        <div className="flex aspect-[16/10] items-center justify-center rounded-lg border border-line bg-white text-sm text-muted">{text.photoNone}</div>
+        <div className="aspect-[16/10] overflow-hidden border border-line bg-white">
+          <MediaSlot label={text.mediaCover} hint={text.photoNone} />
+        </div>
       ) : (
-        <figure className="overflow-hidden rounded-lg border border-line bg-white">
-          <div className="relative aspect-[16/10] bg-[#e7edf4]">
+        <figure className="overflow-hidden border border-line bg-white">
+          <div className="relative aspect-[16/10] bg-[#f3f5f8]">
             {current.placeholder ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src="/demo/placeholder.svg" alt={lang === "ko" ? current.altKo : current.altEn} className="h-full w-full object-cover" />
+              <MediaSlot label={photoLabel(current.category, lang)} hint={text.placeholderNote} />
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={`/api/media/photo/${current.id}`} alt={lang === "ko" ? current.altKo : current.altEn} className="h-full w-full object-cover" />
@@ -71,8 +73,7 @@ export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: 
               onClick={() => setIndex(photoIndex)}
             >
               {photo.placeholder ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src="/demo/placeholder.svg" alt="" className="aspect-[16/10] w-full object-cover" />
+                <span className="flex aspect-[16/10] items-center justify-center bg-[#f3f5f8] text-[10px] font-semibold text-muted">{photoLabel(photo.category, lang)}</span>
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={`/api/media/photo/${photo.id}`} alt="" className="aspect-[16/10] w-full object-cover" />

@@ -94,6 +94,7 @@ export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
           <option value="reserved">예약 중</option>
           <option value="sold">판매 완료</option>
           <option value="hidden">비공개</option>
+          <option value="review">검토 중</option>
         </select>
       </Label>
       <Label text="차급">

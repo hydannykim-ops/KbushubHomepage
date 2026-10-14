@@ -3,10 +3,11 @@ import { requireAdmin } from "@/lib/auth/session";
 import { getRepository } from "@/lib/data/repository";
 import { checkImage } from "@/lib/domain/uploads";
 import type { PhotoCategory } from "@/lib/domain/types";
+import { photoCategoryList } from "@/lib/labels";
 
 export const runtime = "nodejs";
 
-const categories = new Set(["exterior", "interior", "dashboard", "engine", "tires", "defect"]);
+const categories = new Set<string>(photoCategoryList);
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const admin = await requireAdmin();

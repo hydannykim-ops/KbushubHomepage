@@ -36,6 +36,17 @@ export async function getSession(): Promise<Session | null> {
       exp: Date.now() + 60_000,
     };
   }
+  const memberResult = await service.from("member_profiles").select("role, name").eq("user_id", data.user.id).maybeSingle();
+  const memberRole = memberResult.data?.role;
+  if (memberRole === "customer" || memberRole === "dealer") {
+    return {
+      sub: data.user.id,
+      role: memberRole,
+      email: data.user.email ?? "",
+      name: typeof memberResult.data?.name === "string" ? memberResult.data.name : undefined,
+      exp: Date.now() + 60_000,
+    };
+  }
   return null;
 }
 
@@ -47,6 +58,16 @@ export async function requireAdmin(): Promise<Session | null> {
 export async function requireAgent(): Promise<Session | null> {
   const session = await getSession();
   return session?.role === "agent" && session.referralCode ? session : null;
+}
+
+export async function requireMember(): Promise<Session | null> {
+  const session = await getSession();
+  return session && (session.role === "customer" || session.role === "dealer") ? session : null;
+}
+
+export async function requireDealer(): Promise<Session | null> {
+  const session = await getSession();
+  return session?.role === "dealer" ? session : null;
 }
 
 export function demoLogin(email: string, password: string, area: "admin" | "agent"): Session | null {

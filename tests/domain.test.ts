@@ -297,6 +297,69 @@ test("session token rejects tampering", () => {
   assert.equal(readSession(`${token}x`, "secret"), null);
 });
 
+test("dealer listings stay in review and customers cannot publish", async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), "kbus-member-"));
+  const store = createDemoStore(dir);
+  const dealer = await store.signupMember({
+    role: "dealer",
+    name: "김판매",
+    email: "dealer@example.com",
+    password: "password1",
+    phone: null,
+    company: "데모상사",
+    consent: true,
+    companyWebsite: "",
+  });
+  const customer = await store.signupMember({
+    role: "customer",
+    name: "이상담",
+    email: "customer@example.com",
+    password: "password1",
+    phone: null,
+    company: null,
+    consent: true,
+    companyWebsite: "",
+  });
+  const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0]);
+  const input = {
+    vehicleClass: "county" as const,
+    maker: "현대",
+    model: "카운티",
+    modelYear: 2018,
+    mileageKm: 1000,
+    seats: 15,
+    transmission: "automatic" as const,
+    fuel: "diesel" as const,
+    location: "데모",
+    domesticPriceKrw: 1000000,
+    descriptionKo: null,
+    descriptionEn: null,
+  };
+  const files = { front: png, frontSide: png, rear: png, extras: [] };
+  const types = { front: "image/png" as const, frontSide: "image/png" as const, rear: "image/png" as const };
+  await assert.rejects(
+    () => store.createDealerListing(customer, input, files, types),
+    (error: unknown) => error instanceof Error && "code" in error && error.code === "dealer_only",
+  );
+  const listing = await store.createDealerListing(dealer, input, files, types);
+  assert.equal(listing.status, "review");
+  assert.equal(listing.listingSource, "dealer");
+  assert.equal(JSON.stringify(listing).includes("password"), false);
+  assert.equal(JSON.stringify(listing).includes("scrypt"), false);
+  assert.equal("internal" in listing, false);
+  const listed = await store.listPublic({}, "domestic");
+  assert.equal(listed.items.some((item) => item.stockNo === listing.stockNo), false);
+  assert.equal(publicJson({ ...listing, internal: { purchaseCost: 1, purchaseCurrency: "KRW", actualSaleAmount: null, saleCurrency: null, extraCosts: null, agentFee: null, feeCurrency: null, note: "비밀" }, ownerId: dealer.id, sellerName: dealer.name, sellerEmail: dealer.email, sellerCompany: dealer.company }), null);
+  const owned = await store.listOwned(dealer.id);
+  assert.equal(owned[0]?.stockNo, listing.stockNo);
+  assert.equal(await store.verifyMember(dealer.email, "nope"), null);
+  assert.equal((await store.verifyMember(dealer.email, "password1"))?.role, "dealer");
+  await assert.rejects(
+    () => store.signupMember({ ...dealer, password: "password1", consent: true, companyWebsite: "", phone: null }),
+    (error: unknown) => error instanceof Error && "code" in error && error.code === "duplicate_email",
+  );
+});
+
 test("migration locks down internal tables and admin role grants", async () => {
   const sql = await readFile(path.join(process.cwd(), "supabase/migrations/0001_init.sql"), "utf8");
   assert.match(sql, /revoke all on table public\.vehicle_internal from anon, authenticated/i);
@@ -305,4 +368,11 @@ test("migration locks down internal tables and admin role grants", async () => {
   assert.doesNotMatch(sql, /create policy[^;]+insert[^;]+user_roles/i);
   assert.match(sql, /agent_my_referrals/);
   assert.match(sql, /privacy_collection_enabled boolean not null default false/i);
+  const members = await readFile(path.join(process.cwd(), "supabase/migrations/0002_members_and_review.sql"), "utf8");
+  assert.match(members, /revoke all on table public\.member_profiles from anon, authenticated/i);
+  assert.match(members, /status in \('available', 'reserved', 'sold'\)/i);
+  assert.match(members, /owner_id/);
+  assert.match(members, /review/);
+  assert.doesNotMatch(members, /create policy[^;]+insert[^;]+user_roles/i);
+  assert.doesNotMatch(members, /create policy[^;]+insert[^;]+member_profiles/i);
 });

@@ -1,4 +1,4 @@
-import type { AdminVehicle, Agent, AgentReferral, Inquiry, PublicVehicle } from "./types";
+import type { AdminVehicle, Agent, AgentReferral, Inquiry, OwnedListing, PublicVehicle } from "./types";
 
 const internalNames = [
   "internal",
@@ -14,7 +14,7 @@ const internalNames = [
 ] as const;
 
 export function toPublicVehicle(vehicle: AdminVehicle): PublicVehicle | null {
-  if (vehicle.status === "hidden") return null;
+  if (vehicle.status === "hidden" || vehicle.status === "review") return null;
   const publicVehicle: PublicVehicle = {
     id: vehicle.id,
     stockNo: vehicle.stockNo,
@@ -60,6 +60,54 @@ export function toPublicVehicle(vehicle: AdminVehicle): PublicVehicle | null {
     demo: vehicle.demo,
   };
   return publicVehicle;
+}
+
+export function toOwnedListing(vehicle: AdminVehicle): OwnedListing {
+  return {
+    id: vehicle.id,
+    stockNo: vehicle.stockNo,
+    status: vehicle.status,
+    vehicleClass: vehicle.vehicleClass,
+    maker: vehicle.maker,
+    model: vehicle.model,
+    trim: vehicle.trim,
+    modelYear: vehicle.modelYear,
+    firstRegisteredOn: vehicle.firstRegisteredOn,
+    mileageKm: vehicle.mileageKm,
+    seats: vehicle.seats,
+    transmission: vehicle.transmission,
+    fuel: vehicle.fuel,
+    engineModel: vehicle.engineModel,
+    displacementCc: vehicle.displacementCc,
+    steering: vehicle.steering,
+    longBody: vehicle.longBody,
+    lengthMm: vehicle.lengthMm,
+    widthMm: vehicle.widthMm,
+    heightMm: vehicle.heightMm,
+    previousUseKo: vehicle.previousUseKo,
+    previousUseEn: vehicle.previousUseEn,
+    location: vehicle.location,
+    maintenanceKo: vehicle.maintenanceKo,
+    maintenanceEn: vehicle.maintenanceEn,
+    defectsKo: vehicle.defectsKo,
+    defectsEn: vehicle.defectsEn,
+    descriptionKo: vehicle.descriptionKo,
+    descriptionEn: vehicle.descriptionEn,
+    photographedOn: vehicle.photographedOn,
+    stockCheckedOn: vehicle.stockCheckedOn,
+    featured: vehicle.featured,
+    domesticPriceKrw: vehicle.domesticPriceKrw,
+    exportPriceAmount: vehicle.exportPriceAmount,
+    exportPriceCurrency: vehicle.exportPriceCurrency,
+    exportPriceTermsKo: vehicle.exportPriceTermsKo,
+    exportPriceTermsEn: vehicle.exportPriceTermsEn,
+    videoUrl: vehicle.videoUrl,
+    photos: vehicle.photos,
+    createdAt: vehicle.createdAt,
+    updatedAt: vehicle.updatedAt,
+    demo: vehicle.demo,
+    listingSource: vehicle.listingSource,
+  };
 }
 
 export function publicJson(vehicle: AdminVehicle): string | null {

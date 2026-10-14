@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { Footer, Header } from "@/components/chrome";
 import { DemoBanner } from "@/components/catalog";
+import { getSession } from "@/lib/auth/session";
 import { getDataSource } from "@/lib/config";
 import { copy } from "@/lib/i18n";
 import { parseLang, requestContext } from "@/lib/request-context";
@@ -31,6 +32,7 @@ export default async function LangLayout({
   const lang = parseLang(raw);
   if (!lang) notFound();
   const ctx = await requestContext(lang, new URLSearchParams());
+  const session = await getSession();
   const site = await loadSite();
   const settings = site.ok
     ? {
@@ -44,7 +46,7 @@ export default async function LangLayout({
     <>
       {getDataSource() === "demo" ? <DemoBanner lang={lang} /> : null}
       <Suspense fallback={<div className="h-16 border-b border-line bg-white" />}>
-        <Header lang={lang} defaultMode={ctx.mode} refCode={ctx.ref} />
+        <Header lang={lang} defaultMode={ctx.mode} refCode={ctx.ref} member={session ? { role: session.role, name: session.name } : null} />
       </Suspense>
       <main id="content">{children}</main>
       <Footer lang={lang} mode={ctx.mode} refCode={ctx.ref} company={settings} />

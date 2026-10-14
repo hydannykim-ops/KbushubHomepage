@@ -1,7 +1,7 @@
 import { toPublicVehicle } from "./access";
 import type { AdminVehicle, PublicVehicle, SaleStatus, SortKey, TradeMode, VehicleQuery } from "./types";
 
-const statuses = new Set<SaleStatus>(["available", "reserved", "sold", "hidden"]);
+const statuses = new Set<SaleStatus>(["available", "reserved", "sold", "hidden", "review"]);
 const classes = new Set(["county", "medium", "large"]);
 const transmissions = new Set(["manual", "automatic", "unknown"]);
 const fuels = new Set(["diesel", "gasoline", "lpg", "cng", "electric", "hybrid", "unknown"]);

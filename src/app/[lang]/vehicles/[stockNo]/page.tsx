@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { contactActions, DataProblem, Gallery, SpecTable, youtubeId } from "@/components/catalog";
+import { MediaSlot } from "@/components/media-slot";
 import { Consent, EnhanceForm, Field, Honeypot, SubmitBanner } from "@/components/forms";
 import { priceView, showText } from "@/lib/domain/money";
 import { copy } from "@/lib/i18n";
@@ -132,7 +133,7 @@ export default async function VehicleDetailPage({
       <SubmitBanner lang={lang} submitted={typeof rawParams.submitted === "string" ? rawParams.submitted : undefined} error={typeof rawParams.error === "string" ? rawParams.error : undefined} />
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.8fr)]">
         <Gallery photos={vehicle.photos} lang={lang} />
-        <aside className="rounded-lg border border-line bg-white p-5 shadow-sm">
+        <aside className="border border-line bg-white p-5 lg:sticky lg:top-24">
           <p className="text-sm text-muted">
             {text.stockNo} {vehicle.stockNo}
           </p>
@@ -140,7 +141,7 @@ export default async function VehicleDetailPage({
           <h1 className="mt-3 text-2xl font-bold">
             {vehicle.maker} {vehicle.model} {vehicle.trim ?? ""}
           </h1>
-          <p className="mt-4 text-3xl font-bold tabular-nums">{price.primary}</p>
+          <p className="mt-4 text-3xl font-semibold tabular-nums tracking-tight">{price.primary}</p>
           {price.basis ? <p className="mt-1 text-sm text-muted">{price.basis}</p> : null}
           {sold ? <p className="mt-3 text-sm">{text.soldNote}</p> : null}
           {vehicle.status === "reserved" ? <p className="mt-3 text-sm">{text.reservedNote}</p> : null}
@@ -195,23 +196,25 @@ export default async function VehicleDetailPage({
         <h2 className="font-bold">{text.description}</h2>
         <p className="mt-2 whitespace-pre-wrap text-sm leading-6">{showText(description, lang)}</p>
       </section>
-      {vehicle.videoUrl ? (
-        <section className="rounded-lg border border-line bg-white p-5">
-          <h2 className="font-bold">{text.video}</h2>
-          {video ? (
-            <iframe
-              className="mt-3 aspect-video w-full rounded-md"
-              src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(video)}?autoplay=0`}
-              title={vehicle.stockNo}
-              allow="fullscreen"
-            />
-          ) : (
-            <a className="mt-3 inline-block text-primary" href={vehicle.videoUrl} rel="noreferrer">
-              {text.videoLink}
-            </a>
-          )}
-        </section>
-      ) : null}
+      <section className="border border-line bg-white p-5">
+        <h2 className="font-semibold">{text.video}</h2>
+        {vehicle.videoUrl && video ? (
+          <iframe
+            className="mt-3 aspect-video w-full"
+            src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(video)}?autoplay=0`}
+            title={vehicle.stockNo}
+            allow="fullscreen"
+          />
+        ) : vehicle.videoUrl ? (
+          <a className="mt-3 inline-block text-primary" href={vehicle.videoUrl} rel="noreferrer">
+            {text.videoLink}
+          </a>
+        ) : (
+          <div className="mt-3 aspect-video overflow-hidden border border-line">
+            <MediaSlot label={text.mediaVideo} hint={text.mediaVideoHint} />
+          </div>
+        )}
+      </section>
       <section id="inquiry" className="rounded-lg border border-line bg-white p-5">
         <h2 className="mb-4 text-xl font-bold">{sold ? text.similar : text.inquiry}</h2>
         {sold ? (

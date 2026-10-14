@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { VehicleForm } from "@/components/admin/editors";
 import { getRepository } from "@/lib/data/repository";
 import { internalProfit, formatMoney } from "@/lib/domain/money";
-import { photoLabel } from "@/lib/labels";
+import { photoCategoryList, photoLabel } from "@/lib/labels";
 
 export default async function EditVehiclePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -12,6 +12,12 @@ export default async function EditVehiclePage({ params }: { params: Promise<{ id
   return (
     <div className="grid gap-6">
       <h1 className="text-2xl font-bold">{vehicle.stockNo}</h1>
+      {vehicle.listingSource === "dealer" ? (
+        <p className="text-sm">
+          판매 사업자 등록 · {vehicle.sellerCompany ?? "상호 없음"} · {vehicle.sellerName ?? "이름 없음"} · {vehicle.sellerEmail ?? "이메일 없음"}
+          {vehicle.status === "review" ? " · 검토 중이라 공개 목록에 없습니다." : ""}
+        </p>
+      ) : null}
       <p className="text-sm">
         손익:{" "}
         {profit.status === "amount"
@@ -28,9 +34,9 @@ export default async function EditVehiclePage({ params }: { params: Promise<{ id
         <form action={`/api/admin/vehicles/${vehicle.id}/photos`} method="post" encType="multipart/form-data" className="mt-3 grid gap-2 md:grid-cols-4">
           <input name="file" type="file" accept="image/jpeg,image/png,image/webp" required className="text-sm" />
           <select name="category" className="rounded-md border border-line px-2 py-2 text-sm">
-            {["exterior", "interior", "dashboard", "engine", "tires", "defect"].map((category) => (
+            {photoCategoryList.map((category) => (
               <option key={category} value={category}>
-                {photoLabel(category as "exterior", "ko")}
+                {photoLabel(category, "ko")}
               </option>
             ))}
           </select>
@@ -44,9 +50,9 @@ export default async function EditVehiclePage({ params }: { params: Promise<{ id
               <input type="hidden" name="update" value="1" />
               <span className="text-xs text-muted">{photo.placeholder ? "플레이스홀더" : "파일"}</span>
               <select name="category" defaultValue={photo.category} className="rounded-md border border-line px-2 py-1 text-sm">
-                {["exterior", "interior", "dashboard", "engine", "tires", "defect"].map((category) => (
+                {photoCategoryList.map((category) => (
                   <option key={category} value={category}>
-                    {photoLabel(category as "exterior", "ko")}
+                    {photoLabel(category, "ko")}
                   </option>
                 ))}
               </select>

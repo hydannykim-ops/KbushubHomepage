@@ -20,6 +20,7 @@ export default async function AdminHome() {
           ["예약 중", count("reserved")],
           ["판매 완료", count("sold")],
           ["비공개", count("hidden")],
+          ["검토 중", count("review")],
           ["문의", inquiries.length],
           ["신규 문의", inquiries.filter((item) => item.status === "new").length],
           ["승인 대기 에이전트", agents.filter((agent) => agent.status === "pending").length],
