@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 import { CopyLink } from "@/components/copy-link";
 import { Gallery } from "@/components/gallery";
 import { InquiryForm } from "@/components/inquiry-form";
 import { ListingCard } from "@/components/listing-card";
+import { PhotoFrame } from "@/components/photo-frame";
 import { PriceBlock } from "@/components/price-block";
 import { StatusBadge } from "@/components/status-badge";
-import { PhotoFrame } from "@/components/photo-frame";
 import { phoneLink, safeHttpUrl, textOf, vehicleTitle, whatsappLink, whatsappText } from "@/lib/domain";
 import { getDict, isLocale } from "@/lib/i18n";
 import { hrefFor, siteUrl } from "@/lib/paths";
@@ -15,7 +17,6 @@ import { tradeMode } from "@/lib/request-context";
 import { publicData } from "@/lib/store";
 import { btnPrimary, btnSecondary, panel } from "@/lib/ui";
 import type { InquiryKind, Locale } from "@/lib/types";
-import { headers } from "next/headers";
 
 export async function generateMetadata({
   params,
@@ -86,6 +87,8 @@ export default async function VehiclePage({
   ];
   const similar = data.vehicles.filter((item) => item.class === vehicle.class && item.id !== vehicle.id && item.status !== "hidden").slice(0, 2);
   const share = `${siteUrl()}${hrefFor(lang, `/inventory/${vehicle.id}`, trade, ref ? { ref } : undefined)}`;
+  const videoStill = vehicle.photos.find((photo) => photo.file)?.file ?? null;
+  const videoStillLabel = lang === "ko" ? "참고 정지 화면 · 실제 영상이 아닙니다" : "Reference still · not an actual video";
 
   return (
     <article className="mx-auto max-w-7xl px-5 py-12 pb-32 lg:px-8 lg:pb-16">
@@ -151,8 +154,24 @@ export default async function VehiclePage({
       <section className="mt-12">
         <h2 className="text-2xl font-semibold tracking-[-0.03em]">{dict.detail.video}</h2>
         <p className="mt-2 text-sm text-muted">{dict.detail.videoBody}</p>
-        <div className="mt-4 overflow-hidden rounded-[1.25rem]">
-          <PhotoFrame kicker={dict.common.slotVideo} caption={dict.detail.noVideo} aspect="aspect-video" />
+        <div className="relative mt-4 overflow-hidden rounded-[1.25rem] bg-sand">
+          {videoStill ? (
+            <>
+              <Image
+                src={`/stock/${videoStill}`}
+                alt={videoStillLabel}
+                width={1600}
+                height={900}
+                className="aspect-video w-full object-cover"
+              />
+              <p className="absolute left-4 top-4 rounded-full bg-card/90 px-3 py-1 text-[11px] font-medium tracking-[0.16em] text-muted">
+                {dict.common.slotVideo}
+              </p>
+              <p className="absolute bottom-4 left-4 right-4 text-sm text-white drop-shadow">{videoStillLabel}</p>
+            </>
+          ) : (
+            <PhotoFrame kicker={dict.common.slotVideo} caption={dict.detail.noVideo} aspect="aspect-video" />
+          )}
         </div>
         {vehicle.videoUrl === "demo" ? (
           <Link className="mt-4 inline-flex text-sm font-semibold text-blue" href={hrefFor(lang, "/demo/video", trade)}>

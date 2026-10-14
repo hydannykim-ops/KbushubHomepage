@@ -127,3 +127,34 @@ Source file: KKMT 772-GG end on Guanqian Road 20101120.jpg
 Page: https://commons.wikimedia.org/wiki/File:KKMT%20772-GG%20end%20on%20Guanqian%20Road%2020101120.jpg
 Creator: Solomon203
 License: CC BY-SA 3.0 https://creativecommons.org/licenses/by-sa/3.0
+
+l2109-engine.jpg
+Source file: COACH ENGINE (14475444225).jpg
+Page: https://commons.wikimedia.org/wiki/File:COACH%20ENGINE%20%2814475444225%29.jpg
+Creator: MANHATTAN RESEARCH INC (MANHATTAN RESEARCH INC) from MANHATTAN RESEARCH INC , MANHATTAN RESEARCH INC
+License: CC BY 2.0 https://creativecommons.org/licenses/by/2.0
+
+l2109-tires.jpg
+Source file: Milwaukee (WIS) intermodal Station " Greyhound Bus " W St Paul Ave " Flag & Tyre " 2 (4756317503).jpg
+Page: https://commons.wikimedia.org/wiki/File:Milwaukee%20%28WIS%29%20intermodal%20Station%20%22%20Greyhound%20Bus%20%22%20W%20St%20Paul%20Ave%20%22%20Flag%20%26%20Tyre%20%22%202%20%284756317503%29.jpg
+Creator: (vincent desjardins) from Paris, France
+License: CC BY 2.0 https://creativecommons.org/licenses/by/2.0
+
+l2109-defect.jpg
+Source file: Close-up view of peeling paint on vintage car near urban area during late afternoon light.jpg
+Page: https://commons.wikimedia.org/wiki/File:Close-up%20view%20of%20peeling%20paint%20on%20vintage%20car%20near%20urban%20area%20during%20late%20afternoon%20light.jpg
+Creator: Shixart1985
+License: CC BY 2.0 https://creativecommons.org/licenses/by/2.0
+
+home-hero.jpg
+Copy of: l2109-front.jpg (same Commons source)
+
+class-county.jpg
+Copy of: c2106-front.jpg (same Commons source)
+
+class-medium.jpg
+Copy of: m1802-front.jpg (same Commons source)
+
+class-large.jpg
+Copy of: l2007-front.jpg (same Commons source)
+

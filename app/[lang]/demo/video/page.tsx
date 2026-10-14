@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
-import { PhotoFrame } from "@/components/photo-frame";
 import { isLocale } from "@/lib/i18n";
 import { eyebrow } from "@/lib/ui";
 
@@ -21,15 +21,20 @@ export default async function DemoVideoPage({ params }: { params: Promise<{ lang
       </h1>
       <p className="mt-4 text-base leading-7 text-muted">
         {ko
-          ? "샘플 매물에 영상 링크 상태를 보여 주기 위한 페이지입니다. 실제 차량 영상이 아니며 자동으로 재생되지 않습니다."
-          : "This page only shows the video-link state on a sample listing. It is not a recording of a vehicle and it does not play automatically."}
+          ? "샘플 매물에 영상 링크 상태를 보여 주기 위한 페이지입니다. 아래는 참고 정지 화면이며 실제 차량 영상이 아니고 자동으로 재생되지 않습니다."
+          : "This page only shows the video-link state on a sample listing. The still below is a reference frame, not a vehicle recording, and it does not play automatically."}
       </p>
-      <div className="mt-8 overflow-hidden rounded-[1.25rem]">
-        <PhotoFrame
-          kicker={ko ? "영상" : "Video"}
-          caption={ko ? "30–90초 워크어라운드. 자동 재생하지 않습니다." : "A 30–90 second walkaround. It will not autoplay."}
-          aspect="aspect-video"
+      <div className="relative mt-8 overflow-hidden rounded-[1.25rem]">
+        <Image
+          src="/stock/samples/l2109-front.jpg"
+          alt={ko ? "참고 정지 화면" : "Reference still"}
+          width={1600}
+          height={900}
+          className="aspect-video w-full object-cover"
         />
+        <p className="absolute left-4 top-4 rounded-full bg-card/90 px-3 py-1 text-[11px] font-medium tracking-[0.16em] text-muted">
+          {ko ? "영상" : "Video"}
+        </p>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ListingCard } from "@/components/listing-card";
-import { PhotoFrame } from "@/components/photo-frame";
 import { countByClass, textOf } from "@/lib/domain";
 import { getDict, isLocale } from "@/lib/i18n";
 import { hrefFor } from "@/lib/paths";
@@ -9,6 +9,12 @@ import { tradeMode } from "@/lib/request-context";
 import { publicData } from "@/lib/store";
 import { btnPrimary, btnSecondary, eyebrow, fieldClass, panel } from "@/lib/ui";
 import type { Locale, VehicleClass } from "@/lib/types";
+
+const classPhotos: Record<VehicleClass, string> = {
+  county: "/stock/samples/class-county.jpg",
+  medium: "/stock/samples/class-medium.jpg",
+  large: "/stock/samples/class-large.jpg",
+};
 
 export default async function HomePage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang: raw } = await params;
@@ -46,12 +52,18 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
               <Link className={btnSecondary} href={hrefFor(lang, "/guide", trade)}>{dict.nav.guide}</Link>
             </div>
           </div>
-          <div className="overflow-hidden rounded-[1.5rem] lg:col-span-6">
-            <PhotoFrame
-              kicker={dict.common.slotHero}
-              caption={dict.common.slotHeroNote}
-              aspect="aspect-[4/3] min-h-64 md:aspect-[5/4]"
+          <div className="relative min-h-64 overflow-hidden rounded-[1.5rem] lg:col-span-6">
+            <Image
+              src="/stock/samples/home-hero.jpg"
+              alt={lang === "ko" ? "참고 사진 · 메인 비주얼" : "Reference photo · Main visual"}
+              width={1600}
+              height={1200}
+              priority
+              className="aspect-[4/3] h-full w-full object-cover md:aspect-[5/4]"
             />
+            <p className="absolute left-4 top-4 rounded-full bg-card/90 px-3 py-1 text-[11px] font-medium tracking-[0.16em] text-muted">
+              {dict.common.slotHero}
+            </p>
           </div>
         </div>
         <form action={`/${lang}/inventory`} method="get" className={`${panel} mt-8 grid gap-3 p-4 md:grid-cols-4 md:items-end md:p-5`}>
@@ -87,11 +99,15 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
         <div className="mt-8 grid gap-5 md:grid-cols-3">
           {classes.map((item, index) => (
             <Link key={item.key} href={hrefFor(lang, "/inventory", trade, { class: item.key })} className={`${panel} overflow-hidden`}>
-              <PhotoFrame
-                kicker={dict.common.slotPhoto}
-                caption={`${dict.klass[item.key]} · ${dict.common.slotClassNote}`}
-                aspect="aspect-[4/3]"
-              />
+              <div className="relative aspect-[4/3] bg-sand">
+                <Image
+                  src={classPhotos[item.key]}
+                  alt={`${dict.klass[item.key]} · ${lang === "ko" ? "참고 사진" : "Reference photo"}`}
+                  width={1200}
+                  height={900}
+                  className="h-full w-full object-cover"
+                />
+              </div>
               <div className="p-6">
                 <p className="font-mono text-[11px] tracking-[0.16em] text-muted">{String(index + 1).padStart(2, "0")}</p>
                 <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">{dict.klass[item.key]}</h3>
