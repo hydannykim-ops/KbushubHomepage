@@ -5,9 +5,14 @@ import { busMakers, makerForModel, makerLabel, modelsForMaker } from "@/lib/doma
 import type { Lang } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
 
-const chip = "border px-3 py-2 text-sm font-medium transition-colors";
-const chipOn = "border-primary bg-primary text-white";
-const chipOff = "border-line bg-white text-foreground hover:border-primary";
+function chipClass(active: boolean) {
+  return [
+    "inline-flex min-h-11 cursor-pointer items-center border px-3.5 py-2.5 text-sm font-medium transition-colors",
+    active
+      ? "border-primary bg-primary text-white"
+      : "border-line bg-white text-foreground hover:border-primary",
+  ].join(" ");
+}
 
 export function MakerModelPicker({
   lang,
@@ -33,11 +38,12 @@ export function MakerModelPicker({
   const models = maker ? modelsForMaker(maker) : [];
 
   return (
-    <div className="grid gap-4 md:col-span-2">
-      <input type="hidden" name={makerName} value={maker} />
-      <input type="hidden" name={modelName} value={model} />
-      <fieldset>
-        <legend className="mb-2 text-sm font-medium">
+    <div className="grid gap-5 md:col-span-2" data-maker-model-picker>
+      <input type="hidden" name={makerName} value={maker} required={required && !allowEmpty} />
+      <input type="hidden" name={modelName} value={model} required={required && !allowEmpty} />
+
+      <fieldset className="min-w-0">
+        <legend className="mb-3 text-sm font-medium">
           {text.maker}
           {required ? " *" : ""}
         </legend>
@@ -45,7 +51,7 @@ export function MakerModelPicker({
           {allowEmpty ? (
             <button
               type="button"
-              className={`${chip} ${maker === "" ? chipOn : chipOff}`}
+              className={chipClass(maker === "")}
               aria-pressed={maker === ""}
               onClick={() => {
                 setMaker("");
@@ -59,7 +65,7 @@ export function MakerModelPicker({
             <button
               key={item}
               type="button"
-              className={`${chip} ${maker === item ? chipOn : chipOff}`}
+              className={chipClass(maker === item)}
               aria-pressed={maker === item}
               onClick={() => {
                 setMaker(item);
@@ -71,40 +77,36 @@ export function MakerModelPicker({
           ))}
         </div>
       </fieldset>
-      <fieldset>
-        <legend className="mb-2 text-sm font-medium">
+
+      <fieldset className="min-w-0">
+        <legend className="mb-3 text-sm font-medium">
           {text.model}
           {required ? " *" : ""}
         </legend>
         {!maker ? (
-          <p className="text-sm text-muted">{text.pickMakerFirst}</p>
+          <p className="rounded-sm border border-dashed border-line bg-[#f8fafc] px-3 py-4 text-sm text-muted">{text.pickMakerFirst}</p>
         ) : (
-          <div className="flex flex-wrap gap-2" role="group" aria-label={text.model}>
+          <div className="flex flex-wrap gap-2 rounded-sm border border-line bg-[#f8fafc] p-3" role="group" aria-label={`${makerLabel(maker, lang)} ${text.model}`}>
             {allowEmpty ? (
-              <button
-                type="button"
-                className={`${chip} ${model === "" ? chipOn : chipOff}`}
-                aria-pressed={model === ""}
-                onClick={() => setModel("")}
-              >
+              <button type="button" className={chipClass(model === "")} aria-pressed={model === ""} onClick={() => setModel("")}>
                 {text.all}
               </button>
             ) : null}
-            {models.map((item) => (
+            {models.map((entry) => (
               <button
-                key={item}
+                key={entry}
                 type="button"
-                className={`${chip} ${model === item ? chipOn : chipOff}`}
-                aria-pressed={model === item}
-                onClick={() => setModel(item)}
+                className={chipClass(model === entry)}
+                aria-pressed={model === entry}
+                onClick={() => setModel(entry)}
               >
-                {item}
+                {entry}
               </button>
             ))}
           </div>
         )}
+        {required ? <p className="mt-2 text-xs text-muted">{text.pickMakerModel}</p> : null}
       </fieldset>
-      {required && (!maker || !model) ? <p className="text-xs text-muted">{text.pickMakerModel}</p> : null}
     </div>
   );
 }
