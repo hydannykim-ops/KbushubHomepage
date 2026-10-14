@@ -40,6 +40,8 @@ yarn-error.log*
 !/data/.gitkeep
 /public/stock/**
 !/public/stock/.gitkeep
+!/public/stock/samples/
+!/public/stock/samples/**
 
 # vercel
 .vercel

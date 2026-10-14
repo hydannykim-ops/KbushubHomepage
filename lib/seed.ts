@@ -5,8 +5,8 @@ function pair(ko: string, en: string): TextPair {
   return { ko, en };
 }
 
-function slot(id: string, category: PhotoCategory, ko: string, en: string): Photo {
-  return { id, category, alt: pair(ko, en), file: null };
+function slot(id: string, category: PhotoCategory, ko: string, en: string, file: string | null = null): Photo {
+  return { id, category, alt: pair(ko, en), file };
 }
 
 const sampleNote = pair(
@@ -60,11 +60,11 @@ export function createSeed(hashPassword: (password: string) => string): DB {
         includes: pair("차량대금 샘플. 운임 제외.", "Sample vehicle price. Freight excluded."),
       },
       photos: [
-        slot("p1", "exterior", "앞 3/4 자리", "Front three-quarter slot"),
-        slot("p2", "exterior", "옆면 자리", "Side slot"),
-        slot("p3", "exterior", "후면 자리", "Rear slot"),
-        slot("p4", "interior", "실내 자리", "Interior slot"),
-        slot("p5", "dashboard", "계기판 자리", "Dashboard slot"),
+        slot("p1", "exterior", "참고 사진 · 유니버스 앞", "Reference photo · Universe front", "samples/l2109-front.jpg"),
+        slot("p2", "exterior", "참고 사진 · 유니버스 옆", "Reference photo · Universe side", "samples/l2109-side.jpg"),
+        slot("p3", "exterior", "참고 사진 · 유니버스 뒤", "Reference photo · Universe rear", "samples/l2109-rear.jpg"),
+        slot("p4", "interior", "참고 사진 · 유니버스 좌석", "Reference photo · Universe seats", "samples/l2109-seats.jpg"),
+        slot("p5", "dashboard", "참고 사진 · 유니버스 운전석", "Reference photo · Universe cab", "samples/l2109-dash.jpg"),
         slot("p6", "engine", "엔진룸 자리", "Engine slot"),
         slot("p7", "tires", "타이어 자리", "Tire slot"),
         slot("p8", "defect", "결함 자리", "Defect slot"),
@@ -112,7 +112,7 @@ export function createSeed(hashPassword: (password: string) => string): DB {
       updatedAt: "2026-10-10T02:00:00.000Z",
       domesticPrice: { amount: 45_000_000, currency: "KRW" },
       exportPrice: null,
-      photos: [slot("p1", "exterior", "외관 자리", "Exterior slot")],
+      photos: [slot("p1", "exterior", "참고 사진 · 카운티 외관", "Reference photo · County exterior", "samples/c2106-front.jpg")],
       videoUrl: null,
       sample: true,
     }),
@@ -155,7 +155,10 @@ export function createSeed(hashPassword: (password: string) => string): DB {
         terms: "FOB Busan",
         includes: pair("차량대금 샘플. 운임 제외.", "Sample vehicle price. Freight excluded."),
       },
-      photos: [slot("p1", "exterior", "외관 자리", "Exterior slot"), slot("p2", "dashboard", "계기판 자리", "Dashboard slot")],
+      photos: [
+        slot("p1", "exterior", "참고 사진 · 유니버스 외관", "Reference photo · Universe exterior", "samples/l2007-front.jpg"),
+        slot("p2", "exterior", "참고 사진 · 유니버스 측면", "Reference photo · Universe profile", "samples/l2007-side.jpg"),
+      ],
       videoUrl: null,
       sample: true,
     }),
@@ -198,7 +201,10 @@ export function createSeed(hashPassword: (password: string) => string): DB {
         terms: "FCA Pyeongtaek",
         includes: pair("차량대금 샘플.", "Sample vehicle price."),
       },
-      photos: [slot("p1", "exterior", "외관 자리", "Exterior slot"), slot("p2", "interior", "실내 자리", "Interior slot")],
+      photos: [
+        slot("p1", "exterior", "참고 사진 · 에어로타운 앞", "Reference photo · Aero Town front", "samples/m1802-front.jpg"),
+        slot("p2", "exterior", "참고 사진 · 에어로타운 운행", "Reference photo · Aero Town in service", "samples/m1802-side.jpg"),
+      ],
       videoUrl: null,
       sample: true,
     }),
@@ -242,9 +248,9 @@ export function createSeed(hashPassword: (password: string) => string): DB {
         includes: pair("차량대금 샘플. 운임·보험 제외.", "Sample vehicle price. Freight and insurance excluded."),
       },
       photos: [
-        slot("p1", "exterior", "외관 자리", "Exterior slot"),
-        slot("p2", "interior", "실내 자리", "Interior slot"),
-        slot("p3", "dashboard", "계기판 자리", "Dashboard slot"),
+        slot("p1", "exterior", "참고 사진 · 카운티 앞", "Reference photo · County front", "samples/c1903-front.jpg"),
+        slot("p2", "exterior", "참고 사진 · 카운티 옆", "Reference photo · County side", "samples/c1903-side.jpg"),
+        slot("p3", "dashboard", "참고 사진 · 카운티 계기판", "Reference photo · County dashboard", "samples/c1903-dash.jpg"),
       ],
       videoUrl: null,
       sample: true,
@@ -283,7 +289,12 @@ export function createSeed(hashPassword: (password: string) => string): DB {
       updatedAt: "2026-09-12T02:00:00.000Z",
       domesticPrice: null,
       exportPrice: null,
-      photos: [],
+      photos: [
+        slot("p1", "exterior", "참고 사진 · 그랜버드 앞", "Reference photo · Granbird front", "samples/l1404-front.jpg"),
+        slot("p2", "exterior", "참고 사진 · 그랜버드 뒤쪽", "Reference photo · Granbird rear quarter", "samples/l1404-side.jpg"),
+        slot("p3", "exterior", "참고 사진 · 그랜버드 뒤", "Reference photo · Granbird rear", "samples/l1404-rear.jpg"),
+        slot("p4", "interior", "참고 사진 · 그랜버드 좌석", "Reference photo · Granbird seats", "samples/l1404-seats.jpg"),
+      ],
       videoUrl: null,
       sample: true,
     }),
@@ -321,7 +332,10 @@ export function createSeed(hashPassword: (password: string) => string): DB {
       updatedAt: "2026-08-02T02:00:00.000Z",
       domesticPrice: null,
       exportPrice: null,
-      photos: [],
+      photos: [
+        slot("p1", "exterior", "참고 사진 · 카운티 외관", "Reference photo · County exterior", "samples/c1608-front.jpg"),
+        slot("p2", "exterior", "참고 사진 · 카운티 노선", "Reference photo · County on a route", "samples/c1608-side.jpg"),
+      ],
       videoUrl: null,
       sample: true,
     }),
@@ -359,7 +373,10 @@ export function createSeed(hashPassword: (password: string) => string): DB {
       updatedAt: "2026-07-01T02:00:00.000Z",
       domesticPrice: { amount: 52_000_000, currency: "KRW" },
       exportPrice: null,
-      photos: [],
+      photos: [
+        slot("p1", "exterior", "참고 사진 · BX212 앞", "Reference photo · BX212 front", "samples/m1601-front.jpg"),
+        slot("p2", "exterior", "참고 사진 · BX212 뒤", "Reference photo · BX212 rear", "samples/m1601-rear.jpg"),
+      ],
       videoUrl: null,
       sample: true,
     }),
