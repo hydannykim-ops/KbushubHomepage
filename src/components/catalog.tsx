@@ -25,19 +25,26 @@ export function DataProblem({ lang, code }: { lang: Lang; code: "misconfigured" 
   );
 }
 
+function photoSrc(photo: VehiclePhoto): string | null {
+  if (!photo.placeholder) return `/api/media/photo/${photo.id}`;
+  return photo.path;
+}
+
 function PhotoFrame({ vehicle, lang }: { vehicle: PublicVehicle; lang: Lang }) {
   const text = copy(lang);
   const cover = vehicle.photos.find((photo) => photo.isCover) ?? vehicle.photos[0];
+  const src = cover ? photoSrc(cover) : null;
   return (
     <div className="relative aspect-[16/10] overflow-hidden bg-[#f3f5f8]">
-      {cover && !cover.placeholder ? (
-        // Access-checked photos are optimized in the media route.
+      {src ? (
+        // Demo samples are public files; uploaded photos go through the media route.
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={`/api/media/photo/${cover.id}`} alt={lang === "ko" ? cover.altKo : cover.altEn} className="h-full w-full object-cover" />
+        <img src={src} alt={lang === "ko" ? cover!.altKo : cover!.altEn} className="h-full w-full object-cover" />
       ) : (
-        <MediaSlot label={text.mediaCover} hint={cover?.placeholder ? text.placeholderNote : text.mediaCoverHint} />
+        <MediaSlot label={text.mediaCover} hint={text.mediaCoverHint} />
       )}
       <span className="absolute left-3 top-3 bg-white px-2 py-1 text-xs font-semibold">{statusLabel(vehicle.status, lang)}</span>
+      {cover?.placeholder ? <span className="absolute bottom-3 left-3 bg-white/90 px-2 py-1 text-[11px] font-semibold text-muted">{text.placeholderNote}</span> : null}
     </div>
   );
 }

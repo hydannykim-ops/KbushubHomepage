@@ -42,7 +42,10 @@ export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: 
       ) : (
         <figure className="overflow-hidden border border-line bg-white">
           <div className="relative aspect-[16/10] bg-[#f3f5f8]">
-            {current.placeholder ? (
+            {current.placeholder && current.path ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={current.path} alt={lang === "ko" ? current.altKo : current.altEn} className="h-full w-full object-cover" />
+            ) : current.placeholder ? (
               <MediaSlot label={photoLabel(current.category, lang)} hint={text.mediaCoverHint} />
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
@@ -72,7 +75,10 @@ export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: 
               className={`overflow-hidden rounded border ${photo.id === current?.id ? "border-primary" : "border-line"}`}
               onClick={() => setIndex(photoIndex)}
             >
-              {photo.placeholder ? (
+              {photo.placeholder && photo.path ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={photo.path} alt="" className="aspect-[16/10] w-full object-cover" />
+              ) : photo.placeholder ? (
                 <span className="flex aspect-[16/10] items-center justify-center bg-[#f3f5f8] px-1 text-center text-xs font-semibold text-foreground">{photoLabel(photo.category, lang)}</span>
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element

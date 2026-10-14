@@ -12,19 +12,25 @@ const emptyInternal = (): VehicleInternal => ({
   note: null,
 });
 
-function placeholder(vehicleId: string, category: VehiclePhoto["category"], order: number, cover = false): VehiclePhoto {
+function placeholder(
+  vehicleId: string,
+  category: VehiclePhoto["category"],
+  order: number,
+  cover = false,
+  samplePath = "/demo/placeholder.svg",
+): VehiclePhoto {
   return {
-    id: `${vehicleId}-${category}`,
+    id: `${vehicleId}-${category}-${order}`,
     vehicleId,
     category,
     placeholder: true,
     storage: "placeholder",
-    path: null,
-    contentType: null,
+    path: samplePath,
+    contentType: samplePath.endsWith(".svg") ? "image/svg+xml" : "image/jpeg",
     sortOrder: order,
     isCover: cover,
-    altKo: "데모 플레이스홀더. 실제 차량 사진이 아닙니다.",
-    altEn: "Demo placeholder. This is not a photograph of a real vehicle.",
+    altKo: "데모 샘플 사진. 실제 재고 사진이 아닙니다.",
+    altEn: "Demo sample photo. This is not a photograph of real inventory.",
   };
 }
 
@@ -113,7 +119,13 @@ export function buildSeed(): DemoState {
       exportPriceCurrency: "USD",
       exportPriceTermsKo: "FOB 부산, 차량대금만 포함",
       exportPriceTermsEn: "FOB Busan, vehicle price only",
-      photos: [placeholder("veh-c-01", "exterior", 0, true), placeholder("veh-c-01", "interior", 1), placeholder("veh-c-01", "dashboard", 2)],
+      photos: [
+        placeholder("veh-c-01", "front_side", 0, true, "/demo/county-cover.jpg"),
+        placeholder("veh-c-01", "front", 1, false, "/demo/county-front.jpg"),
+        placeholder("veh-c-01", "rear", 2, false, "/demo/county-rear.jpg"),
+        placeholder("veh-c-01", "interior", 3, false, "/demo/bus-interior.jpg"),
+        placeholder("veh-c-01", "dashboard", 4, false, "/demo/bus-dashboard.jpg"),
+      ],
       createdAt: "2026-03-01T00:00:00.000Z",
       internal: {
         purchaseCost: 20000000,
@@ -138,7 +150,11 @@ export function buildSeed(): DemoState {
       fuel: "diesel",
       steering: "unknown",
       featured: false,
-      photos: [],
+      photos: [
+        placeholder("veh-c-02", "front", 0, true, "/demo/county-front.jpg"),
+        placeholder("veh-c-02", "front_side", 1, false, "/demo/county-cover.jpg"),
+        placeholder("veh-c-02", "rear", 2, false, "/demo/county-rear.jpg"),
+      ],
       createdAt: "2026-04-01T00:00:00.000Z",
     }),
     base({
@@ -160,7 +176,11 @@ export function buildSeed(): DemoState {
       exportPriceCurrency: "USD",
       exportPriceTermsKo: "데모 수출가, 조건 미확정",
       exportPriceTermsEn: "Demo export price, terms not final",
-      photos: [placeholder("veh-m-01", "exterior", 0, true), placeholder("veh-m-01", "tires", 1)],
+      photos: [
+        placeholder("veh-m-01", "front_side", 0, true, "/demo/medium-cover.jpg"),
+        placeholder("veh-m-01", "interior", 1, false, "/demo/bus-interior.jpg"),
+        placeholder("veh-m-01", "dashboard", 2, false, "/demo/bus-dashboard.jpg"),
+      ],
       createdAt: "2026-02-01T00:00:00.000Z",
       internal: emptyInternal(),
     }),
@@ -185,7 +205,11 @@ export function buildSeed(): DemoState {
       domesticPriceKrw: 15000000,
       photographedOn: "2026-01-10",
       stockCheckedOn: "2026-01-11",
-      photos: [placeholder("veh-l-01", "exterior", 0, true), placeholder("veh-l-01", "defect", 1), placeholder("veh-l-01", "engine", 2)],
+      photos: [
+        placeholder("veh-l-01", "front_side", 0, true, "/demo/large-cover.jpg"),
+        placeholder("veh-l-01", "interior", 1, false, "/demo/bus-interior.jpg"),
+        placeholder("veh-l-01", "dashboard", 2, false, "/demo/bus-dashboard.jpg"),
+      ],
       createdAt: "2026-01-15T00:00:00.000Z",
       internal: {
         purchaseCost: 10000000,
@@ -218,7 +242,11 @@ export function buildSeed(): DemoState {
       exportPriceTermsKo: "FOB 부산, 차량대금만",
       exportPriceTermsEn: "FOB Busan, vehicle only",
       videoUrl: "https://example.com/demo-not-a-video",
-      photos: [placeholder("veh-l-02", "exterior", 0, true), placeholder("veh-l-02", "interior", 1)],
+      photos: [
+        placeholder("veh-l-02", "front_side", 0, true, "/demo/large-cover.jpg"),
+        placeholder("veh-l-02", "front", 1, false, "/demo/county-front.jpg"),
+        placeholder("veh-l-02", "interior", 2, false, "/demo/bus-interior.jpg"),
+      ],
       createdAt: "2026-03-20T00:00:00.000Z",
       internal: {
         purchaseCost: 20000,
@@ -240,7 +268,7 @@ export function buildSeed(): DemoState {
       model: "에어로타운",
       modelYear: 2016,
       domesticPriceKrw: 999,
-      photos: [placeholder("veh-m-02", "exterior", 0, true)],
+      photos: [placeholder("veh-m-02", "front_side", 0, true, "/demo/medium-cover.jpg")],
       createdAt: "2026-01-01T00:00:00.000Z",
       internal: {
         purchaseCost: 12345678,

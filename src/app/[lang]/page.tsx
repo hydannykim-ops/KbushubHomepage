@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DataProblem, VehicleCard } from "@/components/catalog";
-import { MediaSlot } from "@/components/media-slot";
 import { copy } from "@/lib/i18n";
 import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
 import { loadSite } from "@/lib/site-load";
@@ -65,16 +64,26 @@ export default async function HomePage({
             <button className="bg-primary px-4 py-3 font-semibold text-white sm:col-span-2">{text.search}</button>
           </form>
         </div>
-        <div className="min-h-72 overflow-hidden border border-line bg-white lg:min-h-[28rem]">
-          <MediaSlot label={text.mediaHero} hint={text.mediaHeroHint} className="min-h-72 lg:min-h-[28rem]" />
+        <div className="relative min-h-72 overflow-hidden border border-line bg-white lg:min-h-[28rem]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/demo/hero-yard.jpg" alt={text.mediaHero} className="h-full min-h-72 w-full object-cover lg:min-h-[28rem]" />
+          <span className="absolute bottom-3 left-3 bg-white/90 px-2 py-1 text-[11px] font-semibold text-muted">{text.placeholderNote}</span>
         </div>
       </section>
 
       <section className="grid gap-4 md:grid-cols-3">
-        {classes.map(([title, body, slot, href]) => (
+        {(
+          [
+            [...classes[0], "/demo/county-cover.jpg"],
+            [...classes[1], "/demo/medium-cover.jpg"],
+            [...classes[2], "/demo/large-cover.jpg"],
+          ] as const
+        ).map(([title, body, slot, href, image]) => (
           <Link key={title} href={href} className="overflow-hidden border border-line bg-white">
-            <div className="aspect-[16/9]">
-              <MediaSlot label={slot} />
+            <div className="relative aspect-[16/9] overflow-hidden bg-[#f3f5f8]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={image} alt={slot} className="h-full w-full object-cover" />
+              <span className="sr-only">{text.placeholderNote}</span>
             </div>
             <div className="p-5">
               <h2 className="text-xl font-semibold">{title}</h2>
@@ -141,8 +150,10 @@ export default async function HomePage({
       </section>
 
       <section className="grid gap-6 border border-line bg-white p-6 md:grid-cols-[0.8fr_1.2fr]">
-        <div className="min-h-48 overflow-hidden border border-line">
-          <MediaSlot label={text.mediaYard} hint={text.mediaCoverHint} />
+        <div className="relative min-h-48 overflow-hidden border border-line bg-[#f3f5f8]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/demo/hero-yard.jpg" alt={text.mediaYard} className="h-full min-h-48 w-full object-cover" />
+          <span className="absolute bottom-3 left-3 bg-white/90 px-2 py-1 text-[11px] font-semibold text-muted">{text.placeholderNote}</span>
         </div>
         <div>
           <h2 className="text-xl font-semibold">{text.companyTitle}</h2>
