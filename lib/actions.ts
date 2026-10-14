@@ -15,7 +15,7 @@ import {
   writeSession,
 } from "./auth";
 import { isLiveMode } from "./demo-accounts";
-import { assignAgent } from "./domain";
+import { assignAgent, MAX_LISTING_PHOTOS } from "./domain";
 import { emptyForm, type FormState } from "./form-state";
 import { allowRequest } from "./rate-limit";
 import { readDb, updateDb } from "./store";
@@ -395,7 +395,7 @@ export async function addPhotoSlot(formData: FormData) {
   const category = CATEGORIES.includes(raw.category as PhotoCategory) ? (raw.category as PhotoCategory) : "exterior";
   await updateDb((db) => {
     const vehicle = db.vehicles.find((item) => item.id === raw.id);
-    if (!vehicle) return;
+    if (!vehicle || vehicle.photos.length >= MAX_LISTING_PHOTOS) return;
     vehicle.photos.push({
       id: id("PH"),
       category,
@@ -420,7 +420,7 @@ export async function uploadVehiclePhoto(formData: FormData) {
   const category = CATEGORIES.includes(raw.category as PhotoCategory) ? (raw.category as PhotoCategory) : "exterior";
   await updateDb((db) => {
     const vehicle = db.vehicles.find((item) => item.id === raw.id);
-    if (!vehicle) return;
+    if (!vehicle || vehicle.photos.length >= MAX_LISTING_PHOTOS) return;
     vehicle.photos.push({
       id: id("PH"),
       category,

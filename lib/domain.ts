@@ -13,8 +13,11 @@ import type {
 } from "./types";
 import { PAGE_SIZE } from "./types";
 
+export const MAX_LISTING_PHOTOS = 30;
+export const COVER_PHOTO_COUNT = 3;
+
 export function toPublic(vehicle: Vehicle): PublicVehicle {
-  const rest: Vehicle = { ...vehicle };
+  const rest: Vehicle = { ...vehicle, photos: vehicle.photos.slice(0, MAX_LISTING_PHOTOS) };
   delete rest.internal;
   return rest;
 }
