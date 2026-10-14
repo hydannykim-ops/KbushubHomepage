@@ -17,7 +17,7 @@ export default async function AgentLogin({ params }: { params: Promise<{ lang: s
     <div className="mx-auto max-w-md px-5 py-16">
       <h1 className="text-2xl font-semibold">{dict.agent.login}</h1>
       {!isLiveMode() ? <p className="mt-3 text-sm text-muted">{dict.admin.demoHint} {DEMO_AGENT_EMAIL} / {DEMO_AGENT_PASSWORD}</p> : null}
-      <div className="mt-6 border border-line bg-white p-5">
+      <div className="mt-6 rounded-[1.25rem] bg-card p-6 shadow-card">
         <AuthForm lang={raw} mode="agent" />
       </div>
     </div>

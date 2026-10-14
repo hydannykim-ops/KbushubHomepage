@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ListingCard } from "@/components/listing-card";
+import { PageIntro } from "@/components/page-intro";
 import { getDict, isLocale } from "@/lib/i18n";
 import { hrefFor } from "@/lib/paths";
 import { tradeMode } from "@/lib/request-context";
@@ -24,9 +25,8 @@ export default async function BusesPage({ params }: { params: Promise<{ lang: st
     ["large", dict.buses.large],
   ] as const;
   return (
-    <div className="mx-auto max-w-6xl px-5 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">{dict.buses.title}</h1>
-      <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">{dict.buses.lead}</p>
+    <div className="mx-auto max-w-7xl px-5 py-12 lg:px-8 lg:py-16">
+      <PageIntro title={dict.buses.title} lead={dict.buses.lead} />
       {groups.map(([key, label]) => {
         const items = data.vehicles.filter((vehicle) => vehicle.class === key && vehicle.status !== "hidden").slice(0, 4);
         return (
@@ -35,9 +35,9 @@ export default async function BusesPage({ params }: { params: Promise<{ lang: st
               <h2 className="text-xl font-semibold">{label}</h2>
               <Link href={hrefFor(raw, "/inventory", trade, { class: key })} className="text-sm font-semibold text-blue">{dict.buses.more}</Link>
             </div>
-            <div className="mt-4 grid gap-4">
+            <div className="mt-5 grid gap-5 lg:grid-cols-2">
               {items.map((vehicle) => (
-                <ListingCard key={vehicle.id} vehicle={vehicle} lang={raw} trade={trade} />
+                <ListingCard key={vehicle.id} vehicle={vehicle} lang={raw} trade={trade} layout="grid" />
               ))}
             </div>
           </section>

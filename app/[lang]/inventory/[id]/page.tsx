@@ -7,12 +7,13 @@ import { InquiryForm } from "@/components/inquiry-form";
 import { ListingCard } from "@/components/listing-card";
 import { PriceBlock } from "@/components/price-block";
 import { StatusBadge } from "@/components/status-badge";
+import { PhotoFrame } from "@/components/photo-frame";
 import { phoneLink, safeHttpUrl, textOf, vehicleTitle, whatsappLink, whatsappText } from "@/lib/domain";
 import { getDict, isLocale } from "@/lib/i18n";
 import { hrefFor, siteUrl } from "@/lib/paths";
 import { tradeMode } from "@/lib/request-context";
 import { publicData } from "@/lib/store";
-import { btnPrimary, btnSecondary } from "@/lib/ui";
+import { btnPrimary, btnSecondary, panel } from "@/lib/ui";
 import type { InquiryKind, Locale } from "@/lib/types";
 import { headers } from "next/headers";
 
@@ -87,23 +88,23 @@ export default async function VehiclePage({
   const share = `${siteUrl()}${hrefFor(lang, `/inventory/${vehicle.id}`, trade, ref ? { ref } : undefined)}`;
 
   return (
-    <article className="mx-auto max-w-6xl px-5 py-10 pb-28 lg:pb-10">
+    <article className="mx-auto max-w-7xl px-5 py-12 pb-32 lg:px-8 lg:pb-16">
       <p className="text-sm text-muted">
         <Link href={hrefFor(lang, "/inventory", trade)}>{dict.nav.inventory}</Link>
         <span> / {vehicle.id}</span>
       </p>
-      <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
+      <div className="mt-5 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="font-mono text-xs text-muted">{vehicle.id} · {dict.common.sample}</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight">{title}</h1>
+          <p className="font-mono text-[11px] tracking-wide text-muted">{vehicle.id} · {dict.common.sample}</p>
+          <h1 className="mt-2 text-4xl font-semibold tracking-[-0.035em] md:text-5xl">{title}</h1>
         </div>
         <StatusBadge status={vehicle.status} lang={lang} />
       </div>
-      {vehicle.status === "sold" ? <p className="mt-4 border border-line bg-white px-4 py-3 text-sm">{dict.detail.sold}</p> : null}
-      {vehicle.status === "reserved" ? <p className="mt-4 border border-line bg-white px-4 py-3 text-sm">{dict.detail.reserved}</p> : null}
-      <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+      {vehicle.status === "sold" ? <p className={`${panel} mt-5 px-4 py-3 text-sm`}>{dict.detail.sold}</p> : null}
+      {vehicle.status === "reserved" ? <p className={`${panel} mt-5 px-4 py-3 text-sm`}>{dict.detail.reserved}</p> : null}
+      <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
         <Gallery photos={vehicle.photos} lang={lang} variant={vehicle.class} />
-        <aside className="border border-line bg-white p-5 lg:sticky lg:top-24">
+        <aside className={`${panel} p-6 lg:sticky lg:top-28`}>
           <PriceBlock vehicle={vehicle} trade={trade} lang={lang} large />
           <div className="mt-5 grid gap-2">
             <a className={btnPrimary} href="#inquiry">{dict.detail.inquiry}</a>
@@ -122,47 +123,48 @@ export default async function VehiclePage({
           </div>
         </aside>
       </div>
-      <section className="mt-10">
-        <h2 className="text-xl font-semibold">{dict.detail.specs}</h2>
-        <dl className="mt-4 border-t border-line">
+      <section className="mt-14">
+        <h2 className="text-2xl font-semibold tracking-[-0.03em]">{dict.detail.specs}</h2>
+        <dl className={`${panel} mt-5 px-5`}>
           {rows.map(([label, value]) => (
-            <div key={label} className="grid grid-cols-1 gap-1 border-b border-line py-3 text-sm sm:grid-cols-[180px_minmax(0,1fr)]">
+            <div key={label} className="grid grid-cols-1 gap-1 border-b border-line/80 py-3.5 text-sm last:border-b-0 sm:grid-cols-[180px_minmax(0,1fr)]">
               <dt className="text-muted">{label}</dt>
               <dd>{value}</dd>
             </div>
           ))}
         </dl>
       </section>
-      <section className="mt-10 grid gap-4 md:grid-cols-2">
-        <div className="border border-line bg-white p-5">
+      <section className="mt-8 grid gap-4 md:grid-cols-2">
+        <div className={`${panel} p-6`}>
           <h2 className="font-semibold">{dict.detail.maintenance}</h2>
           <p className="mt-2 text-sm leading-6">{textOf(vehicle.maintenance, lang, unknown)}</p>
         </div>
-        <div className="border border-l-4 border-line border-l-[#8a5a00] bg-white p-5">
+        <div className={`${panel} border-l-4 border-l-[#8a5a00] p-6`}>
           <h2 className="font-semibold">{dict.detail.defects}</h2>
           <p className="mt-2 text-sm leading-6">{textOf(vehicle.knownDefects, lang, unknown)}</p>
         </div>
       </section>
-      <section className="mt-10">
-        <h2 className="text-xl font-semibold">{dict.detail.about}</h2>
-        <p className="mt-3 max-w-3xl text-sm leading-7">{textOf(vehicle.description, lang, unknown)}</p>
+      <section className="mt-12">
+        <h2 className="text-2xl font-semibold tracking-[-0.03em]">{dict.detail.about}</h2>
+        <p className="mt-4 max-w-3xl text-base leading-7">{textOf(vehicle.description, lang, unknown)}</p>
       </section>
-      <section className="mt-10">
-        <h2 className="text-xl font-semibold">{dict.detail.video}</h2>
+      <section className="mt-12">
+        <h2 className="text-2xl font-semibold tracking-[-0.03em]">{dict.detail.video}</h2>
         <p className="mt-2 text-sm text-muted">{dict.detail.videoBody}</p>
+        <div className="mt-4 overflow-hidden rounded-[1.25rem]">
+          <PhotoFrame kicker={dict.common.slotVideo} caption={dict.detail.noVideo} aspect="aspect-video" />
+        </div>
         {vehicle.videoUrl === "demo" ? (
-          <Link className="mt-3 inline-flex text-sm font-semibold text-blue" href={hrefFor(lang, "/demo/video", trade)}>
+          <Link className="mt-4 inline-flex text-sm font-semibold text-blue" href={hrefFor(lang, "/demo/video", trade)}>
             {dict.detail.videoDemo}
           </Link>
         ) : vehicle.videoUrl && safeHttpUrl(vehicle.videoUrl) ? (
-          <a className="mt-3 inline-flex text-sm font-semibold text-blue" href={safeHttpUrl(vehicle.videoUrl)!}>
+          <a className="mt-4 inline-flex text-sm font-semibold text-blue" href={safeHttpUrl(vehicle.videoUrl)!}>
             {dict.detail.video}
           </a>
-        ) : (
-          <p className="mt-3 text-sm">{dict.detail.noVideo}</p>
-        )}
+        ) : null}
       </section>
-      <section id="inquiry" className="mt-12 scroll-mt-24 border border-line bg-white p-5 md:p-6">
+      <section id="inquiry" className={`${panel} mt-14 scroll-mt-28 p-6 md:p-8`}>
         <h2 className="text-xl font-semibold">{dict.detail.inquiry}</h2>
         <p className="mt-2 text-sm leading-6 text-muted">{dict.detail.formLead}</p>
         <div className="mt-5">
@@ -179,7 +181,7 @@ export default async function VehiclePage({
           </div>
         </section>
       ) : null}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-card px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
           <PriceBlock vehicle={vehicle} trade={trade} lang={lang} />
           <a href="#inquiry" className={btnPrimary}>{dict.detail.inquiry}</a>

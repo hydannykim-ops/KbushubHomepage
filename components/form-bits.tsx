@@ -14,7 +14,7 @@ export function Honeypot() {
 export function Consent({ lang }: { lang: Locale }) {
   const dict = getDict(lang);
   return (
-    <div className="border border-line bg-paper p-4">
+    <div className="rounded-2xl bg-paper p-4 shadow-[inset_0_0_0_1px_var(--color-line)]">
       <p className="text-sm leading-6 text-muted">{dict.common.consent}</p>
       <label className="mt-3 flex items-start gap-2 text-sm">
         <input type="checkbox" name="consent" value="yes" className="mt-1" required />
@@ -28,7 +28,7 @@ export function FormNotice({ lang, state }: { lang: Locale; state: FormState }) 
   const dict = getDict(lang);
   if (state.saved) {
     return (
-      <p role="status" className="border border-line bg-white px-4 py-3 text-sm">
+      <p role="status" className="rounded-2xl bg-card px-4 py-3 text-sm shadow-card">
         {dict.common.demoSaved}
         {state.id ? <span className="mt-1 block font-mono text-xs text-muted">{state.id}</span> : null}
       </p>
@@ -36,7 +36,7 @@ export function FormNotice({ lang, state }: { lang: Locale; state: FormState }) 
   }
   if (!state.errors.form) return null;
   return (
-    <p role="alert" className="border border-[#f3d0d8] bg-white px-4 py-3 text-sm text-[#9f1239]">
+    <p role="alert" className="rounded-2xl bg-card px-4 py-3 text-sm text-[#9f1239] shadow-[inset_0_0_0_1px_#f3d0d8]">
       {errorText(lang, state.errors.form)}
     </p>
   );

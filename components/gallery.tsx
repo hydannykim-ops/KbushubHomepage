@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { BusArt } from "@/components/bus-art";
+import { PhotoFrame } from "@/components/photo-frame";
 import { textOf } from "@/lib/domain";
 import { getDict } from "@/lib/i18n";
+import { chipOff, chipOn } from "@/lib/ui";
 import type { Locale, Photo, VehicleClass } from "@/lib/types";
 
 const order = ["exterior", "interior", "dashboard", "engine", "tires", "defect"] as const;
@@ -12,7 +13,6 @@ const order = ["exterior", "interior", "dashboard", "engine", "tires", "defect"]
 export function Gallery({
   photos,
   lang,
-  variant,
 }: {
   photos: Photo[];
   lang: Locale;
@@ -22,8 +22,8 @@ export function Gallery({
   const [category, setCategory] = useState<string>("all");
   if (!photos.length) {
     return (
-      <div className="border border-line">
-        <BusArt variant={variant} label={dict.common.photoNone} />
+      <div className="overflow-hidden rounded-[1.25rem]">
+        <PhotoFrame kicker={dict.common.slotPhoto} caption={dict.common.photoNone} aspect="aspect-[16/10]" />
       </div>
     );
   }
@@ -32,12 +32,7 @@ export function Gallery({
   return (
     <div>
       <div className="flex flex-wrap gap-2" role="tablist" aria-label={dict.a11y.gallery}>
-        <button
-          type="button"
-          aria-pressed={category === "all"}
-          className={`h-9 px-3 text-sm ${category === "all" ? "bg-ink text-white" : "border border-line bg-white"}`}
-          onClick={() => setCategory("all")}
-        >
+        <button type="button" aria-pressed={category === "all"} className={category === "all" ? chipOn : chipOff} onClick={() => setCategory("all")}>
           {dict.common.all}
         </button>
         {used.map((item) => (
@@ -45,16 +40,16 @@ export function Gallery({
             key={item}
             type="button"
             aria-pressed={category === item}
-            className={`h-9 px-3 text-sm ${category === item ? "bg-ink text-white" : "border border-line bg-white"}`}
+            className={category === item ? chipOn : chipOff}
             onClick={() => setCategory(item)}
           >
             {dict.photo[item]}
           </button>
         ))}
       </div>
-      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
         {visible.map((photo) => (
-          <figure key={photo.id} className="border border-line bg-white">
+          <figure key={photo.id} className="overflow-hidden rounded-[1.25rem] bg-card shadow-card">
             {photo.file ? (
               <Image
                 src={`/stock/${photo.file}`}
@@ -64,11 +59,9 @@ export function Gallery({
                 className="aspect-[16/10] w-full object-cover"
               />
             ) : (
-              <BusArt variant={variant} label={dict.common.photoPending} />
+              <PhotoFrame kicker={dict.common.slotPhoto} caption={`${dict.photo[photo.category]} · ${dict.common.photoPending}`} aspect="aspect-[16/10]" />
             )}
-            <figcaption className="border-t border-line px-3 py-2 text-xs text-muted">
-              {dict.photo[photo.category]}
-            </figcaption>
+            <figcaption className="px-4 py-3 text-[12px] text-muted">{dict.photo[photo.category]}</figcaption>
           </figure>
         ))}
       </div>

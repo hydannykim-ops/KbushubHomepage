@@ -1,12 +1,15 @@
 @import "tailwindcss";
 
 @theme {
-  --color-paper: #f3f5f7;
-  --color-ink: #10243f;
-  --color-muted: #3e5168;
-  --color-line: #d9e0e7;
-  --color-blue: #0e4c9a;
-  --color-blue-press: #0c3e7e;
+  --color-paper: #f4f1eb;
+  --color-card: #fffcf8;
+  --color-sand: #ebe4d8;
+  --color-ink: #14181f;
+  --color-muted: #5c6570;
+  --color-line: #e3ddd3;
+  --color-blue: #1a3f8f;
+  --color-blue-press: #132f6b;
+  --shadow-card: 0 1px 1px rgb(20 24 31 / 0.04), 0 22px 44px -30px rgb(20 24 31 / 0.42);
   --font-sans: var(--font-pretendard), "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
@@ -19,11 +22,11 @@ body {
 }
 
 ::selection {
-  background: #d6e4f7;
+  background: #d9e2f2;
 }
 
 :focus-visible {
-  outline: 2px solid #0e4c9a;
+  outline: 2px solid #1a3f8f;
   outline-offset: 2px;
 }
 

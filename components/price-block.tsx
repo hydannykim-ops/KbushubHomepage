@@ -24,7 +24,7 @@ export function PriceBlock({
   return (
     <div>
       <p className="text-xs text-muted">{basis}</p>
-      <p className={`mt-1 font-semibold tabular-nums tracking-tight ${large ? "text-3xl" : "text-2xl"}`}>
+      <p className={`mt-1 font-semibold tabular-nums tracking-[-0.03em] ${large ? "text-3xl" : "text-2xl"}`}>
         {price ? formatMoney(price.amount, price.currency, lang) : dict.common.priceAsk}
       </p>
       {price && isExportOffer(price) ? (

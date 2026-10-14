@@ -22,15 +22,15 @@ export default async function OpenGraphImage({
         style={{
           width: "100%",
           height: "100%",
-          background: "#f3f5f7",
-          color: "#10243f",
+          background: "#f4f1eb",
+          color: "#14181f",
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
           padding: 64,
         }}
       >
-        <div style={{ fontSize: 28, color: "#0e4c9a" }}>K-BUS HUB · SAMPLE</div>
+        <div style={{ fontSize: 28, color: "#1a3f8f" }}>K-BUS HUB · SAMPLE</div>
         <div style={{ fontSize: 64, lineHeight: 1.15 }}>{title}</div>
         <div style={{ fontSize: 28 }}>{vehicle ? vehicle.id : id}</div>
       </div>

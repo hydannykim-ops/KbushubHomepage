@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { RequestForm } from "@/components/lead-forms";
+import { PageIntro } from "@/components/page-intro";
 import { getDict, isLocale } from "@/lib/i18n";
+import { panel } from "@/lib/ui";
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params;
@@ -21,10 +23,9 @@ export default async function RequestPage({
   const model = typeof query.model === "string" ? query.model : "";
   const dict = getDict(raw);
   return (
-    <div className="mx-auto max-w-3xl px-5 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">{dict.request.title}</h1>
-      <p className="mt-3 text-sm leading-6 text-muted">{dict.request.lead}</p>
-      <div className="mt-8 border border-line bg-white p-5 md:p-6">
+    <div className="mx-auto max-w-3xl px-5 py-12 lg:py-16">
+      <PageIntro title={dict.request.title} lead={dict.request.lead} />
+      <div className={`${panel} mt-8 p-5 md:p-8`}>
         <RequestForm lang={raw} model={model} />
       </div>
     </div>

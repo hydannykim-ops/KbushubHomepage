@@ -10,5 +10,5 @@ const tone: Record<SaleStatus, string> = {
 
 export function StatusBadge({ status, lang }: { status: SaleStatus; lang: Locale }) {
   const label = getDict(lang).status[status];
-  return <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold ${tone[status]}`}>{label}</span>;
+  return <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${tone[status]}`}>{label}</span>;
 }

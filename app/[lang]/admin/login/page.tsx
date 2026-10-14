@@ -23,7 +23,7 @@ export default async function AdminLoginPage({ params }: { params: Promise<{ lan
       ) : (
         <p className="mt-3 text-sm text-muted">{dict.errors.live}</p>
       )}
-      <div className="mt-6 border border-line bg-white p-5">
+      <div className="mt-6 rounded-[1.25rem] bg-card p-6 shadow-card">
         <AuthForm lang={raw} mode="admin" />
       </div>
     </div>

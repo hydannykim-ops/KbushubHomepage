@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { PageIntro } from "@/components/page-intro";
 import { getDict, isLocale } from "@/lib/i18n";
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
@@ -12,9 +13,9 @@ export default async function PrivacyPage({ params }: { params: Promise<{ lang: 
   if (!isLocale(raw)) notFound();
   const dict = getDict(raw);
   return (
-    <div className="mx-auto max-w-3xl px-5 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">{dict.privacy.title}</h1>
-      <p className="mt-4 text-sm leading-7">{dict.privacy.body}</p>
+    <div className="mx-auto max-w-3xl px-5 py-12 lg:py-16">
+      <PageIntro title={dict.privacy.title} />
+      <p className="mt-6 text-base leading-8 text-muted">{dict.privacy.body}</p>
     </div>
   );
 }

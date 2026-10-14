@@ -42,7 +42,7 @@ export default async function LangLayout({
   return (
     <>
       {isLiveMode() ? null : (
-        <p className="bg-ink px-5 py-2 text-center text-xs text-white">{dict.common.demoBanner}</p>
+        <p className="bg-sand px-5 py-2 text-center text-[12px] leading-5 text-muted">{dict.common.demoBanner}</p>
       )}
       <Suspense fallback={<div className="h-16 border-b border-line bg-white" />}>
         <SiteHeader lang={raw} trade={trade} />

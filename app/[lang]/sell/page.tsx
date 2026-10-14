@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SellForm } from "@/components/lead-forms";
+import { PageIntro } from "@/components/page-intro";
 import { getDict, isLocale } from "@/lib/i18n";
+import { panel } from "@/lib/ui";
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params;
@@ -13,10 +15,9 @@ export default async function SellPage({ params }: { params: Promise<{ lang: str
   if (!isLocale(raw)) notFound();
   const dict = getDict(raw);
   return (
-    <div className="mx-auto max-w-3xl px-5 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">{dict.sell.title}</h1>
-      <p className="mt-3 text-sm leading-6 text-muted">{dict.sell.lead}</p>
-      <div className="mt-8 border border-line bg-white p-5 md:p-6">
+    <div className="mx-auto max-w-3xl px-5 py-12 lg:py-16">
+      <PageIntro title={dict.sell.title} lead={dict.sell.lead} />
+      <div className={`${panel} mt-8 p-5 md:p-8`}>
         <SellForm lang={raw} />
       </div>
     </div>

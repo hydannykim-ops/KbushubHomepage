@@ -3,11 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FilterForm } from "@/components/filter-form";
 import { ListingCard } from "@/components/listing-card";
+import { PageIntro } from "@/components/page-intro";
 import { filterVehicles, parseFilterParams, textOf } from "@/lib/domain";
 import { getDict, isLocale } from "@/lib/i18n";
 import { hrefFor } from "@/lib/paths";
 import { tradeMode } from "@/lib/request-context";
 import { publicData } from "@/lib/store";
+import { chipOff, chipOn, panel } from "@/lib/ui";
 import type { Locale } from "@/lib/types";
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
@@ -51,9 +53,11 @@ export default async function InventoryPage({
   };
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-8 px-5 py-10 lg:grid-cols-[280px_minmax(0,1fr)]">
+    <div className="mx-auto max-w-7xl px-5 py-12 lg:px-8 lg:py-16">
+      <PageIntro kicker={dict.common.sample} title={dict.inventory.title} lead={dict.inventory.lead} />
+      <div className="mt-10 grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)]">
       <aside>
-        <details open className="border border-line bg-white p-4">
+        <details open className={`${panel} p-5`}>
           <summary className="text-sm font-semibold">{dict.a11y.filters}</summary>
           <div className="mt-4">
             <FilterForm lang={lang} trade={trade} action={`/${lang}/inventory`} values={values} makers={makers} models={models} />
@@ -61,13 +65,10 @@ export default async function InventoryPage({
         </details>
       </aside>
       <div>
-        <p className="text-sm text-muted">{dict.common.sample}</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight">{dict.inventory.title}</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">{dict.inventory.lead}</p>
-        <p className="mt-4 text-sm">
+        <p className="text-sm">
           <span className="font-semibold tabular-nums">{result.total}</span> {dict.inventory.count}
         </p>
-        {result.priceIgnored ? <p className="mt-3 border border-line bg-white px-4 py-3 text-sm">{dict.inventory.priceIgnored}</p> : null}
+        {result.priceIgnored ? <p className={`${panel} mt-3 px-4 py-3 text-sm`}>{dict.inventory.priceIgnored}</p> : null}
         <p className="mt-3 text-xs leading-5 text-muted">{dict.inventory.priceNote}</p>
         <div className="mt-4 flex flex-wrap gap-2" aria-label={dict.inventory.sort}>
           {sorts.map((sort) => (
@@ -75,7 +76,7 @@ export default async function InventoryPage({
               key={sort}
               href={hrefFor(lang, "/inventory", trade, { ...values, sort, page: undefined })}
               aria-current={result.sort === sort ? "true" : undefined}
-              className={`px-3 py-1.5 text-sm ${result.sort === sort ? "bg-ink text-white" : "border border-line bg-white"}`}
+              className={result.sort === sort ? chipOn : chipOff}
             >
               {dict.inventory[sort]}
             </Link>
@@ -88,7 +89,7 @@ export default async function InventoryPage({
             ))}
           </div>
         ) : (
-          <div className="mt-6 border border-line bg-white p-8">
+          <div className={`${panel} mt-6 p-8`}>
             <h2 className="text-lg font-semibold">{dict.inventory.empty}</h2>
             <p className="mt-2 text-sm text-muted">{dict.inventory.emptyBody}</p>
             <Link href={hrefFor(lang, "/request", trade)} className="mt-4 inline-flex text-sm font-semibold text-blue">
@@ -98,11 +99,12 @@ export default async function InventoryPage({
         )}
         {result.pages > 1 ? (
           <nav aria-label={dict.inventory.page} className="mt-6 flex gap-2">
-            {result.page > 1 ? <Link className="border border-line bg-white px-3 py-2 text-sm" href={pageQuery(result.page - 1)}>{dict.inventory.prev}</Link> : null}
+            {result.page > 1 ? <Link className={chipOff} href={pageQuery(result.page - 1)}>{dict.inventory.prev}</Link> : null}
             <span className="px-3 py-2 text-sm tabular-nums">{result.page} / {result.pages}</span>
-            {result.page < result.pages ? <Link className="border border-line bg-white px-3 py-2 text-sm" href={pageQuery(result.page + 1)}>{dict.inventory.next}</Link> : null}
+            {result.page < result.pages ? <Link className={chipOff} href={pageQuery(result.page + 1)}>{dict.inventory.next}</Link> : null}
           </nav>
         ) : null}
+      </div>
       </div>
     </div>
   );

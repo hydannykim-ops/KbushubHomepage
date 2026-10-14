@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { InquiryForm } from "@/components/inquiry-form";
+import { PageIntro } from "@/components/page-intro";
 import { getDict, isLocale } from "@/lib/i18n";
 import { tradeMode } from "@/lib/request-context";
+import { panel } from "@/lib/ui";
 import type { InquiryKind } from "@/lib/types";
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
@@ -17,10 +19,9 @@ export default async function InquiryPage({ params }: { params: Promise<{ lang: 
   const dict = getDict(raw);
   const kinds: InquiryKind[] = trade === "export" ? ["quote", "general"] : ["general", "purchase"];
   return (
-    <div className="mx-auto max-w-3xl px-5 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">{dict.guide.contact}</h1>
-      <p className="mt-3 text-sm leading-6 text-muted">{dict.detail.formLead}</p>
-      <div className="mt-8 border border-line bg-white p-5 md:p-6">
+    <div className="mx-auto max-w-3xl px-5 py-12 lg:py-16">
+      <PageIntro title={dict.guide.contact} lead={dict.detail.formLead} />
+      <div className={`${panel} mt-8 p-5 md:p-8`}>
         <InquiryForm lang={raw} trade={trade} kinds={kinds} defaultKind="general" />
       </div>
     </div>
