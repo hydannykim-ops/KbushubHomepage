@@ -144,7 +144,7 @@ export function MarketFilterBar({
           role="dialog"
           aria-modal="false"
           aria-labelledby={`${baseId}-${openKey}`}
-          className="border-y border-[#d8dde6] bg-[#eef0f4]/70 px-1 py-4 backdrop-blur-[2px]"
+          className="px-0.5 pb-1 pt-1"
         >
           {openKey === "class" ? (
             <div className="grid max-w-sm gap-1">
