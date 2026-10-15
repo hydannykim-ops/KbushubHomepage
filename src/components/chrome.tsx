@@ -47,8 +47,6 @@ export function Header({
 
   const links = [
     [text.navVehicles, href("/vehicles")],
-    [text.navCounty, href("/vehicles", { class: "county" })],
-    [text.navBuses, href("/buses")],
     [text.navSell, href("/sell")],
     [text.navGuide, href("/guide")],
     [text.navPartner, href("/partner")],
