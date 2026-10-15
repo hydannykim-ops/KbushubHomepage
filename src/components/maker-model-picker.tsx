@@ -7,9 +7,15 @@ import {
   makerLabel,
   makersForClass,
   modelsForMaker,
+  modelsForSeries,
+  seriesForMaker,
+  seriesForModel,
+  seriesHasVariants,
 } from "@/lib/domain/vehicle-catalog";
 import type { Lang, VehicleClass } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
+
+type Step = "maker" | "series" | "model" | "done";
 
 function resolveInitialMaker(defaultMaker: string, defaultModel: string, vehicleClass: VehicleClass | "") {
   const fromModel = defaultModel ? makerForModel(defaultModel) : "";
@@ -28,30 +34,29 @@ function resolveInitialModel(defaultModel: string, maker: string, vehicleClass: 
   return defaultModel;
 }
 
-function makerTileClass(active: boolean, market: boolean) {
+function resolveInitialStep(maker: string, model: string): Step {
+  if (!maker) return "maker";
+  if (!model) return "series";
+  return "done";
+}
+
+function optionClass(active: boolean, market: boolean) {
   if (market) {
     return [
-      "flex min-h-[3.25rem] cursor-pointer items-center justify-center border px-2 py-3 text-center text-sm font-semibold transition-colors",
-      active ? "border-ink bg-ink text-white" : "border-line bg-white text-foreground hover:border-ink/40",
+      "flex min-h-11 w-full cursor-pointer items-center justify-between gap-3 px-3 py-2.5 text-left text-sm transition-colors",
+      active ? "bg-ink font-semibold text-white" : "bg-transparent text-ink hover:bg-[#e8ebf0]",
     ].join(" ");
   }
   return [
-    "inline-flex min-h-11 cursor-pointer items-center border px-3.5 py-2.5 text-sm font-medium transition-colors",
+    "flex min-h-11 w-full cursor-pointer items-center justify-between gap-3 border px-3.5 py-2.5 text-left text-sm font-medium transition-colors",
     active ? "border-primary bg-primary text-white" : "border-line bg-white text-foreground hover:border-primary",
   ].join(" ");
 }
 
-function modelChipClass(active: boolean, market: boolean) {
-  if (market) {
-    return [
-      "inline-flex min-h-10 cursor-pointer items-center px-3.5 py-2 text-sm font-medium transition-colors",
-      active ? "bg-ink text-white" : "bg-[#eef1f5] text-foreground hover:bg-[#e4e8ef]",
-    ].join(" ");
-  }
-  return [
-    "inline-flex min-h-11 cursor-pointer items-center border px-3.5 py-2.5 text-sm font-medium transition-colors",
-    active ? "border-primary bg-primary text-white" : "border-line bg-white text-foreground hover:border-primary",
-  ].join(" ");
+function lockedRowClass(market: boolean) {
+  return market
+    ? "flex w-full items-center justify-between gap-3 border-b border-[#d8dde6] px-1 py-2.5 text-left text-sm"
+    : "flex w-full items-center justify-between gap-3 border border-line bg-[#f8fafc] px-3.5 py-2.5 text-left text-sm";
 }
 
 export function MakerModelPicker({
@@ -79,38 +84,112 @@ export function MakerModelPicker({
   const market = layout === "market";
   const initialMaker = resolveInitialMaker(defaultMaker, defaultModel, vehicleClass);
   const initialModel = resolveInitialModel(defaultModel, initialMaker, vehicleClass);
+  const initialSeries = initialModel ? seriesForModel(initialModel) : "";
   const [maker, setMaker] = useState(initialMaker);
+  const [series, setSeries] = useState(initialSeries);
   const [model, setModel] = useState(initialModel);
+  const [step, setStep] = useState<Step>(() => resolveInitialStep(initialMaker, initialModel));
+
   const makers = makersForClass(vehicleClass);
-  const models = maker ? modelsForMaker(maker, vehicleClass) : [];
+  const seriesList = maker ? seriesForMaker(maker, vehicleClass) : [];
+  const variants = maker && series ? modelsForSeries(maker, series, vehicleClass) : [];
+
+  function pickMaker(next: string) {
+    setMaker(next);
+    setSeries("");
+    setModel("");
+    setStep(next ? "series" : "maker");
+  }
+
+  function pickSeries(next: string) {
+    const nextVariants = modelsForSeries(maker, next, vehicleClass);
+    setSeries(next);
+    if (nextVariants.length <= 1) {
+      setModel(nextVariants[0] ?? next);
+      setStep("done");
+      return;
+    }
+    setModel("");
+    setStep("model");
+  }
+
+  function pickModel(next: string) {
+    setModel(next);
+    setStep("done");
+  }
 
   return (
-    <div className="grid gap-5" data-maker-model-picker data-vehicle-class={vehicleClass || "all"} data-layout={layout}>
+    <div className="grid gap-3" data-maker-model-picker data-vehicle-class={vehicleClass || "all"} data-layout={layout} data-step={step}>
       <input type="hidden" name={makerName} value={maker} required={required && !allowEmpty} />
       <input type="hidden" name={modelName} value={model} required={required && !allowEmpty} />
 
-      <fieldset className="min-w-0">
-        {!market ? (
-          <legend className="mb-3 text-sm font-medium">
-            {text.maker}
-            {required ? " *" : ""}
-          </legend>
-        ) : null}
-        <div
-          className={market ? "grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6" : "flex flex-wrap gap-2"}
-          role="group"
-          aria-label={text.maker}
+      {!market ? (
+        <p className="text-sm font-medium">
+          {text.maker} · {text.model}
+          {required ? " *" : ""}
+        </p>
+      ) : null}
+
+      {maker && step !== "maker" ? (
+        <button
+          type="button"
+          className={lockedRowClass(market)}
+          onClick={() => {
+            setStep("maker");
+          }}
         >
+          <span>
+            <span className="text-xs font-semibold text-muted">{text.maker}</span>
+            <span className="mt-0.5 block font-semibold text-ink">{makerLabel(maker, lang)}</span>
+          </span>
+          <span className="text-xs font-medium text-muted">{text.reset}</span>
+        </button>
+      ) : null}
+
+      {series && (step === "model" || (step === "done" && seriesHasVariants(maker, series, vehicleClass))) ? (
+        <button
+          type="button"
+          className={lockedRowClass(market)}
+          onClick={() => {
+            setModel("");
+            setStep("series");
+          }}
+        >
+          <span>
+            <span className="text-xs font-semibold text-muted">{text.model}</span>
+            <span className="mt-0.5 block font-semibold text-ink">{series}</span>
+          </span>
+          <span className="text-xs font-medium text-muted">{text.reset}</span>
+        </button>
+      ) : null}
+
+      {step === "done" && model ? (
+        <button
+          type="button"
+          className={lockedRowClass(market)}
+          onClick={() => {
+            if (series && seriesHasVariants(maker, series, vehicleClass)) {
+              setModel("");
+              setStep("model");
+            } else {
+              setSeries("");
+              setModel("");
+              setStep("series");
+            }
+          }}
+        >
+          <span>
+            <span className="text-xs font-semibold text-muted">{text.model}</span>
+            <span className="mt-0.5 block font-semibold text-ink">{model}</span>
+          </span>
+          <span className="text-xs font-medium text-muted">{text.reset}</span>
+        </button>
+      ) : null}
+
+      {step === "maker" ? (
+        <div className={market ? "grid gap-0.5" : "grid gap-2"} role="listbox" aria-label={text.maker}>
           {allowEmpty ? (
-            <button
-              type="button"
-              className={makerTileClass(maker === "", market)}
-              aria-pressed={maker === ""}
-              onClick={() => {
-                setMaker("");
-                setModel("");
-              }}
-            >
+            <button type="button" className={optionClass(maker === "", market)} aria-pressed={maker === ""} onClick={() => pickMaker("")}>
               {text.all}
             </button>
           ) : null}
@@ -118,58 +197,72 @@ export function MakerModelPicker({
             <button
               key={item}
               type="button"
-              className={makerTileClass(maker === item, market)}
+              className={optionClass(maker === item, market)}
               aria-pressed={maker === item}
-              onClick={() => {
-                setMaker(item);
-                setModel((current) => (modelsForMaker(item, vehicleClass).includes(current) ? current : ""));
-              }}
+              onClick={() => pickMaker(item)}
             >
-              {makerLabel(item, lang)}
+              <span>{makerLabel(item, lang)}</span>
+              <span aria-hidden className="text-[10px] opacity-50">
+                ›
+              </span>
             </button>
           ))}
         </div>
-      </fieldset>
+      ) : null}
 
-      <fieldset className="min-w-0">
-        {!market ? (
-          <legend className="mb-3 text-sm font-medium">
-            {text.model}
-            {required ? " *" : ""}
-          </legend>
-        ) : maker ? (
-          <legend className="mb-3 text-sm font-medium text-muted">
-            {makerLabel(maker, lang)} · {text.model}
-          </legend>
-        ) : null}
-        {!maker ? (
-          market ? null : (
-            <p className="rounded-sm border border-dashed border-line bg-[#f8fafc] px-3 py-4 text-sm text-muted">{text.pickMakerFirst}</p>
-          )
-        ) : models.length === 0 ? (
+      {step === "series" && maker ? (
+        seriesList.length === 0 ? (
           <p className="text-sm text-muted">{text.noModelsInClass}</p>
         ) : (
-          <div className="flex flex-wrap gap-2" role="group" aria-label={`${makerLabel(maker, lang)} ${text.model}`}>
+          <div className={market ? "grid gap-0.5" : "grid gap-2"} role="listbox" aria-label={`${makerLabel(maker, lang)} ${text.model}`}>
             {allowEmpty ? (
-              <button type="button" className={modelChipClass(model === "", market)} aria-pressed={model === ""} onClick={() => setModel("")}>
+              <button
+                type="button"
+                className={optionClass(series === "" && model === "", market)}
+                aria-pressed={series === "" && model === ""}
+                onClick={() => {
+                  setSeries("");
+                  setModel("");
+                  setStep("done");
+                }}
+              >
                 {text.all}
               </button>
             ) : null}
-            {models.map((entry) => (
-              <button
-                key={entry}
-                type="button"
-                className={modelChipClass(model === entry, market)}
-                aria-pressed={model === entry}
-                onClick={() => setModel(entry)}
-              >
-                {entry}
-              </button>
-            ))}
+            {seriesList.map((entry) => {
+              const multi = seriesHasVariants(maker, entry, vehicleClass);
+              return (
+                <button key={entry} type="button" className={optionClass(false, market)} onClick={() => pickSeries(entry)}>
+                  <span>{entry}</span>
+                  {multi ? (
+                    <span aria-hidden className="text-[10px] opacity-50">
+                      ›
+                    </span>
+                  ) : null}
+                </button>
+              );
+            })}
           </div>
-        )}
-        {required && !market ? <p className="mt-2 text-xs text-muted">{text.pickMakerModel}</p> : null}
-      </fieldset>
+        )
+      ) : null}
+
+      {step === "model" && maker && series ? (
+        <div className={market ? "grid gap-0.5" : "grid gap-2"} role="listbox" aria-label={`${series} ${text.model}`}>
+          {variants.map((entry) => (
+            <button
+              key={entry}
+              type="button"
+              className={optionClass(model === entry, market)}
+              aria-pressed={model === entry}
+              onClick={() => pickModel(entry)}
+            >
+              <span>{entry}</span>
+            </button>
+          ))}
+        </div>
+      ) : null}
+
+      {required && !market && !model ? <p className="text-xs text-muted">{text.pickMakerModel}</p> : null}
     </div>
   );
 }

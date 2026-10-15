@@ -11,7 +11,7 @@ import { normalizeReferralCode, referralForInquiry, rememberReferral, whatsappHr
 import { acceptOrReject, submissionGate } from "../src/lib/domain/submit";
 import { checkImage } from "../src/lib/domain/uploads";
 import { parseInquiry, parseQuote } from "../src/lib/domain/validation";
-import { makersForClass, modelsForMaker } from "../src/lib/domain/vehicle-catalog";
+import { makersForClass, modelsForMaker, modelsForSeries, seriesForMaker, seriesHasVariants } from "../src/lib/domain/vehicle-catalog";
 import { buildSeed } from "../src/lib/demo/seed";
 import { createDemoStore } from "../src/lib/demo/store";
 

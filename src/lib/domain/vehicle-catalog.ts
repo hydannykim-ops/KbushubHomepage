@@ -40,6 +40,50 @@ export const busModelsByMaker: Record<BusMaker, readonly string[]> = {
   기타: ["기타"],
 };
 
+/**
+ * Series/family for models that share a line (MyBus-style: maker → series → trim).
+ * Models without siblings treat themselves as their own series.
+ */
+const modelSeries: Record<string, string> = {
+  카운티: "카운티",
+  "카운티 롱바디": "카운티",
+  쏠라티: "쏠라티",
+  에어로타운: "에어로타운",
+  "에어로타운 롱바디": "에어로타운",
+  에어로시티: "에어로시티",
+  유니시티: "유니시티",
+  글로벌900: "글로벌900",
+  유니버스: "유니버스",
+  "유니버스 노블": "유니버스",
+  "유니버스 노블EX": "유니버스",
+  "유니버스 프라임": "유니버스",
+  "유니버스 프라임EX": "유니버스",
+  "유니버스 럭셔리": "유니버스",
+  일렉시티: "일렉시티",
+  그랜버드: "그랜버드",
+  "뉴그랜버드 실크로드": "그랜버드",
+  "뉴그랜버드 파크웨이": "그랜버드",
+  "뉴그랜버드 썬샤인": "그랜버드",
+  레스타: "레스타",
+  BH090: "BH090",
+  BS106: "BS106",
+  BX212: "BX212",
+  FX: "FX",
+  스페이스콤비: "스페이스콤비",
+  로얄시티: "로얄시티",
+  스프린터: "스프린터",
+  투리스모: "투리스모",
+  트라베고: "트라베고",
+  슬로프: "슬로프",
+  시티: "시티",
+  코치: "코치",
+  볼보: "볼보",
+  스카니아: "스카니아",
+  만: "만",
+  이베코: "이베코",
+  기타: "기타",
+};
+
 /** Fixed class for each catalog model so browse filters stay coherent. */
 const modelVehicleClass: Record<string, VehicleClass> = {
   카운티: "county",
@@ -125,4 +169,29 @@ export function makerForModel(model: string): BusMaker | "" {
     if (busModelsByMaker[maker].includes(model)) return maker;
   }
   return "";
+}
+
+export function seriesForModel(model: string): string {
+  return modelSeries[model] ?? model;
+}
+
+export function modelsForSeries(maker: string, series: string, vehicleClass: VehicleClass | "" = ""): readonly string[] {
+  return modelsForMaker(maker, vehicleClass).filter((model) => seriesForModel(model) === series);
+}
+
+/** Unique series names for a maker, preserving catalog order. */
+export function seriesForMaker(maker: string, vehicleClass: VehicleClass | "" = ""): readonly string[] {
+  const seen = new Set<string>();
+  const series: string[] = [];
+  for (const model of modelsForMaker(maker, vehicleClass)) {
+    const name = seriesForModel(model);
+    if (seen.has(name)) continue;
+    seen.add(name);
+    series.push(name);
+  }
+  return series;
+}
+
+export function seriesHasVariants(maker: string, series: string, vehicleClass: VehicleClass | "" = ""): boolean {
+  return modelsForSeries(maker, series, vehicleClass).length > 1;
 }
