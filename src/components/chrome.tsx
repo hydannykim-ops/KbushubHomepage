@@ -1,11 +1,107 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useId, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { LogoSlot } from "@/components/media-slot";
 import type { Lang, SessionRole, TradeMode } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
 import { langs, langMeta, langPathPattern } from "@/lib/i18n/langs";
+
+function GlobeIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M3.5 12h17" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <path
+        d="M12 3c2.4 2.6 3.6 5.6 3.6 9s-1.2 6.4-3.6 9c-2.4-2.6-3.6-5.6-3.6-9s1.2-6.4 3.6-9Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function LanguageMenu({
+  lang,
+  label,
+  switchLang,
+  align = "right",
+}: {
+  lang: Lang;
+  label: string;
+  switchLang: (next: Lang) => string;
+  align?: "left" | "right";
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const listId = useId();
+  const current = langMeta[lang];
+
+  useEffect(() => {
+    if (!open) return;
+    function onPointerDown(event: MouseEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    }
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div className="relative" ref={rootRef}>
+      <button
+        type="button"
+        className="inline-flex items-center gap-1.5 border border-line px-2.5 py-1.5 text-sm text-foreground hover:border-ink"
+        aria-label={label}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={listId}
+        onClick={() => setOpen((value) => !value)}
+      >
+        <GlobeIcon className="h-4 w-4 shrink-0" />
+        <span className="max-w-[5.5rem] truncate font-medium">{current.native}</span>
+      </button>
+      {open ? (
+        <div
+          id={listId}
+          role="listbox"
+          aria-label={label}
+          className={`absolute top-[calc(100%+0.35rem)] z-50 max-h-56 w-56 overflow-y-auto border border-line bg-white py-1 shadow-[0_8px_24px_rgba(16,32,51,0.12)] ${
+            align === "right" ? "right-0" : "left-0"
+          }`}
+        >
+          {langs.map((code) => {
+            const meta = langMeta[code];
+            const active = code === lang;
+            return (
+              <Link
+                key={code}
+                role="option"
+                aria-selected={active}
+                href={switchLang(code)}
+                className={`flex items-baseline justify-between gap-3 px-3 py-2 text-sm hover:bg-[#f3f5f8] ${
+                  active ? "bg-[#f3f5f8] font-semibold text-ink" : "text-foreground"
+                }`}
+                onClick={() => setOpen(false)}
+              >
+                <span>{meta.native}</span>
+                <span className="shrink-0 text-[11px] text-muted">{meta.short}</span>
+              </Link>
+            );
+          })}
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 export function Header({
   lang,
@@ -62,18 +158,7 @@ export function Header({
 
   const bar = (
     <div className="flex flex-wrap items-center gap-2">
-      <div className="flex flex-wrap border border-line p-0.5 text-sm" role="group" aria-label={text.language}>
-        {langs.map((code) => (
-          <Link
-            key={code}
-            className={lang === code ? "bg-ink px-2 py-1 text-white" : "px-2 py-1"}
-            href={switchLang(code)}
-            title={`${langMeta[code].native} · ${langMeta[code].markets}`}
-          >
-            {langMeta[code].short}
-          </Link>
-        ))}
-      </div>
+      <LanguageMenu lang={lang} label={text.language} switchLang={switchLang} />
       <div className="flex border border-line p-0.5 text-sm" role="group" aria-label={text.modeDomestic}>
         <Link
           className={mode === "domestic" ? "bg-primary px-2 py-1 text-white" : "px-2 py-1"}
