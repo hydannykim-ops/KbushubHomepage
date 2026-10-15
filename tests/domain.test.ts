@@ -11,6 +11,7 @@ import { normalizeReferralCode, referralForInquiry, rememberReferral, whatsappHr
 import { acceptOrReject, submissionGate } from "../src/lib/domain/submit";
 import { checkImage } from "../src/lib/domain/uploads";
 import { parseInquiry, parseQuote } from "../src/lib/domain/validation";
+import { makersForClass, modelsForMaker } from "../src/lib/domain/vehicle-catalog";
 import { buildSeed } from "../src/lib/demo/seed";
 import { createDemoStore } from "../src/lib/demo/store";
 
@@ -375,4 +376,25 @@ test("migration locks down internal tables and admin role grants", async () => {
   assert.match(members, /review/);
   assert.doesNotMatch(members, /create policy[^;]+insert[^;]+user_roles/i);
   assert.doesNotMatch(members, /create policy[^;]+insert[^;]+member_profiles/i);
+});
+
+test("maker model catalog stays inside the selected vehicle class", () => {
+  const mediumHyundai = modelsForMaker("현대", "medium");
+  assert.ok(mediumHyundai.includes("에어로타운"));
+  assert.equal(mediumHyundai.includes("유니버스"), false);
+  assert.equal(mediumHyundai.includes("카운티"), false);
+
+  const largeHyundai = modelsForMaker("현대", "large");
+  assert.ok(largeHyundai.includes("유니버스"));
+  assert.equal(largeHyundai.includes("에어로타운"), false);
+
+  const mediumMakers = makersForClass("medium");
+  assert.ok(mediumMakers.includes("현대"));
+  assert.equal(mediumMakers.includes("기아"), false);
+
+  const seed = buildSeed();
+  const medium = filterVehicles(seed.vehicles, { vehicleClass: "medium", sort: "newest" }, "domestic");
+  assert.ok(medium.items.every((item) => item.vehicleClass === "medium"));
+  assert.ok(medium.items.some((item) => item.stockNo === "DEMO-M-01"));
+  assert.equal(medium.items.some((item) => item.model === "유니버스"), false);
 });

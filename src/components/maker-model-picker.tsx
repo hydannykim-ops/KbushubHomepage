@@ -1,8 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { busMakers, makerForModel, makerLabel, modelsForMaker } from "@/lib/domain/vehicle-catalog";
-import type { Lang } from "@/lib/domain/types";
+import {
+  classForModel,
+  makerForModel,
+  makerLabel,
+  makersForClass,
+  modelsForMaker,
+} from "@/lib/domain/vehicle-catalog";
+import type { Lang, VehicleClass } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
 
 function chipClass(active: boolean) {
@@ -14,12 +20,30 @@ function chipClass(active: boolean) {
   ].join(" ");
 }
 
+function resolveInitialMaker(defaultMaker: string, defaultModel: string, vehicleClass: VehicleClass | "") {
+  const fromModel = defaultModel ? makerForModel(defaultModel) : "";
+  const maker = defaultMaker || fromModel;
+  if (!maker) return "";
+  if (vehicleClass && !modelsForMaker(maker, vehicleClass).length) return "";
+  if (vehicleClass && defaultModel && classForModel(defaultModel) && classForModel(defaultModel) !== vehicleClass) {
+    return maker;
+  }
+  return maker;
+}
+
+function resolveInitialModel(defaultModel: string, maker: string, vehicleClass: VehicleClass | "") {
+  if (!defaultModel || !maker) return "";
+  if (!modelsForMaker(maker, vehicleClass).includes(defaultModel)) return "";
+  return defaultModel;
+}
+
 export function MakerModelPicker({
   lang,
   makerName = "maker",
   modelName = "model",
   defaultMaker = "",
   defaultModel = "",
+  vehicleClass = "",
   required = false,
   allowEmpty = false,
 }: {
@@ -28,17 +52,20 @@ export function MakerModelPicker({
   modelName?: string;
   defaultMaker?: string;
   defaultModel?: string;
+  vehicleClass?: VehicleClass | "";
   required?: boolean;
   allowEmpty?: boolean;
 }) {
   const text = copy(lang);
-  const initialMaker = defaultMaker || (defaultModel ? makerForModel(defaultModel) : "");
+  const initialMaker = resolveInitialMaker(defaultMaker, defaultModel, vehicleClass);
+  const initialModel = resolveInitialModel(defaultModel, initialMaker, vehicleClass);
   const [maker, setMaker] = useState(initialMaker);
-  const [model, setModel] = useState(defaultModel);
-  const models = maker ? modelsForMaker(maker) : [];
+  const [model, setModel] = useState(initialModel);
+  const makers = makersForClass(vehicleClass);
+  const models = maker ? modelsForMaker(maker, vehicleClass) : [];
 
   return (
-    <div className="grid gap-5 md:col-span-2" data-maker-model-picker>
+    <div className="grid gap-5 md:col-span-2" data-maker-model-picker data-vehicle-class={vehicleClass || "all"}>
       <input type="hidden" name={makerName} value={maker} required={required && !allowEmpty} />
       <input type="hidden" name={modelName} value={model} required={required && !allowEmpty} />
 
@@ -61,7 +88,7 @@ export function MakerModelPicker({
               {text.all}
             </button>
           ) : null}
-          {busMakers.map((item) => (
+          {makers.map((item) => (
             <button
               key={item}
               type="button"
@@ -69,7 +96,7 @@ export function MakerModelPicker({
               aria-pressed={maker === item}
               onClick={() => {
                 setMaker(item);
-                setModel((current) => (modelsForMaker(item).includes(current) ? current : ""));
+                setModel((current) => (modelsForMaker(item, vehicleClass).includes(current) ? current : ""));
               }}
             >
               {makerLabel(item, lang)}
@@ -85,6 +112,8 @@ export function MakerModelPicker({
         </legend>
         {!maker ? (
           <p className="rounded-sm border border-dashed border-line bg-[#f8fafc] px-3 py-4 text-sm text-muted">{text.pickMakerFirst}</p>
+        ) : models.length === 0 ? (
+          <p className="rounded-sm border border-dashed border-line bg-[#f8fafc] px-3 py-4 text-sm text-muted">{text.noModelsInClass}</p>
         ) : (
           <div className="flex flex-wrap gap-2 rounded-sm border border-line bg-[#f8fafc] p-3" role="group" aria-label={`${makerLabel(maker, lang)} ${text.model}`}>
             {allowEmpty ? (

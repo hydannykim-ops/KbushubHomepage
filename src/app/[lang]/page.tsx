@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DataProblem, VehicleCard } from "@/components/catalog";
-import { MakerModelPicker } from "@/components/maker-model-picker";
 import { copy } from "@/lib/i18n";
 import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
 import { loadSite } from "@/lib/site-load";
@@ -37,32 +36,24 @@ export default async function HomePage({
 
   return (
     <div className="mx-auto grid max-w-6xl gap-16 px-4 py-10 md:py-14">
-      <section className="grid items-stretch gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="flex flex-col justify-center">
-          <p className="text-xs font-semibold tracking-[0.2em] text-primary">K-BUS HUB</p>
-          <h1 className="mt-3 text-4xl font-semibold leading-tight tracking-tight md:text-5xl">{text.heroTitle}</h1>
-          <p className="mt-5 max-w-xl text-base leading-7 text-muted">{text.heroBody}</p>
-          <form action={`/${lang}/vehicles`} method="get" className="mt-8 grid gap-3 border border-line bg-white p-4">
-            <input type="hidden" name="mode" value={ctx.mode} />
-            {ctx.ref ? <input type="hidden" name="ref" value={ctx.ref} /> : null}
-            <MakerModelPicker lang={lang} allowEmpty />
-            <label className="grid gap-1 text-sm font-medium">
-              {text.classLabel}
-              <select name="class" className="border border-line bg-white px-3 py-2 font-normal" defaultValue="">
-                <option value="">{text.all}</option>
-                <option value="county">{text.classCounty}</option>
-                <option value="medium">{text.classMedium}</option>
-                <option value="large">{text.classLarge}</option>
-              </select>
-            </label>
-            <button className="bg-primary px-4 py-3 font-semibold text-white">{text.search}</button>
-          </form>
+      <section className="relative min-h-[70vh] overflow-hidden border border-line bg-[#0f172a] text-white lg:min-h-[32rem]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/demo/hero-yard.jpg" alt={text.mediaHero} className="absolute inset-0 h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/55 to-black/25" />
+        <div className="relative flex min-h-[70vh] max-w-2xl flex-col justify-center px-6 py-14 lg:min-h-[32rem] lg:px-10">
+          <p className="text-sm font-semibold tracking-[0.28em] text-white/90">K-BUS HUB</p>
+          <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tight md:text-5xl">{text.heroTitle}</h1>
+          <p className="mt-5 max-w-xl text-base leading-7 text-white/85">{text.heroBody}</p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href={hrefTo(lang, "/vehicles", ctx)} className="bg-primary px-5 py-3 text-sm font-semibold text-white">
+              {text.browseInventory}
+            </Link>
+            <Link href={hrefTo(lang, "/vehicles", ctx, { class: "county" })} className="border border-white/40 bg-white/10 px-5 py-3 text-sm font-semibold text-white backdrop-blur-sm">
+              {text.classCounty}
+            </Link>
+          </div>
         </div>
-        <div className="relative min-h-72 overflow-hidden border border-line bg-white lg:min-h-[28rem]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/demo/hero-yard.jpg" alt={text.mediaHero} className="h-full min-h-72 w-full object-cover lg:min-h-[28rem]" />
-          <span className="absolute bottom-3 left-3 bg-white/90 px-2 py-1 text-[11px] font-semibold text-muted">{text.placeholderNote}</span>
-        </div>
+        <span className="absolute bottom-3 left-3 bg-white/90 px-2 py-1 text-[11px] font-semibold text-muted">{text.placeholderNote}</span>
       </section>
 
       <section className="grid gap-4 md:grid-cols-3">
