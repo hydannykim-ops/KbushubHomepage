@@ -35,15 +35,17 @@ function PhotoFrame({ vehicle, lang }: { vehicle: PublicVehicle; lang: Lang }) {
   const cover = vehicle.photos.find((photo) => photo.isCover) ?? vehicle.photos[0];
   const src = cover ? photoSrc(cover) : null;
   return (
-    <div className="relative aspect-[16/10] overflow-hidden bg-[#f3f5f8]">
+    <div className="relative aspect-[4/3] overflow-hidden bg-[#eef1f5]">
       {src ? (
         // Demo samples are public files; uploaded photos go through the media route.
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt={lang === "ko" ? cover!.altKo : cover!.altEn} className="h-full w-full object-cover" />
+        <img src={src} alt={lang === "ko" ? cover!.altKo : cover!.altEn} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
       ) : (
         <MediaSlot label={text.mediaCover} hint={text.mediaCoverHint} />
       )}
-      <span className="absolute left-3 top-3 bg-white px-2 py-1 text-xs font-semibold">{statusLabel(vehicle.status, lang)}</span>
+      {vehicle.status !== "available" ? (
+        <span className="absolute left-3 top-3 bg-white/95 px-2 py-1 text-xs font-semibold text-ink">{statusLabel(vehicle.status, lang)}</span>
+      ) : null}
       {cover?.placeholder ? <span className="absolute bottom-3 left-3 bg-white/90 px-2 py-1 text-[11px] font-semibold text-muted">{text.placeholderNote}</span> : null}
     </div>
   );
@@ -62,23 +64,29 @@ export function VehicleCard({
 }) {
   const text = copy(lang);
   const price = priceView(vehicle, mode, lang);
+  const yearLabel = vehicle.modelYear ? (lang === "ko" ? `${vehicle.modelYear}년` : String(vehicle.modelYear)) : text.unknown;
+  const seatsLabel =
+    vehicle.seats != null ? `${vehicle.seats}${lang === "ko" ? text.seatsShort : ` ${text.seatsShort}`}` : text.unknown;
   return (
-    <article className="overflow-hidden border border-line bg-white">
+    <article className="group overflow-hidden bg-white transition-shadow hover:shadow-[0_8px_28px_rgba(16,32,51,0.08)]">
       <Link href={href} className="block">
         <PhotoFrame vehicle={vehicle} lang={lang} />
-        <div className="space-y-2 p-4">
-          <p className="text-xs tracking-wide text-muted">
-            {text.stockNo} {vehicle.stockNo}
-          </p>
-          <h2 className="text-lg font-semibold leading-snug">
+        <div className="space-y-2 px-4 pb-5 pt-4">
+          <h2 className="text-[1.05rem] font-semibold leading-snug tracking-tight text-ink">
             {vehicle.maker} {vehicle.model}
-            {vehicle.trim ? ` ${vehicle.trim}` : ""}
+            {vehicle.trim ? (
+              <span className="mt-1 block text-sm font-medium text-muted">{vehicle.trim}</span>
+            ) : null}
           </h2>
           <p className="text-sm text-muted">
-            {vehicle.modelYear ?? text.unknown} · {formatKm(vehicle.mileageKm, lang)} · {vehicle.seats ?? text.unknown}
-            {lang === "ko" ? "인승" : " seats"}
+            {yearLabel} · {formatKm(vehicle.mileageKm, lang)} · {seatsLabel}
           </p>
-          <p className="pt-1 text-2xl font-semibold tabular-nums tracking-tight">{price.primary}</p>
+          <div className="flex flex-wrap items-end gap-2 pt-1">
+            <p className="text-2xl font-bold tabular-nums tracking-tight text-ink">{price.primary}</p>
+            {vehicle.status !== "available" ? (
+              <span className="mb-0.5 text-xs font-semibold text-muted">{statusLabel(vehicle.status, lang)}</span>
+            ) : null}
+          </div>
           {price.basis ? <p className="text-sm text-muted">{price.basis}</p> : null}
         </div>
       </Link>
