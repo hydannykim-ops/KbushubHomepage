@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { LogoSlot } from "@/components/media-slot";
 import type { Lang, SessionRole, TradeMode } from "@/lib/domain/types";
@@ -34,18 +34,18 @@ function LanguageMenu({
   switchLang: (next: Lang) => string;
   align?: "left" | "right";
 }) {
-  const [open, setOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDetailsElement>(null);
   const listId = useId();
   const current = langMeta[lang];
 
   useEffect(() => {
-    if (!open) return;
     function onPointerDown(event: MouseEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+      const node = rootRef.current;
+      if (!node?.open) return;
+      if (!node.contains(event.target as Node)) node.open = false;
     }
     function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape" && rootRef.current) rootRef.current.open = false;
     }
     document.addEventListener("mousedown", onPointerDown);
     document.addEventListener("keydown", onKey);
@@ -53,52 +53,74 @@ function LanguageMenu({
       document.removeEventListener("mousedown", onPointerDown);
       document.removeEventListener("keydown", onKey);
     };
-  }, [open]);
+  }, []);
 
   return (
-    <div className="relative" ref={rootRef}>
-      <button
-        type="button"
-        className="inline-flex items-center gap-1.5 border border-line px-2.5 py-1.5 text-sm text-foreground hover:border-ink"
+    <details className="relative" ref={rootRef} data-language-menu>
+      <summary
+        className="inline-flex cursor-pointer list-none items-center gap-1.5 border border-line px-2.5 py-1.5 text-sm text-foreground hover:border-ink [&::-webkit-details-marker]:hidden"
         aria-label={label}
-        aria-haspopup="listbox"
-        aria-expanded={open}
         aria-controls={listId}
-        onClick={() => setOpen((value) => !value)}
       >
         <GlobeIcon className="h-4 w-4 shrink-0" />
         <span className="max-w-[5.5rem] truncate font-medium">{current.native}</span>
-      </button>
-      {open ? (
-        <div
-          id={listId}
-          role="listbox"
-          aria-label={label}
-          className={`absolute top-[calc(100%+0.35rem)] z-50 max-h-56 w-56 overflow-y-auto border border-line bg-white py-1 shadow-[0_8px_24px_rgba(16,32,51,0.12)] ${
-            align === "right" ? "right-0" : "left-0"
-          }`}
-        >
-          {langs.map((code) => {
-            const meta = langMeta[code];
-            const active = code === lang;
-            return (
-              <Link
-                key={code}
-                role="option"
-                aria-selected={active}
-                href={switchLang(code)}
-                className={`flex items-baseline justify-between gap-3 px-3 py-2 text-sm hover:bg-[#f3f5f8] ${
-                  active ? "bg-[#f3f5f8] font-semibold text-ink" : "text-foreground"
-                }`}
-                onClick={() => setOpen(false)}
-              >
-                <span>{meta.native}</span>
-                <span className="shrink-0 text-[11px] text-muted">{meta.short}</span>
-              </Link>
-            );
-          })}
-        </div>
-      ) : null}
+      </summary>
+      <div
+        id={listId}
+        role="listbox"
+        aria-label={label}
+        className={`absolute top-[calc(100%+0.35rem)] z-50 max-h-56 w-56 overflow-y-auto border border-line bg-white py-1 shadow-[0_8px_24px_rgba(16,32,51,0.12)] ${
+          align === "right" ? "right-0" : "left-0"
+        }`}
+      >
+        {langs.map((code) => {
+          const meta = langMeta[code];
+          const active = code === lang;
+          return (
+            <Link
+              key={code}
+              role="option"
+              aria-selected={active}
+              href={switchLang(code)}
+              className={`flex items-baseline justify-between gap-3 px-3 py-2 text-sm hover:bg-[#f3f5f8] ${
+                active ? "bg-[#f3f5f8] font-semibold text-ink" : "text-foreground"
+              }`}
+              onClick={() => {
+                if (rootRef.current) rootRef.current.open = false;
+              }}
+            >
+              <span>{meta.native}</span>
+              <span className="shrink-0 text-[11px] text-muted">{meta.short}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </details>
+  );
+}
+
+function ModeToggle({
+  lang,
+  mode,
+  pathname,
+  text,
+  href,
+}: {
+  lang: Lang;
+  mode: TradeMode;
+  pathname: string;
+  text: ReturnType<typeof copy>;
+  href: (path: string, extra?: Record<string, string>) => string;
+}) {
+  const stripped = pathname.replace(new RegExp(`^/(${langPathPattern})`), "") || "";
+  return (
+    <div className="flex border border-line p-0.5 text-sm" role="group" aria-label={text.modeDomestic}>
+      <Link className={mode === "domestic" ? "bg-primary px-2 py-1 text-white" : "px-2 py-1"} href={href(stripped, { mode: "domestic" })}>
+        {text.modeDomestic}
+      </Link>
+      <Link className={mode === "export" ? "bg-primary px-2 py-1 text-white" : "px-2 py-1"} href={href(stripped, { mode: "export" })}>
+        {text.modeExport}
+      </Link>
     </div>
   );
 }
@@ -156,29 +178,9 @@ export function Header({
         [text.navSignup, href("/account/signup")],
       ] as const);
 
-  const bar = (
-    <div className="flex flex-wrap items-center gap-2">
-      <LanguageMenu lang={lang} label={text.language} switchLang={switchLang} />
-      <div className="flex border border-line p-0.5 text-sm" role="group" aria-label={text.modeDomestic}>
-        <Link
-          className={mode === "domestic" ? "bg-primary px-2 py-1 text-white" : "px-2 py-1"}
-          href={href(pathname.replace(new RegExp(`^/(${langPathPattern})`), "") || "", { mode: "domestic" })}
-        >
-          {text.modeDomestic}
-        </Link>
-        <Link
-          className={mode === "export" ? "bg-primary px-2 py-1 text-white" : "px-2 py-1"}
-          href={href(pathname.replace(new RegExp(`^/(${langPathPattern})`), "") || "", { mode: "export" })}
-        >
-          {text.modeExport}
-        </Link>
-      </div>
-    </div>
-  );
-
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-white">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
+    <header className="sticky top-0 z-40 overflow-visible border-b border-line bg-white">
+      <div className="relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
         <Link href={href("")} className="flex items-center gap-3 text-foreground">
           <LogoSlot label={text.mediaLogo} />
           <span>
@@ -199,11 +201,14 @@ export function Header({
               {label}
             </Link>
           ))}
-          {bar}
+          <div className="flex flex-wrap items-center gap-2">
+            <LanguageMenu lang={lang} label={text.language} switchLang={switchLang} />
+            <ModeToggle lang={lang} mode={mode} pathname={pathname} text={text} href={href} />
+          </div>
         </div>
         <details className="md:hidden">
           <summary className="cursor-pointer border border-line px-3 py-2 text-sm">{text.menu}</summary>
-          <div className="absolute inset-x-0 top-full border-b border-line bg-white px-4 py-4">
+          <div className="absolute inset-x-0 top-full z-50 border-b border-line bg-white px-4 py-4">
             <nav className="grid gap-3 text-sm" aria-label="main mobile">
               {links.map(([label, hrefValue]) => (
                 <Link key={label} href={hrefValue}>
@@ -216,7 +221,10 @@ export function Header({
                 </Link>
               ))}
             </nav>
-            <div className="mt-4">{bar}</div>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <LanguageMenu lang={lang} label={text.language} switchLang={switchLang} align="left" />
+              <ModeToggle lang={lang} mode={mode} pathname={pathname} text={text} href={href} />
+            </div>
           </div>
         </details>
       </div>
