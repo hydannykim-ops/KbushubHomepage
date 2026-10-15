@@ -398,3 +398,23 @@ test("maker model catalog stays inside the selected vehicle class", () => {
   assert.ok(medium.items.some((item) => item.stockNo === "DEMO-M-01"));
   assert.equal(medium.items.some((item) => item.model === "유니버스"), false);
 });
+
+test("maker series drill-down groups shared model lines", () => {
+  const hyundaiSeries = seriesForMaker("현대", "");
+  assert.ok(hyundaiSeries.includes("에어로타운"));
+  assert.ok(hyundaiSeries.includes("유니버스"));
+  assert.equal(hyundaiSeries.includes("에어로타운 롱바디"), false);
+  assert.equal(hyundaiSeries.includes("유니버스 노블"), false);
+
+  assert.equal(seriesHasVariants("현대", "에어로타운", "medium"), true);
+  assert.deepEqual([...modelsForSeries("현대", "에어로타운", "medium")], ["에어로타운", "에어로타운 롱바디"]);
+  assert.equal(seriesHasVariants("현대", "쏠라티", "county"), false);
+  assert.deepEqual([...modelsForSeries("현대", "유니버스", "large")], [
+    "유니버스",
+    "유니버스 노블",
+    "유니버스 노블EX",
+    "유니버스 프라임",
+    "유니버스 프라임EX",
+    "유니버스 럭셔리",
+  ]);
+});
