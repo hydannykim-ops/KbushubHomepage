@@ -5,13 +5,21 @@ import { MakerModelPicker } from "@/components/maker-model-picker";
 import type { Lang } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
 
-const field = "border border-line bg-white px-3 py-2 font-normal";
+const field = "border border-line bg-white px-3 py-2.5 font-normal";
 
-export function SignupForm({ lang, nextPath, defaultRole }: { lang: Lang; nextPath: string; defaultRole: "customer" | "dealer" }) {
+export function SignupForm({
+  lang,
+  nextPath,
+  role,
+}: {
+  lang: Lang;
+  nextPath: string;
+  role: "customer" | "dealer";
+}) {
   const text = copy(lang);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [role, setRole] = useState(defaultRole);
+  const dealer = role === "dealer";
 
   return (
     <form
@@ -38,50 +46,51 @@ export function SignupForm({ lang, nextPath, defaultRole }: { lang: Lang; nextPa
       }}
     >
       <input type="hidden" name="lang" value={lang} />
+      <input type="hidden" name="role" value={role} />
       {message ? (
         <p role="alert" className="border border-[#fecdd3] bg-[#fff1f2] px-3 py-2 text-sm">
           {message}
         </p>
       ) : null}
-      <fieldset className="grid gap-2">
-        <legend className="text-sm font-medium">{text.signupTitle}</legend>
-        <label className="flex items-start gap-2 border border-line bg-white p-3 text-sm">
-          <input type="radio" name="role" value="dealer" checked={role === "dealer"} onChange={() => setRole("dealer")} />
-          <span>
-            <span className="font-semibold">{text.roleDealer}</span>
-            <span className="mt-1 block text-muted">{text.roleDealerBody}</span>
-          </span>
-        </label>
-        <label className="flex items-start gap-2 border border-line bg-white p-3 text-sm">
-          <input type="radio" name="role" value="customer" checked={role === "customer"} onChange={() => setRole("customer")} />
-          <span>
-            <span className="font-semibold">{text.roleCustomer}</span>
-            <span className="mt-1 block text-muted">{text.roleCustomerBody}</span>
-          </span>
-        </label>
-      </fieldset>
+
+      {dealer ? (
+        <>
+          <label className="grid gap-1 text-sm font-medium">
+            {text.company} *
+            <input name="company" required className={field} autoComplete="organization" />
+          </label>
+          <label className="grid gap-1 text-sm font-medium">
+            {text.dealerName} *
+            <input name="name" required className={field} autoComplete="name" />
+          </label>
+          <label className="grid gap-1 text-sm font-medium">
+            {text.businessPhone}
+            <input name="phone" className={field} autoComplete="tel" />
+          </label>
+        </>
+      ) : (
+        <>
+          <label className="grid gap-1 text-sm font-medium">
+            {text.customerName} *
+            <input name="name" required className={field} autoComplete="name" />
+          </label>
+          <label className="grid gap-1 text-sm font-medium">
+            {text.contact}
+            <input name="phone" className={field} autoComplete="tel" />
+          </label>
+        </>
+      )}
+
       <label className="grid gap-1 text-sm font-medium">
-        {text.name}
-        <input name="name" required className={field} />
-      </label>
-      <label className="grid gap-1 text-sm font-medium">
-        {text.email}
+        {text.email} *
         <input name="email" type="email" required autoComplete="username" className={field} />
       </label>
       <label className="grid gap-1 text-sm font-medium">
-        {text.password}
+        {text.password} *
         <input name="password" type="password" required minLength={8} autoComplete="new-password" className={field} />
         <span className="font-normal text-muted">{text.passwordHint}</span>
       </label>
-      <label className="grid gap-1 text-sm font-medium">
-        {text.contact}
-        <input name="phone" className={field} />
-      </label>
-      <label className="grid gap-1 text-sm font-medium">
-        {text.company}
-        {role === "dealer" ? " *" : ""}
-        <input name="company" required={role === "dealer"} className={field} />
-      </label>
+
       <label className="flex items-start gap-2 text-sm">
         <input name="consent" type="checkbox" value="true" required className="mt-1" />
         <span>{text.consent}</span>
@@ -91,7 +100,7 @@ export function SignupForm({ lang, nextPath, defaultRole }: { lang: Lang; nextPa
         <input name="companyWebsite" tabIndex={-1} autoComplete="off" />
       </label>
       <button disabled={pending} className="bg-primary px-4 py-3 text-sm font-semibold text-white disabled:opacity-60">
-        {text.navSignup}
+        {dealer ? text.signupDealerCta : text.signupCustomerCta}
       </button>
     </form>
   );

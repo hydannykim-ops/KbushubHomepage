@@ -824,7 +824,7 @@ export function parseSignup(body: unknown, lang: Lang): { ok: true; data: Signup
       email: parsed.data.email.trim().toLowerCase(),
       password: parsed.data.password,
       phone: parsed.data.phone?.trim() || null,
-      company: parsed.data.role === "dealer" ? parsed.data.company?.trim() || null : parsed.data.company?.trim() || null,
+      company: parsed.data.role === "dealer" ? parsed.data.company?.trim() || null : null,
       consent: true,
       companyWebsite: "",
     },
