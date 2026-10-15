@@ -23,7 +23,18 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: "Noto Sans KR", sans-serif;
+  font-family: "Noto Sans KR", "Noto Sans", "Noto Sans Khmer", sans-serif;
+}
+
+html[lang="km"] body {
+  font-family: "Noto Sans Khmer", "Noto Sans", sans-serif;
+}
+
+html[lang="mn"] body,
+html[lang="es"] body,
+html[lang="fr"] body,
+html[lang="en"] body {
+  font-family: "Noto Sans", "Noto Sans KR", sans-serif;
 }
 
 input,

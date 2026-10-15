@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { MediaSlot } from "@/components/media-slot";
 import type { Lang, PhotoCategory, VehiclePhoto } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
+import { contentFieldLang } from "@/lib/i18n/langs";
 import { photoCategoryList, photoLabel } from "@/lib/labels";
 
 const categories: Array<PhotoCategory | "all"> = ["all", ...photoCategoryList];
@@ -44,12 +45,12 @@ export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: 
           <div className="relative aspect-[16/10] bg-[#f3f5f8]">
             {current.placeholder && current.path ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={current.path} alt={lang === "ko" ? current.altKo : current.altEn} className="h-full w-full object-cover" />
+              <img src={current.path} alt={contentFieldLang(lang) === "ko" ? current.altKo : current.altEn} className="h-full w-full object-cover" />
             ) : current.placeholder ? (
               <MediaSlot label={photoLabel(current.category, lang)} hint={text.mediaCoverHint} />
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={`/api/media/photo/${current.id}`} alt={lang === "ko" ? current.altKo : current.altEn} className="h-full w-full object-cover" />
+              <img src={`/api/media/photo/${current.id}`} alt={contentFieldLang(lang) === "ko" ? current.altKo : current.altEn} className="h-full w-full object-cover" />
             )}
           </div>
           <figcaption className="flex items-center justify-between gap-3 px-3 py-2 text-sm text-muted">

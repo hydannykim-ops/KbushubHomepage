@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { LogoSlot } from "@/components/media-slot";
 import type { Lang, SessionRole, TradeMode } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
+import { langs, langMeta, langPathPattern } from "@/lib/i18n/langs";
 
 export function Header({
   lang,
@@ -61,19 +62,29 @@ export function Header({
 
   const bar = (
     <div className="flex flex-wrap items-center gap-2">
-      <div className="flex border border-line p-0.5 text-sm" role="group" aria-label={text.language}>
-        <Link className={lang === "ko" ? "bg-ink px-2 py-1 text-white" : "px-2 py-1"} href={switchLang("ko")}>
-          KO
-        </Link>
-        <Link className={lang === "en" ? "bg-ink px-2 py-1 text-white" : "px-2 py-1"} href={switchLang("en")}>
-          EN
-        </Link>
+      <div className="flex flex-wrap border border-line p-0.5 text-sm" role="group" aria-label={text.language}>
+        {langs.map((code) => (
+          <Link
+            key={code}
+            className={lang === code ? "bg-ink px-2 py-1 text-white" : "px-2 py-1"}
+            href={switchLang(code)}
+            title={`${langMeta[code].native} · ${langMeta[code].markets}`}
+          >
+            {langMeta[code].short}
+          </Link>
+        ))}
       </div>
       <div className="flex border border-line p-0.5 text-sm" role="group" aria-label={text.modeDomestic}>
-        <Link className={mode === "domestic" ? "bg-primary px-2 py-1 text-white" : "px-2 py-1"} href={href(pathname.replace(/^\/(ko|en)/, "") || "", { mode: "domestic" })}>
+        <Link
+          className={mode === "domestic" ? "bg-primary px-2 py-1 text-white" : "px-2 py-1"}
+          href={href(pathname.replace(new RegExp(`^/(${langPathPattern})`), "") || "", { mode: "domestic" })}
+        >
           {text.modeDomestic}
         </Link>
-        <Link className={mode === "export" ? "bg-primary px-2 py-1 text-white" : "px-2 py-1"} href={href(pathname.replace(/^\/(ko|en)/, "") || "", { mode: "export" })}>
+        <Link
+          className={mode === "export" ? "bg-primary px-2 py-1 text-white" : "px-2 py-1"}
+          href={href(pathname.replace(new RegExp(`^/(${langPathPattern})`), "") || "", { mode: "export" })}
+        >
           {text.modeExport}
         </Link>
       </div>
@@ -160,6 +171,7 @@ export function Footer({
         </div>
         <div className="leading-6 text-white/70">
           <p className="font-medium text-white">{company.name}</p>
+          <p className="text-white/70">{lang === "ko" ? "사업자등록번호 445-08-03206" : "Business Reg. No. 445-08-03206"}</p>
           {company.address ? <p>{company.address}</p> : null}
           {company.phone ? <p>{company.phone}</p> : null}
           {company.email ? <p>{company.email}</p> : null}

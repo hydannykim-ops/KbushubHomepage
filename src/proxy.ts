@@ -11,7 +11,7 @@ export async function proxy(request: NextRequest) {
   }
 
   const requestHeaders = new Headers(request.headers);
-  const lang = pathname.match(/^\/(ko|en)(\/|$)/)?.[1] ?? "ko";
+  const lang = pathname.match(/^\/(ko|en|es|fr|km|mn)(\/|$)/)?.[1] ?? "ko";
   requestHeaders.set("x-kb-lang", lang);
   const headerMode = searchParams.get("mode");
   const headerRef = normalizeReferralCode(searchParams.get("ref"));

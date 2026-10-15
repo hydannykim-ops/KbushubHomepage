@@ -3,6 +3,7 @@
 import { useEffect, useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Lang, TradeMode, VehicleClass, VehicleQuery } from "@/lib/domain/types";
+import { localeTag } from "@/lib/i18n/langs";
 import { copy } from "@/lib/i18n";
 import { fuelLabel, statusLabel, transmissionLabel } from "@/lib/labels";
 
@@ -87,12 +88,12 @@ export function MarketFilterBar({
     ? `${query.yearMin ?? ""}${query.yearMin != null || query.yearMax != null ? "~" : ""}${query.yearMax ?? ""}`.replace(/^~$/, text.year)
     : text.year;
   const mileageLabel = mileageActive
-    ? `~${Number(query.mileageMax).toLocaleString(lang === "ko" ? "ko-KR" : "en-US")} km`
+    ? `~${Number(query.mileageMax).toLocaleString(localeTag(lang))} km`
     : text.mileage;
   const priceLabel = priceActive
-    ? `${query.priceMin != null ? Number(query.priceMin).toLocaleString(lang === "ko" ? "ko-KR" : "en-US") : ""}${
+    ? `${query.priceMin != null ? Number(query.priceMin).toLocaleString(localeTag(lang)) : ""}${
         query.priceMin != null || query.priceMax != null ? "~" : ""
-      }${query.priceMax != null ? Number(query.priceMax).toLocaleString(lang === "ko" ? "ko-KR" : "en-US") : ""}`.replace(/^~$/, text.price)
+      }${query.priceMax != null ? Number(query.priceMax).toLocaleString(localeTag(lang)) : ""}`.replace(/^~$/, text.price)
     : text.price;
 
   const classLabelMap: Record<VehicleClass | "", string> = {

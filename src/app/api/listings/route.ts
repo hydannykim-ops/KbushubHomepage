@@ -6,6 +6,7 @@ import { parseDealerListing } from "@/lib/domain/validation";
 import { crossOrigin, resultResponse } from "@/lib/http/form";
 import { allowRequest, clientKey } from "@/lib/http/rate-limit";
 import type { ImageType } from "@/lib/domain/uploads";
+import { langFromBody } from "@/lib/request-context";
 
 export const runtime = "nodejs";
 
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
   const form = await request.formData();
   const body: Record<string, unknown> = {};
   for (const [key, value] of form.entries()) if (typeof value === "string") body[key] = value;
-  const lang = body.lang === "en" ? "en" : "ko";
+  const lang = langFromBody(body.lang);
   const back = `/${lang}/sell`;
   if (!session || (session.role !== "dealer" && session.role !== "customer")) {
     return resultResponse(request, { status: 401, body: { ok: false, code: "login_failed" } }, `/${lang}/account/login`);

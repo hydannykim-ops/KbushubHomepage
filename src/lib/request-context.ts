@@ -2,9 +2,15 @@ import "server-only";
 import { cookies, headers } from "next/headers";
 import { normalizeReferralCode, referralForInquiry } from "./domain/referral";
 import type { Lang, TradeMode } from "./domain/types";
+import { isLang } from "./i18n/langs";
 
 export function parseLang(value: string | undefined): Lang | null {
-  return value === "ko" || value === "en" ? value : null;
+  return isLang(value) ? value : null;
+}
+
+/** Form/API body lang with Korean fallback. Safe for client-less API routes. */
+export function langFromBody(value: unknown): Lang {
+  return isLang(typeof value === "string" ? value : null) ? (value as Lang) : "ko";
 }
 
 export function parseMode(value: string | null | undefined): TradeMode | null {

@@ -1,6 +1,8 @@
 import type { Lang, PublicVehicle, Quote, QuoteLineKey, TradeMode, VehicleInternal } from "./types";
+import { contentFieldLang, localeTag } from "../i18n/langs";
+import { copy } from "../i18n";
 
-const unknownText = (lang: Lang) => (lang === "ko" ? "미확인" : "Not confirmed");
+const unknownText = (lang: Lang) => copy(lang).unknown;
 
 export function unknownLabel(lang: Lang): string {
   return unknownText(lang);
@@ -12,7 +14,7 @@ export function showText(value: string | null | undefined, lang: Lang): string {
 }
 
 export function formatMoney(amount: number, currency: string, lang: Lang): string {
-  const locale = lang === "ko" ? "ko-KR" : "en-US";
+  const locale = localeTag(lang);
   try {
     return new Intl.NumberFormat(locale, {
       style: "currency",
@@ -26,7 +28,7 @@ export function formatMoney(amount: number, currency: string, lang: Lang): strin
 
 export function formatKm(km: number | null, lang: Lang): string {
   if (km == null) return unknownText(lang);
-  const locale = lang === "ko" ? "ko-KR" : "en-US";
+  const locale = localeTag(lang);
   return `${km.toLocaleString(locale)} km`;
 }
 
@@ -36,21 +38,40 @@ export type PriceView = {
   ask: boolean;
 };
 
+const askPrice: Record<Lang, string> = {
+  ko: "가격 문의",
+  en: "Ask for price",
+  es: "Consultar precio",
+  fr: "Prix sur demande",
+  km: "សួរតម្លៃ",
+  mn: "Үнэ асуух",
+};
+
+const domesticBasis: Record<Lang, string> = {
+  ko: "국내 판매가",
+  en: "Domestic price",
+  es: "Precio nacional",
+  fr: "Prix national",
+  km: "តម្លៃក្នុងស្រុក",
+  mn: "Дотоод үнэ",
+};
+
 export function priceView(vehicle: PublicVehicle, mode: TradeMode, lang: Lang): PriceView {
   if (mode === "domestic") {
     if (vehicle.domesticPriceKrw == null) {
-      return { primary: lang === "ko" ? "가격 문의" : "Ask for price", basis: null, ask: true };
+      return { primary: askPrice[lang], basis: null, ask: true };
     }
     return {
       primary: formatMoney(vehicle.domesticPriceKrw, "KRW", lang),
-      basis: lang === "ko" ? "국내 판매가" : "Domestic price",
+      basis: domesticBasis[lang],
       ask: false,
     };
   }
   if (vehicle.exportPriceAmount == null || !vehicle.exportPriceCurrency) {
-    return { primary: lang === "ko" ? "가격 문의" : "Ask for price", basis: null, ask: true };
+    return { primary: askPrice[lang], basis: null, ask: true };
   }
-  const terms = lang === "ko" ? vehicle.exportPriceTermsKo : vehicle.exportPriceTermsEn;
+  const field = contentFieldLang(lang);
+  const terms = field === "ko" ? vehicle.exportPriceTermsKo : vehicle.exportPriceTermsEn;
   return {
     primary: formatMoney(vehicle.exportPriceAmount, vehicle.exportPriceCurrency, lang),
     basis: terms?.trim()

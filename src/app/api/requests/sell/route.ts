@@ -4,7 +4,7 @@ import { checkImage, MAX_SELL_PHOTOS } from "@/lib/domain/uploads";
 import { parseSell } from "@/lib/domain/validation";
 import { crossOrigin, resultResponse } from "@/lib/http/form";
 import { allowRequest, clientKey } from "@/lib/http/rate-limit";
-import { referralFromRequest } from "@/lib/request-context";
+import { langFromBody, referralFromRequest } from "@/lib/request-context";
 import { openGate } from "@/lib/server/gate";
 
 export const runtime = "nodejs";
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   const form = await request.formData();
   const body: Record<string, unknown> = {};
   for (const [key, value] of form.entries()) if (typeof value === "string") body[key] = value;
-  const lang = body.lang === "en" ? "en" : "ko";
+  const lang = langFromBody(body.lang);
   const parsed = parseSell(body, lang);
   if (!parsed.ok) return resultResponse(request, { status: 400, body: { ok: false, code: "invalid", errors: parsed.errors } }, `/${lang}/sell`);
   const files = form.getAll("photos").filter((item): item is File => item instanceof File && item.size > 0);

@@ -1,4 +1,5 @@
 import type { Fuel, InquiryStatus, Lang, PhotoCategory, SaleStatus, Steering, Transmission, VehicleClass } from "./domain/types";
+import { contentFieldLang } from "./i18n/langs";
 
 const ko = {
   status: { available: "판매 중", reserved: "예약 중", sold: "판매 완료", hidden: "비공개", review: "검토 중" },
@@ -22,10 +23,56 @@ const en = {
   longBody: { yes: "Long body", no: "Short body", unknown: "Not confirmed" },
 } as const;
 
+const es = {
+  status: { available: "Disponible", reserved: "Reservado", sold: "Vendido", hidden: "Oculto", review: "En revisión" },
+  class: { county: "County", medium: "Bus mediano", large: "Bus grande" },
+  transmission: { manual: "Manual", automatic: "Automática", unknown: "No confirmado" },
+  fuel: { diesel: "Diésel", gasoline: "Gasolina", lpg: "GLP", cng: "GNC", electric: "Eléctrico", hybrid: "Híbrido", unknown: "No confirmado" },
+  steering: { lhd: "Volante a la izquierda", rhd: "Volante a la derecha", unknown: "No confirmado" },
+  photo: { front: "Frontal", front_side: "Tres cuartos delantera", rear: "Trasera", exterior: "Exterior", interior: "Interior y asientos", dashboard: "Tablero", engine: "Motor y bajos", tires: "Llantas", defect: "Defectos" },
+  inquiry: { new: "Nueva", consulting: "En consulta", quoted: "Cotización enviada", negotiating: "Negociando", contracted: "Contrato", closed: "Cerrada" },
+  longBody: { yes: "Carrocería larga", no: "Carrocería corta", unknown: "No confirmado" },
+} as const;
+
+const fr = {
+  status: { available: "Disponible", reserved: "Réservé", sold: "Vendu", hidden: "Masqué", review: "En révision" },
+  class: { county: "County", medium: "Bus moyen", large: "Grand bus" },
+  transmission: { manual: "Manuelle", automatic: "Automatique", unknown: "Non confirmé" },
+  fuel: { diesel: "Diesel", gasoline: "Essence", lpg: "GPL", cng: "GNC", electric: "Électrique", hybrid: "Hybride", unknown: "Non confirmé" },
+  steering: { lhd: "Conduite à gauche", rhd: "Conduite à droite", unknown: "Non confirmé" },
+  photo: { front: "Avant", front_side: "Trois-quarts avant", rear: "Arrière", exterior: "Extérieur", interior: "Intérieur et sièges", dashboard: "Tableau de bord", engine: "Moteur et dessous", tires: "Pneus", defect: "Défauts" },
+  inquiry: { new: "Nouvelle", consulting: "En consultation", quoted: "Devis envoyé", negotiating: "Négociation", contracted: "Contrat", closed: "Clôturée" },
+  longBody: { yes: "Carrosserie longue", no: "Carrosserie courte", unknown: "Non confirmé" },
+} as const;
+
+const km = {
+  status: { available: "កំពុងលក់", reserved: "បានកក់", sold: "បានលក់", hidden: "លាក់", review: "កំពុងពិនិត្យ" },
+  class: { county: "County", medium: "ឡានក្រុងមធ្យម", large: "ឡានក្រុងធំ" },
+  transmission: { manual: "ដៃ", automatic: "ស្វ័យប្រវត្តិ", unknown: "មិនបានបញ្ជាក់" },
+  fuel: { diesel: "ម៉ាស៊ូត", gasoline: "សាំង", lpg: "LPG", cng: "CNG", electric: "អគ្គិសនី", hybrid: "ហាយប្រ៊ីត", unknown: "មិនបានបញ្ជាក់" },
+  steering: { lhd: "ចង្កូតឆ្វេង", rhd: "ចង្កូតស្តាំ", unknown: "មិនបានបញ្ជាក់" },
+  photo: { front: "ខាងមុខ", front_side: "ខាងមុខបីភាគបួន", rear: "ខាងក្រោយ", exterior: "ខាងក្រៅ", interior: "ខាងក្នុង និងកៅអី", dashboard: "ផ្ទាំងគ្រប់គ្រង", engine: "បន្ទប់ម៉ាស៊ីន និងផ្នែកក្រោម", tires: "សំបកកង់", defect: "ពិការភាព" },
+  inquiry: { new: "ថ្មី", consulting: "កំពុងពិគ្រោះ", quoted: "បានផ្ញើសម្រង់", negotiating: "កំពុងចរចា", contracted: "កិច្ចសន្យា", closed: "បិទ" },
+  longBody: { yes: "តួវែង", no: "តួខ្លី", unknown: "មិនបានបញ្ជាក់" },
+} as const;
+
+const mn = {
+  status: { available: "Зарагдаж байна", reserved: "Захиалсан", sold: "Зарагдсан", hidden: "Нуугдсан", review: "Шалгагдаж байна" },
+  class: { county: "County", medium: "Дунд автобус", large: "Том автобус" },
+  transmission: { manual: "Механик", automatic: "Автомат", unknown: "Баталгаажаагүй" },
+  fuel: { diesel: "Дизель", gasoline: "Бензин", lpg: "LPG", cng: "CNG", electric: "Цахилгаан", hybrid: "Гибрид", unknown: "Баталгаажаагүй" },
+  steering: { lhd: "Зүүн жолоо", rhd: "Баруун жолоо", unknown: "Баталгаажаагүй" },
+  photo: { front: "Урд", front_side: "Урд гурван дөрөвний нэг", rear: "Ард", exterior: "Гадна", interior: "Дотор ба суудал", dashboard: "Самбар", engine: "Хөдөлгүүр ба доод хэсэг", tires: "Дугуй", defect: "Гэмтэл" },
+  inquiry: { new: "Шинэ", consulting: "Зөвлөгөөнд", quoted: "Үнийн санал илгээсэн", negotiating: "Хэлэлцэж байна", contracted: "Гэрээ", closed: "Хаагдсан" },
+  longBody: { yes: "Урт их бие", no: "Богино их бие", unknown: "Баталгаажаагүй" },
+} as const;
+
+const catalog = { ko, en, es, fr, km, mn } as const;
+
 export const photoCategoryList: PhotoCategory[] = ["front", "front_side", "rear", "exterior", "interior", "dashboard", "engine", "tires", "defect"];
 
 export function labels(lang: Lang) {
-  return lang === "en" ? en : ko;
+  return catalog[lang] ?? catalog[contentFieldLang(lang)];
 }
 
 export function statusLabel(status: SaleStatus, lang: Lang) {

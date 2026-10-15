@@ -1,6 +1,6 @@
 /** Korean bus makers and models used for selection UI (MyBus-style lists). */
 
-import type { VehicleClass } from "./types";
+import type { Lang, VehicleClass } from "./types";
 
 export const busMakers = ["현대", "기아", "대우", "벤츠", "선롱버스", "수입버스", "기타"] as const;
 
@@ -110,9 +110,9 @@ export function makersForClass(vehicleClass: VehicleClass | "" = ""): readonly B
   return busMakers.filter((maker) => modelsForMaker(maker, vehicleClass).some((model) => model !== "기타" || busModelsByMaker[maker].length === 1));
 }
 
-export function makerLabel(maker: string, lang: "ko" | "en"): string {
+export function makerLabel(maker: string, lang: Lang): string {
   if (!isBusMaker(maker)) return maker;
-  return lang === "en" ? makerEn[maker] : maker;
+  return lang === "ko" ? maker : makerEn[maker];
 }
 
 export function knownMakerModel(maker: string, model: string, vehicleClass: VehicleClass | "" = ""): boolean {

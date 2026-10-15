@@ -6,6 +6,7 @@ import { MediaSlot } from "@/components/media-slot";
 import { Consent, EnhanceForm, Field, Honeypot, SubmitBanner } from "@/components/forms";
 import { priceView, showText } from "@/lib/domain/money";
 import { copy } from "@/lib/i18n";
+import { contentFieldLang } from "@/lib/i18n/langs";
 import { statusLabel } from "@/lib/labels";
 import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
 import { loadSite } from "@/lib/site-load";
@@ -23,7 +24,7 @@ export async function generateMetadata({
   const vehicle = await site.repo.getPublicByStockNo(stockNo);
   if (!vehicle) return { title: stockNo, robots: { index: false, follow: false } };
   const title = `${vehicle.maker} ${vehicle.model} ${vehicle.modelYear ?? ""} ${vehicle.stockNo}`.replace(/\s+/g, " ").trim();
-  const description = (lang === "ko" ? vehicle.descriptionKo : vehicle.descriptionEn) || title;
+  const description = (contentFieldLang(lang) === "ko" ? vehicle.descriptionKo : vehicle.descriptionEn) || title;
   const cover = vehicle.photos.find((photo) => photo.isCover && !photo.placeholder);
   return {
     title,
@@ -76,9 +77,10 @@ export default async function VehicleDetailPage({
     referralCode: ctx.ref,
   });
   const sold = vehicle.status === "sold";
-  const description = lang === "ko" ? vehicle.descriptionKo : vehicle.descriptionEn;
-  const maintenance = lang === "ko" ? vehicle.maintenanceKo : vehicle.maintenanceEn;
-  const defects = lang === "ko" ? vehicle.defectsKo : vehicle.defectsEn;
+  const field = contentFieldLang(lang);
+  const description = field === "ko" ? vehicle.descriptionKo : vehicle.descriptionEn;
+  const maintenance = field === "ko" ? vehicle.maintenanceKo : vehicle.maintenanceEn;
+  const defects = field === "ko" ? vehicle.defectsKo : vehicle.defectsEn;
   const video = vehicle.videoUrl ? youtubeId(vehicle.videoUrl) : null;
   const kind = ctx.mode === "export" ? "quote" : "purchase";
 

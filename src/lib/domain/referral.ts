@@ -1,3 +1,5 @@
+import type { Lang } from "./types";
+
 const CODE = /^[A-Z0-9]{4,16}$/;
 
 export function normalizeReferralCode(input: string | null | undefined): string | null {
@@ -30,7 +32,7 @@ export function generateReferralCode(randomByte: () => number = () => Math.floor
   return code;
 }
 
-export function whatsappMessage(input: { lang: "ko" | "en"; stockNo: string; referralCode: string | null }): string {
+export function whatsappMessage(input: { lang: Lang; stockNo: string; referralCode: string | null }): string {
   if (input.lang === "ko") {
     return `K-BUS HUB 수출 문의\n매물번호: ${input.stockNo}\n추천코드: ${input.referralCode ?? "없음"}`;
   }

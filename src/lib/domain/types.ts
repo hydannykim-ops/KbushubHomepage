@@ -1,4 +1,4 @@
-export type Lang = "ko" | "en";
+export type Lang = "ko" | "en" | "es" | "fr" | "km" | "mn";
 export type TradeMode = "domestic" | "export";
 export type SaleStatus = "available" | "reserved" | "sold" | "hidden" | "review";
 export type VehicleClass = "county" | "medium" | "large";

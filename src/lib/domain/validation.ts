@@ -23,7 +23,7 @@ const photoCategories = ["front", "front_side", "rear", "exterior", "interior", 
 const inquiryKinds = ["purchase", "visit", "quote", "video", "general"] as const;
 const inquiryStatuses = ["new", "consulting", "quoted", "negotiating", "contracted", "closed"] as const;
 const modes = ["domestic", "export"] as const;
-const langs = ["ko", "en"] as const;
+const langs = ["ko", "en", "es", "fr", "km", "mn"] as const;
 const moneyStatuses = ["amount", "zero", "unknown"] as const;
 const currencies = ["KRW", "USD", "EUR", "JPY", "CNY", "AED"] as const;
 

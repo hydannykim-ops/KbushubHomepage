@@ -4,6 +4,7 @@ import { GalleryClient } from "./gallery-client";
 import { formatKm, priceView, showText } from "@/lib/domain/money";
 import type { Lang, PublicVehicle, TradeMode, VehiclePhoto, VehicleQuery } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
+import { contentFieldLang, localeTag } from "@/lib/i18n/langs";
 import { classLabel, fuelLabel, longBodyLabel, statusLabel, steeringLabel, transmissionLabel } from "@/lib/labels";
 import { whatsappHref, whatsappMessage } from "@/lib/domain/referral";
 
@@ -39,7 +40,7 @@ function PhotoFrame({ vehicle, lang }: { vehicle: PublicVehicle; lang: Lang }) {
       {src ? (
         // Demo samples are public files; uploaded photos go through the media route.
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt={lang === "ko" ? cover!.altKo : cover!.altEn} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+        <img src={src} alt={contentFieldLang(lang) === "ko" ? cover!.altKo : cover!.altEn} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
       ) : (
         <MediaSlot label={text.mediaCover} hint={text.mediaCoverHint} />
       )}
@@ -123,11 +124,11 @@ export function SpecTable({ vehicle, lang }: { vehicle: PublicVehicle; lang: Lan
     [text.transmission, transmissionLabel(vehicle.transmission, lang)],
     [text.fuel, fuelLabel(vehicle.fuel, lang)],
     [text.engine, showText(vehicle.engineModel, lang)],
-    [text.displacement, vehicle.displacementCc ? `${vehicle.displacementCc.toLocaleString(lang === "ko" ? "ko-KR" : "en-US")} cc` : text.unknown],
+    [text.displacement, vehicle.displacementCc ? `${vehicle.displacementCc.toLocaleString(localeTag(lang))} cc` : text.unknown],
     [text.steering, steeringLabel(vehicle.steering, lang)],
     [text.longBody, longBodyLabel(vehicle.longBody, lang)],
     [text.dimensions, dimension ?? text.unknown],
-    [text.previousUse, showText(lang === "ko" ? vehicle.previousUseKo : vehicle.previousUseEn, lang)],
+    [text.previousUse, showText(contentFieldLang(lang) === "ko" ? vehicle.previousUseKo : vehicle.previousUseEn, lang)],
     [text.location, showText(vehicle.location, lang)],
     [text.photographed, showText(vehicle.photographedOn, lang)],
     [text.stockChecked, showText(vehicle.stockCheckedOn, lang)],

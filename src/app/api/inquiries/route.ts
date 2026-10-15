@@ -3,7 +3,7 @@ import { parseInquiry } from "@/lib/domain/validation";
 import { allowRequest, clientKey } from "@/lib/http/rate-limit";
 import { crossOrigin, readBody, resultResponse } from "@/lib/http/form";
 import { getRepository } from "@/lib/data/repository";
-import { referralFromRequest } from "@/lib/request-context";
+import { langFromBody, referralFromRequest } from "@/lib/request-context";
 import { openGate } from "@/lib/server/gate";
 
 export const runtime = "nodejs";
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     return resultResponse(request, { status: 429, body: { ok: false, code: "rate_limited" } }, fallback);
   }
   const body = await readBody(request);
-  const lang = body.lang === "en" ? "en" : "ko";
+  const lang = langFromBody(body.lang);
   const parsed = parseInquiry(body, lang);
   if (!parsed.ok) {
     return resultResponse(request, { status: 400, body: { ok: false, code: "invalid", errors: parsed.errors } }, `/${lang}/inquiry`);
