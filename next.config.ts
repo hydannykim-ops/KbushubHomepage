@@ -12,6 +12,8 @@ if (supabaseUrl) {
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Cloud Agent / port-forward clients often hit 127.0.0.1 or a tunnel host.
+  allowedDevOrigins: ["127.0.0.1", "localhost", "*.cursor.sh", "*.cursorapi.com"],
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: supabaseHost

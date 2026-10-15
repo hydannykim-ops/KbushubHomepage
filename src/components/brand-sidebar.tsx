@@ -171,7 +171,16 @@ export function BrandSidebar({
                 const lone = modelsForSeries(selectedMaker, series, vehicleClass)[0] ?? series;
                 if (multi) {
                   return (
-                    <button key={series} type="button" className={optionClass(false)} onClick={() => setDraftSeries(series)}>
+                    <button
+                      key={series}
+                      type="button"
+                      data-series={series}
+                      className={optionClass(false)}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        setDraftSeries(series);
+                      }}
+                    >
                       <span>{series}</span>
                       <span aria-hidden className="text-[10px] text-muted">
                         ›

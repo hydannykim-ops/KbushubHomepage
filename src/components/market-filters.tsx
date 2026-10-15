@@ -67,16 +67,20 @@ export function MarketFilterBar({
 
   useEffect(() => {
     if (!openKey) return;
-    function onPointerDown(event: MouseEvent) {
+    function onPointerDown(event: PointerEvent) {
       if (!rootRef.current?.contains(event.target as Node)) setOpenKey(null);
     }
     function onKey(event: KeyboardEvent) {
       if (event.key === "Escape") setOpenKey(null);
     }
-    document.addEventListener("mousedown", onPointerDown);
+    // Bind after this open click finishes so the opening click does not instantly close.
+    const timer = window.setTimeout(() => {
+      document.addEventListener("pointerdown", onPointerDown);
+    }, 0);
     document.addEventListener("keydown", onKey);
     return () => {
-      document.removeEventListener("mousedown", onPointerDown);
+      window.clearTimeout(timer);
+      document.removeEventListener("pointerdown", onPointerDown);
       document.removeEventListener("keydown", onKey);
     };
   }, [openKey]);
