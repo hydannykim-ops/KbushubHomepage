@@ -62,7 +62,7 @@ export default async function VehiclesPage({
   }
 
   return (
-    <div className="border-t border-line bg-[#f6f7f9]">
+    <div className="border-t border-[#d8dde6]/80 bg-[#f3f5f8]">
       <div className="mx-auto grid max-w-7xl lg:grid-cols-[15.5rem_minmax(0,1fr)]">
         <BrandSidebar lang={lang} ctx={ctx} query={query} counts={counts} />
 
@@ -71,19 +71,19 @@ export default async function VehiclesPage({
             <h1 className="text-2xl font-bold tracking-tight text-ink md:text-3xl">{text.navVehicles}</h1>
           </div>
 
-          <div className="mb-4 overflow-x-auto pb-1">
+          <div className="mb-5">
             <MarketFilterBar lang={lang} ctx={ctx} query={query} />
           </div>
 
           {result.ignoredPriceFilter ? (
-            <p className="mb-4 bg-white px-4 py-3 text-sm text-muted" role="status">
+            <p className="mb-4 text-sm text-muted" role="status">
               {text.priceIgnored}
             </p>
           ) : null}
 
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <p className="text-lg font-bold tabular-nums text-ink">{text.resultCount.replace("{n}", String(result.items.length))}</p>
-            <div className="flex gap-1 overflow-x-auto text-sm">
+            <div className="flex flex-wrap gap-1 text-sm">
               {(["newest", "year_desc", "year_asc", "price_asc", "price_desc", "mileage_asc"] as const).map((sort) => {
                 const active = query.sort === sort || (!query.sort && sort === "newest");
                 return (
@@ -101,28 +101,28 @@ export default async function VehiclesPage({
           </div>
 
           {(query.maker || query.model || selectedClass) && (
-            <div className="mb-4 flex flex-wrap gap-2 text-sm">
+            <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
               {selectedClass ? (
-                <span className="rounded-full bg-white px-3 py-1 text-muted ring-1 ring-line">
+                <span className="text-muted">
                   {selectedClass === "county" ? text.classCounty : selectedClass === "medium" ? text.classMedium : text.classLarge}
                 </span>
               ) : null}
-              {query.maker ? <span className="rounded-full bg-white px-3 py-1 text-muted ring-1 ring-line">{query.maker}</span> : null}
-              {query.model ? <span className="rounded-full bg-white px-3 py-1 text-muted ring-1 ring-line">{query.model}</span> : null}
-              <Link href={hrefTo(lang, "/vehicles", ctx)} className="px-2 py-1 font-medium text-muted hover:text-ink">
+              {query.maker ? <span className="text-muted">{query.maker}</span> : null}
+              {query.model ? <span className="text-muted">{query.model}</span> : null}
+              <Link href={hrefTo(lang, "/vehicles", ctx)} className="font-medium text-muted hover:text-ink">
                 {text.reset}
               </Link>
             </div>
           )}
 
           {result.items.length ? (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
               {result.items.map((vehicle) => (
                 <VehicleCard key={vehicle.id} vehicle={vehicle} lang={lang} mode={ctx.mode} href={hrefTo(lang, `/vehicles/${vehicle.stockNo}`, ctx)} />
               ))}
             </div>
           ) : (
-            <p className="bg-white px-6 py-16 text-center text-muted">{text.noResults}</p>
+            <p className="py-16 text-center text-muted">{text.noResults}</p>
           )}
         </div>
       </div>

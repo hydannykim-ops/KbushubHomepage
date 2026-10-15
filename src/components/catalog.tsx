@@ -68,10 +68,10 @@ export function VehicleCard({
   const seatsLabel =
     vehicle.seats != null ? `${vehicle.seats}${lang === "ko" ? text.seatsShort : ` ${text.seatsShort}`}` : text.unknown;
   return (
-    <article className="group overflow-hidden bg-white transition-shadow hover:shadow-[0_8px_28px_rgba(16,32,51,0.08)]">
+    <article className="group overflow-hidden">
       <Link href={href} className="block">
         <PhotoFrame vehicle={vehicle} lang={lang} />
-        <div className="space-y-2 px-4 pb-5 pt-4">
+        <div className="space-y-2 pt-3">
           <h2 className="text-[1.05rem] font-semibold leading-snug tracking-tight text-ink">
             {vehicle.maker} {vehicle.model}
             {vehicle.trim ? (
@@ -81,7 +81,7 @@ export function VehicleCard({
           <p className="text-sm text-muted">
             {yearLabel} · {formatKm(vehicle.mileageKm, lang)} · {seatsLabel}
           </p>
-          <div className="flex flex-wrap items-end gap-2 pt-1">
+          <div className="flex flex-wrap items-end gap-2 pt-0.5">
             <p className="text-2xl font-bold tabular-nums tracking-tight text-ink">{price.primary}</p>
             {vehicle.status !== "available" ? (
               <span className="mb-0.5 text-xs font-semibold text-muted">{statusLabel(vehicle.status, lang)}</span>
