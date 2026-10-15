@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { Footer, Header } from "@/components/chrome";
 import { DemoBanner } from "@/components/catalog";
@@ -31,6 +30,7 @@ export default async function LangLayout({
   const { lang: raw } = await params;
   const lang = parseLang(raw);
   if (!lang) notFound();
+  // Mode/ref come from proxy headers + cookies (layouts do not receive searchParams).
   const ctx = await requestContext(lang, new URLSearchParams());
   const session = await getSession();
   const site = await loadSite();
@@ -45,9 +45,7 @@ export default async function LangLayout({
   return (
     <>
       {getDataSource() === "demo" ? <DemoBanner lang={lang} /> : null}
-      <Suspense fallback={<div className="h-16 border-b border-line bg-white" />}>
-        <Header lang={lang} defaultMode={ctx.mode} refCode={ctx.ref} member={session ? { role: session.role, name: session.name } : null} />
-      </Suspense>
+      <Header lang={lang} defaultMode={ctx.mode} refCode={ctx.ref} member={session ? { role: session.role, name: session.name } : null} />
       <main id="content">{children}</main>
       <Footer lang={lang} mode={ctx.mode} refCode={ctx.ref} company={settings} />
     </>

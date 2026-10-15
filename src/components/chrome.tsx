@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useId, useRef } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { LogoSlot } from "@/components/media-slot";
 import type { Lang, SessionRole, TradeMode } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
@@ -100,13 +100,11 @@ function LanguageMenu({
 }
 
 function ModeToggle({
-  lang,
   mode,
   pathname,
   text,
   href,
 }: {
-  lang: Lang;
   mode: TradeMode;
   pathname: string;
   text: ReturnType<typeof copy>;
@@ -137,10 +135,9 @@ export function Header({
   member: { role: SessionRole; name?: string } | null;
 }) {
   const text = copy(lang);
-  const pathname = usePathname();
-  const params = useSearchParams();
-  const mode: TradeMode = params.get("mode") === "export" || params.get("mode") === "domestic" ? (params.get("mode") as TradeMode) : defaultMode;
-  const ref = params.get("ref") || refCode || "";
+  const pathname = usePathname() || `/${lang}`;
+  const mode = defaultMode;
+  const ref = refCode || "";
   const signedIn = member?.role === "customer" || member?.role === "dealer";
 
   function href(path: string, extra?: Record<string, string>) {
@@ -158,7 +155,7 @@ export function Header({
   function switchLang(next: Lang) {
     const parts = pathname.split("/");
     parts[1] = next;
-    const query = new URLSearchParams(params.toString());
+    const query = new URLSearchParams();
     query.set("mode", mode);
     if (ref) query.set("ref", ref);
     return `${parts.join("/") || `/${next}`}?${query.toString()}`;
@@ -203,7 +200,7 @@ export function Header({
           ))}
           <div className="flex flex-wrap items-center gap-2">
             <LanguageMenu lang={lang} label={text.language} switchLang={switchLang} />
-            <ModeToggle lang={lang} mode={mode} pathname={pathname} text={text} href={href} />
+            <ModeToggle mode={mode} pathname={pathname} text={text} href={href} />
           </div>
         </div>
         <details className="md:hidden">
@@ -223,7 +220,7 @@ export function Header({
             </nav>
             <div className="mt-4 flex flex-wrap items-center gap-2">
               <LanguageMenu lang={lang} label={text.language} switchLang={switchLang} align="left" />
-              <ModeToggle lang={lang} mode={mode} pathname={pathname} text={text} href={href} />
+              <ModeToggle mode={mode} pathname={pathname} text={text} href={href} />
             </div>
           </div>
         </details>
