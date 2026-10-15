@@ -105,25 +105,6 @@ export default async function HomePage({
       </section>
 
       <section className="grid gap-4 md:grid-cols-2">
-        <article className="border border-line bg-white p-6">
-          <h2 className="text-xl font-semibold">{text.domesticProcess}</h2>
-          <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm leading-6">
-            {text.domesticSteps.map((step) => (
-              <li key={step}>{step}</li>
-            ))}
-          </ol>
-        </article>
-        <article className="border border-line bg-white p-6">
-          <h2 className="text-xl font-semibold">{text.exportProcess}</h2>
-          <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm leading-6">
-            {text.exportSteps.map((step) => (
-              <li key={step}>{step}</li>
-            ))}
-          </ol>
-        </article>
-      </section>
-
-      <section className="grid gap-4 md:grid-cols-2">
         <Link href={hrefTo(lang, "/wanted", ctx)} className="border border-line bg-white p-6">
           <h2 className="text-xl font-semibold">{text.wantedTitle}</h2>
           <p className="mt-2 text-sm leading-6 text-muted">{text.wantedBody}</p>
