@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Lang, TradeMode, VehicleClass, VehicleQuery } from "@/lib/domain/types";
 import { localeTag } from "@/lib/i18n/langs";
@@ -58,11 +58,28 @@ export function MarketFilterBar({
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [draft, setDraft] = useState(query);
   const baseId = useId();
+  const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setDraft(query);
     setOpenKey(null);
   }, [query]);
+
+  useEffect(() => {
+    if (!openKey) return;
+    function onPointerDown(event: MouseEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) setOpenKey(null);
+    }
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpenKey(null);
+    }
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [openKey]);
 
   function navigate(next: VehicleQuery) {
     const params = queryToParams(next, ctx);
@@ -121,7 +138,7 @@ export function MarketFilterBar({
   ];
 
   return (
-    <div className="grid gap-3" data-market-filter-bar>
+    <div className="relative z-20" data-market-filter-bar ref={rootRef}>
       <div className="flex flex-wrap gap-2">
         {chips.map((chip) => (
           <button
@@ -145,7 +162,7 @@ export function MarketFilterBar({
           role="dialog"
           aria-modal="false"
           aria-labelledby={`${baseId}-${openKey}`}
-          className="px-0.5 pb-1 pt-1"
+          className="absolute left-0 top-[calc(100%+0.5rem)] z-30 min-w-[16rem] max-w-[min(100%,24rem)] border border-line bg-white p-4 shadow-[0_12px_32px_rgba(16,32,51,0.14)]"
         >
           {openKey === "class" ? (
             <div className="grid max-w-sm gap-1">
