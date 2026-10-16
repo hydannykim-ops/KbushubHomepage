@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { PatchForm } from "@/components/admin/patch-form";
 import { getRepository } from "@/lib/data/repository";
 
@@ -6,6 +7,14 @@ export default async function RequestsPage() {
   return (
     <div className="grid gap-4">
       <h1 className="text-2xl font-bold">차량 요청·매입 상담</h1>
+      <p className="text-sm text-muted">
+        여기에는 홈의 <strong className="font-semibold text-ink">원하는 차량 요청</strong>과 게스트{" "}
+        <strong className="font-semibold text-ink">매입 상담</strong>만 모입니다. 로그인 딜러가 올린 매물은{" "}
+        <Link href="/admin/vehicles?status=review" className="font-semibold text-primary underline">
+          매물 관리 → 검토 중
+        </Link>
+        을 보세요.
+      </p>
       {requests.length ? (
         requests.map((request) => (
           <article key={request.id} className="rounded-lg border border-line bg-white p-4 text-sm">
