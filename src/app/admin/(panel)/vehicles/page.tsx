@@ -61,6 +61,7 @@ export default async function AdminVehiclesPage({
         <table className="min-w-full text-left text-sm">
           <thead className="border-b border-line text-muted">
             <tr>
+              <th className="px-3 py-2">사진</th>
               <th className="px-3 py-2">매물번호</th>
               <th className="px-3 py-2">모델</th>
               <th className="px-3 py-2">상태</th>
@@ -72,32 +73,47 @@ export default async function AdminVehiclesPage({
           </thead>
           <tbody>
             {visible.length ? (
-              visible.map((vehicle) => (
-                <tr key={vehicle.id} className="border-b border-line">
-                  <td className="px-3 py-2">
-                    <Link href={`/admin/vehicles/${vehicle.id}`} className="text-primary">
-                      {vehicle.stockNo}
-                    </Link>
-                  </td>
-                  <td className="px-3 py-2">
-                    {vehicle.maker} {vehicle.model}
-                  </td>
-                  <td className="px-3 py-2">{statusLabel(vehicle.status, "ko")}</td>
-                  <td className="px-3 py-2">{vehicle.listingSource === "dealer" ? "딜러" : "회사"}</td>
-                  <td className="px-3 py-2">
-                    {vehicle.listingSource === "dealer"
-                      ? [vehicle.sellerName, vehicle.sellerEmail, vehicle.sellerCompany].filter(Boolean).join(" · ") || "-"
-                      : "-"}
-                  </td>
-                  <td className="px-3 py-2">{vehicle.domesticPriceKrw ?? "가격 문의"}</td>
-                  <td className="px-3 py-2">
-                    {vehicle.exportPriceAmount != null ? `${vehicle.exportPriceAmount} ${vehicle.exportPriceCurrency}` : "가격 문의"}
-                  </td>
-                </tr>
-              ))
+              visible.map((vehicle) => {
+                const cover = vehicle.photos.find((photo) => photo.isCover && !photo.placeholder) ?? vehicle.photos.find((photo) => !photo.placeholder);
+                return (
+                  <tr key={vehicle.id} className="border-b border-line">
+                    <td className="px-3 py-2">
+                      {cover ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={`/api/media/photo/${cover.id}`}
+                          alt=""
+                          className="h-12 w-16 object-cover"
+                        />
+                      ) : (
+                        <span className="inline-flex h-12 w-16 items-center justify-center bg-[#eef1f5] text-[10px] text-muted">없음</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-2">
+                      <Link href={`/admin/vehicles/${vehicle.id}`} className="text-primary">
+                        {vehicle.stockNo}
+                      </Link>
+                    </td>
+                    <td className="px-3 py-2">
+                      {vehicle.maker} {vehicle.model}
+                    </td>
+                    <td className="px-3 py-2">{statusLabel(vehicle.status, "ko")}</td>
+                    <td className="px-3 py-2">{vehicle.listingSource === "dealer" ? "딜러" : "회사"}</td>
+                    <td className="px-3 py-2">
+                      {vehicle.listingSource === "dealer"
+                        ? [vehicle.sellerName, vehicle.sellerEmail, vehicle.sellerCompany].filter(Boolean).join(" · ") || "-"
+                        : "-"}
+                    </td>
+                    <td className="px-3 py-2">{vehicle.domesticPriceKrw ?? "가격 문의"}</td>
+                    <td className="px-3 py-2">
+                      {vehicle.exportPriceAmount != null ? `${vehicle.exportPriceAmount} ${vehicle.exportPriceCurrency}` : "가격 문의"}
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
-                <td colSpan={7} className="px-3 py-8 text-center text-muted">
+                <td colSpan={8} className="px-3 py-8 text-center text-muted">
                   표시할 매물이 없습니다.
                 </td>
               </tr>
