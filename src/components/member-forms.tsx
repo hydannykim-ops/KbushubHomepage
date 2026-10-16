@@ -110,6 +110,7 @@ export function DealerListingForm({ lang }: { lang: Lang }) {
   const text = copy(lang);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const [vehicleClass, setVehicleClass] = useState<"county" | "medium" | "large">("county");
 
   return (
     <form
@@ -136,6 +137,7 @@ export function DealerListingForm({ lang }: { lang: Lang }) {
         if (response.ok && data.ok) {
           setMessage({ ok: true, text: text.listingSaved });
           form.reset();
+          setVehicleClass("county");
           return;
         }
         const code = data.code ?? "save_failed";
@@ -151,24 +153,29 @@ export function DealerListingForm({ lang }: { lang: Lang }) {
       ) : null}
       <label className="grid gap-1 text-sm font-medium">
         {text.classLabel}
-        <select name="vehicleClass" className={field} defaultValue="county">
+        <select
+          name="vehicleClass"
+          className={field}
+          value={vehicleClass}
+          onChange={(event) => setVehicleClass(event.target.value as "county" | "medium" | "large")}
+        >
           <option value="county">{text.classCounty}</option>
           <option value="medium">{text.classMedium}</option>
           <option value="large">{text.classLarge}</option>
         </select>
       </label>
-      <MakerModelPicker lang={lang} required />
+      <MakerModelPicker key={vehicleClass} lang={lang} required vehicleClass={vehicleClass} />
       <label className="grid gap-1 text-sm font-medium">
         {text.modelYear}
-        <input name="modelYear" className={field} />
+        <input name="modelYear" inputMode="numeric" placeholder="2017" className={field} />
       </label>
       <label className="grid gap-1 text-sm font-medium">
         {text.mileage}
-        <input name="mileageKm" className={field} />
+        <input name="mileageKm" inputMode="numeric" placeholder="150000" className={field} />
       </label>
       <label className="grid gap-1 text-sm font-medium">
         {text.seats}
-        <input name="seats" className={field} />
+        <input name="seats" inputMode="numeric" placeholder="28" className={field} />
       </label>
       <label className="grid gap-1 text-sm font-medium">
         {text.transmission}

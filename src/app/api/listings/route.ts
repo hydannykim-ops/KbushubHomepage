@@ -39,13 +39,64 @@ export async function POST(request: Request) {
   const front = await imageFile(form.get("front"));
   const frontSide = await imageFile(form.get("frontSide"));
   const rear = await imageFile(form.get("rear"));
-  if (!front || !frontSide || !rear) return resultResponse(request, { status: 400, body: { ok: false, code: "invalid" } }, back);
+  if (!front || !frontSide || !rear) {
+    return resultResponse(
+      request,
+      {
+        status: 400,
+        body: {
+          ok: false,
+          code: "invalid",
+          errors: {
+            photos:
+              lang === "ko"
+                ? "정면·정측면·후면 사진을 JPEG/PNG/WebP로 올려 주세요. (각 8MB 이하)"
+                : "Upload front, front three-quarter, and rear photos as JPEG/PNG/WebP (max 8MB each).",
+          },
+        },
+      },
+      back,
+    );
+  }
   const extraFiles = form.getAll("extras").filter((item): item is File => item instanceof File && item.size > 0);
-  if (3 + extraFiles.length > MAX_VEHICLE_PHOTOS) return resultResponse(request, { status: 400, body: { ok: false, code: "invalid" } }, back);
+  if (3 + extraFiles.length > MAX_VEHICLE_PHOTOS) {
+    return resultResponse(
+      request,
+      {
+        status: 400,
+        body: {
+          ok: false,
+          code: "invalid",
+          errors: {
+            photos: lang === "ko" ? "사진은 최대 12장까지입니다." : "You can upload up to 12 photos.",
+          },
+        },
+      },
+      back,
+    );
+  }
   const extras: Array<{ bytes: Buffer; contentType: ImageType }> = [];
   for (const file of extraFiles) {
     const checked = await imageFile(file);
-    if (!checked) return resultResponse(request, { status: 400, body: { ok: false, code: "invalid" } }, back);
+    if (!checked) {
+      return resultResponse(
+        request,
+        {
+          status: 400,
+          body: {
+            ok: false,
+            code: "invalid",
+            errors: {
+              photos:
+                lang === "ko"
+                  ? "추가 사진은 JPEG/PNG/WebP만 가능합니다. (각 8MB 이하)"
+                  : "Extra photos must be JPEG/PNG/WebP (max 8MB each).",
+            },
+          },
+        },
+        back,
+      );
+    }
     extras.push(checked);
   }
   const owner = await getRepository().getMember(session.sub);

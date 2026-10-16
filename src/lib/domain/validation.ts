@@ -40,7 +40,7 @@ function fieldErrors(error: z.ZodError): FieldErrors {
   return errors;
 }
 
-function optionalText(max: number) {
+function optionalText(max: number, message = "Text is too long.") {
   return z
     .union([z.string(), z.null()])
     .optional()
@@ -48,31 +48,38 @@ function optionalText(max: number) {
       const trimmed = value?.trim() ?? "";
       return trimmed ? trimmed : null;
     })
-    .refine((value) => value == null || value.length <= max);
+    .refine((value) => value == null || value.length <= max, { message });
 }
 
-function optionalInt(min: number, max: number) {
+function parseLooseNumber(value: string | number): number {
+  if (typeof value === "number") return value;
+  const normalized = value.replace(/,/g, "").replace(/\s+/g, "").trim();
+  if (!normalized) return Number.NaN;
+  return Number(normalized);
+}
+
+function optionalInt(min: number, max: number, message = `Enter a whole number between ${min} and ${max}.`) {
   return z
     .union([z.string(), z.number(), z.null()])
     .optional()
     .transform((value) => {
       if (value == null || value === "") return null;
-      const parsed = typeof value === "number" ? value : Number(value);
+      const parsed = parseLooseNumber(value);
       return Number.isFinite(parsed) ? parsed : Number.NaN;
     })
-    .refine((value) => value === null || (Number.isInteger(value) && value >= min && value <= max));
+    .refine((value) => value === null || (Number.isInteger(value) && value >= min && value <= max), { message });
 }
 
-function optionalNumber(min: number, max: number) {
+function optionalNumber(min: number, max: number, message = `Enter a number between ${min} and ${max}.`) {
   return z
     .union([z.string(), z.number(), z.null()])
     .optional()
     .transform((value) => {
       if (value == null || value === "") return null;
-      const parsed = typeof value === "number" ? value : Number(value);
+      const parsed = parseLooseNumber(value);
       return Number.isFinite(parsed) ? parsed : Number.NaN;
     })
-    .refine((value) => value === null || (value >= min && value <= max));
+    .refine((value) => value === null || (value >= min && value <= max), { message });
 }
 
 function optionalBool() {
@@ -849,22 +856,28 @@ export type DealerListingInput = {
 export function parseDealerListing(body: unknown, lang: Lang): { ok: true; data: DealerListingInput } | { ok: false; errors: FieldErrors } {
   const schema = z
     .object({
-      vehicleClass: z.enum(classes),
+      vehicleClass: z.enum(classes, {
+        message: text(lang, "차급을 선택해 주세요.", "Choose a vehicle class."),
+      }),
       maker: z.string().trim().min(1, text(lang, "제조사를 선택해 주세요.", "Choose a maker.")).max(80),
       model: z.string().trim().min(1, text(lang, "모델을 선택해 주세요.", "Choose a model.")).max(80),
-      modelYear: optionalInt(1980, 2035),
-      mileageKm: optionalInt(0, 5_000_000),
-      seats: optionalInt(1, 80),
-      transmission: z.enum(transmissions),
-      fuel: z.enum(fuels),
-      location: optionalText(120),
-      domesticPriceKrw: optionalInt(0, 5_000_000_000),
-      descriptionKo: optionalText(8000),
-      descriptionEn: optionalText(8000),
+      modelYear: optionalInt(1980, 2035, text(lang, "연식은 1980~2035 사이 정수로 입력해 주세요.", "Enter a whole model year between 1980 and 2035.")),
+      mileageKm: optionalInt(0, 5_000_000, text(lang, "주행거리는 숫자(km)로 입력해 주세요.", "Enter mileage as a whole number in km.")),
+      seats: optionalInt(1, 80, text(lang, "인승은 1~80 사이 정수로 입력해 주세요.", "Enter seats as a whole number from 1 to 80.")),
+      transmission: z.enum(transmissions, { message: text(lang, "변속기를 선택해 주세요.", "Choose a transmission.") }),
+      fuel: z.enum(fuels, { message: text(lang, "연료를 선택해 주세요.", "Choose a fuel type.") }),
+      location: optionalText(120, text(lang, "위치는 120자 이내로 입력해 주세요.", "Location must be 120 characters or fewer.")),
+      domesticPriceKrw: optionalInt(0, 5_000_000_000, text(lang, "가격은 숫자(원)로 입력해 주세요.", "Enter price as a whole number in KRW.")),
+      descriptionKo: optionalText(8000, text(lang, "설명은 8000자 이내로 입력해 주세요.", "Description must be 8000 characters or fewer.")),
+      descriptionEn: optionalText(8000, text(lang, "설명은 8000자 이내로 입력해 주세요.", "Description must be 8000 characters or fewer.")),
     })
     .superRefine((value, ctx) => {
-      if (!knownMakerModel(value.maker, value.model)) {
-        ctx.addIssue({ code: "custom", path: ["model"], message: text(lang, "목록에서 제조사와 모델을 선택해 주세요.", "Choose a maker and model from the list.") });
+      if (!knownMakerModel(value.maker, value.model, value.vehicleClass)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["model"],
+          message: text(lang, "선택한 차급에 맞는 제조사·모델을 골라 주세요.", "Choose a maker and model that match the class."),
+        });
       }
     });
   const parsed = schema.safeParse(body);
