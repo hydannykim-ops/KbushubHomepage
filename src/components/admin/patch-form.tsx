@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { notifyAdminSaved } from "@/components/admin/saved-toast";
 
 export function PatchForm({ action, children }: { action: string; children: React.ReactNode }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
   return (
     <form
       className="grid gap-2"
@@ -15,7 +15,6 @@ export function PatchForm({ action, children }: { action: string; children: Reac
         event.preventDefault();
         setPending(true);
         setError(null);
-        setSaved(false);
         const form = new FormData(event.currentTarget);
         try {
           const response = await fetch(action, {
@@ -28,7 +27,7 @@ export function PatchForm({ action, children }: { action: string; children: Reac
             setError(data.errors ? Object.values(data.errors).join(" ") : "저장하지 못했습니다.");
             return;
           }
-          setSaved(true);
+          notifyAdminSaved("저장되었습니다.");
           router.refresh();
         } catch {
           setError("저장하지 못했습니다.");
@@ -42,14 +41,9 @@ export function PatchForm({ action, children }: { action: string; children: Reac
           {error}
         </p>
       ) : null}
-      {saved ? (
-        <p role="status" className="text-sm text-[#166534]">
-          저장했습니다.
-        </p>
-      ) : null}
       {children}
       <button disabled={pending} className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white disabled:opacity-60">
-        {pending ? "저장 중" : "저장"}
+        {pending ? "저장 중…" : "저장"}
       </button>
     </form>
   );

@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { AdminToastHost } from "@/components/admin/saved-toast";
 import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata = { robots: { index: false, follow: false } };
@@ -36,6 +38,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </nav>
       </header>
       <div className="mx-auto max-w-6xl px-4 py-6">{children}</div>
+      <Suspense fallback={null}>
+        <AdminToastHost />
+      </Suspense>
     </div>
   );
 }

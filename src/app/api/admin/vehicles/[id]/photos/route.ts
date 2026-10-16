@@ -19,6 +19,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const photoId = String(form.get("photoId") ?? "");
   if (form.get("delete") === "1" && photoId) {
     await getRepository().deletePhoto(id, photoId);
+    back.searchParams.set("saved", "deleted");
     return NextResponse.redirect(back, 303);
   }
   if (photoId && form.get("update") === "1") {
@@ -30,6 +31,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       altKo: String(form.get("altKo") ?? ""),
       altEn: String(form.get("altEn") ?? ""),
     });
+    back.searchParams.set("saved", "1");
     return NextResponse.redirect(back, 303);
   }
   const file = form.get("file");
@@ -45,5 +47,6 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     altKo: String(form.get("altKo") ?? "차량 사진"),
     altEn: String(form.get("altEn") ?? "Vehicle photo"),
   });
+  back.searchParams.set("saved", "uploaded");
   return NextResponse.redirect(back, 303);
 }

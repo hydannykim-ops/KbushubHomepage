@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { notifyAdminSaved } from "@/components/admin/saved-toast";
 import { MakerModelPicker } from "@/components/maker-model-picker";
 import type { AdminVehicle, Agent, Inquiry, InquiryStatus } from "@/lib/domain/types";
 import type { QuoteInput } from "@/lib/domain/validation";
@@ -17,15 +18,19 @@ function inputValue(form: FormData, name: string) {
 export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
   const v = vehicle;
   return (
     <form
       className="grid gap-3 md:grid-cols-2"
       onSubmit={async (event) => {
         event.preventDefault();
+        setError(null);
+        setPending(true);
         const form = new FormData(event.currentTarget);
         if (!inputValue(form, "maker") || !inputValue(form, "model")) {
           setError("제조사와 모델을 선택해 주세요.");
+          setPending(false);
           return;
         }
         const payload = {
@@ -77,18 +82,25 @@ export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
             note: inputValue(form, "note"),
           },
         };
-        const response = await fetch(vehicle ? `/api/admin/vehicles/${vehicle.id}` : "/api/admin/vehicles", {
-          method: vehicle ? "PATCH" : "POST",
-          headers: { "content-type": "application/json", accept: "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const data = (await response.json()) as { ok?: boolean; id?: string; code?: string; errors?: Record<string, string> };
-        if (!response.ok || !data.ok) {
-          setError(data.errors ? Object.values(data.errors).join(" ") : data.code || "save_failed");
-          return;
+        try {
+          const response = await fetch(vehicle ? `/api/admin/vehicles/${vehicle.id}` : "/api/admin/vehicles", {
+            method: vehicle ? "PATCH" : "POST",
+            headers: { "content-type": "application/json", accept: "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const data = (await response.json()) as { ok?: boolean; id?: string; code?: string; errors?: Record<string, string> };
+          if (!response.ok || !data.ok) {
+            setError(data.errors ? Object.values(data.errors).join(" ") : data.code || "save_failed");
+            return;
+          }
+          notifyAdminSaved("저장되었습니다.");
+          router.push(`/admin/vehicles/${data.id ?? vehicle?.id}?saved=1`);
+          router.refresh();
+        } catch {
+          setError("저장하지 못했습니다.");
+        } finally {
+          setPending(false);
         }
-        router.push(`/admin/vehicles/${data.id ?? vehicle?.id}`);
-        router.refresh();
       }}
     >
       {error ? <p className="text-sm text-[#9f1239] md:col-span-2">{error}</p> : null}
@@ -179,7 +191,9 @@ export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
         <Label text="수수료 통화"><input name="feeCurrency" defaultValue={v?.internal.feeCurrency ?? ""} className={field} /></Label>
         <Label text="내부 메모" className="md:col-span-2"><textarea name="note" defaultValue={v?.internal.note ?? ""} rows={2} className={field} /></Label>
       </fieldset>
-      <button className="rounded-md bg-primary px-4 py-3 text-sm font-semibold text-white md:col-span-2">저장</button>
+      <button disabled={pending} className="rounded-md bg-primary px-4 py-3 text-sm font-semibold text-white disabled:opacity-60 md:col-span-2">
+        {pending ? "저장 중…" : "저장"}
+      </button>
     </form>
   );
 }
@@ -196,26 +210,39 @@ function Label({ text, children, className = "" }: { text: string; children: Rea
 export function InquiryEditor({ inquiry, agents }: { inquiry: Inquiry; agents: Agent[] }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
   return (
     <form
       className="grid gap-3"
       onSubmit={async (event) => {
         event.preventDefault();
+        setPending(true);
+        setError(null);
         const form = new FormData(event.currentTarget);
-        const response = await fetch(`/api/admin/inquiries/${inquiry.id}`, {
-          method: "PATCH",
-          headers: { "content-type": "application/json", accept: "application/json" },
-          body: JSON.stringify({
-            status: form.get("status"),
-            staffMemo: form.get("staffMemo"),
-            closeReason: form.get("closeReason"),
-            assignedAgentId: form.get("assignedAgentId"),
-            assignmentReason: form.get("assignmentReason"),
-          }),
-        });
-        const data = (await response.json()) as { ok?: boolean; code?: string; errors?: Record<string, string> };
-        if (!response.ok || !data.ok) setError(data.errors ? Object.values(data.errors).join(" ") : data.code || "save_failed");
-        else router.refresh();
+        try {
+          const response = await fetch(`/api/admin/inquiries/${inquiry.id}`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json", accept: "application/json" },
+            body: JSON.stringify({
+              status: form.get("status"),
+              staffMemo: form.get("staffMemo"),
+              closeReason: form.get("closeReason"),
+              assignedAgentId: form.get("assignedAgentId"),
+              assignmentReason: form.get("assignmentReason"),
+            }),
+          });
+          const data = (await response.json()) as { ok?: boolean; code?: string; errors?: Record<string, string> };
+          if (!response.ok || !data.ok) {
+            setError(data.errors ? Object.values(data.errors).join(" ") : data.code || "save_failed");
+            return;
+          }
+          notifyAdminSaved("저장되었습니다.");
+          router.refresh();
+        } catch {
+          setError("저장하지 못했습니다.");
+        } finally {
+          setPending(false);
+        }
       }}
     >
       {error ? <p className="text-sm text-[#9f1239]">{error}</p> : null}
@@ -252,7 +279,9 @@ export function InquiryEditor({ inquiry, agents }: { inquiry: Inquiry; agents: A
         종료 사유
         <input name="closeReason" defaultValue={inquiry.closeReason ?? ""} className={field} />
       </label>
-      <button className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white">저장</button>
+      <button disabled={pending} className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+        {pending ? "저장 중…" : "저장"}
+      </button>
     </form>
   );
 }
@@ -260,6 +289,7 @@ export function InquiryEditor({ inquiry, agents }: { inquiry: Inquiry; agents: A
 export function QuoteForm({ inquiryId, stockNo }: { inquiryId: string; stockNo: string | null }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
   const keys = ["vehiclePrice", "domesticTransport", "exportCosts", "oceanFreight", "otherCosts"] as const;
   const labels: Record<(typeof keys)[number], string> = {
     vehiclePrice: "차량대금",
@@ -273,6 +303,8 @@ export function QuoteForm({ inquiryId, stockNo }: { inquiryId: string; stockNo: 
       className="grid gap-3"
       onSubmit={async (event) => {
         event.preventDefault();
+        setPending(true);
+        setError(null);
         const form = new FormData(event.currentTarget);
         const lines = {} as QuoteInput["lines"];
         for (const key of keys) {
@@ -280,22 +312,32 @@ export function QuoteForm({ inquiryId, stockNo }: { inquiryId: string; stockNo: 
           const raw = String(form.get(`${key}Amount`) ?? "");
           lines[key] = { status, amount: raw === "" ? null : Number(raw) };
         }
-        const response = await fetch("/api/admin/quotes", {
-          method: "POST",
-          headers: { "content-type": "application/json", accept: "application/json" },
-          body: JSON.stringify({
-            inquiryId,
-            currency: form.get("currency"),
-            lines,
-            includedItems: form.get("includedItems"),
-            excludedItems: form.get("excludedItems"),
-            tradeTerms: form.get("tradeTerms"),
-            validUntil: form.get("validUntil"),
-          }),
-        });
-        const data = (await response.json()) as { ok?: boolean; code?: string; errors?: Record<string, string> };
-        if (!response.ok || !data.ok) setError(data.errors ? Object.values(data.errors).join(" ") : data.code || "save_failed");
-        else router.push("/admin/quotes");
+        try {
+          const response = await fetch("/api/admin/quotes", {
+            method: "POST",
+            headers: { "content-type": "application/json", accept: "application/json" },
+            body: JSON.stringify({
+              inquiryId,
+              currency: form.get("currency"),
+              lines,
+              includedItems: form.get("includedItems"),
+              excludedItems: form.get("excludedItems"),
+              tradeTerms: form.get("tradeTerms"),
+              validUntil: form.get("validUntil"),
+            }),
+          });
+          const data = (await response.json()) as { ok?: boolean; code?: string; errors?: Record<string, string> };
+          if (!response.ok || !data.ok) {
+            setError(data.errors ? Object.values(data.errors).join(" ") : data.code || "save_failed");
+            return;
+          }
+          notifyAdminSaved("견적을 저장했습니다.");
+          router.push("/admin/quotes?saved=1");
+        } catch {
+          setError("저장하지 못했습니다.");
+        } finally {
+          setPending(false);
+        }
       }}
     >
       {error ? <p className="text-sm text-[#9f1239]">{error}</p> : null}
@@ -323,7 +365,9 @@ export function QuoteForm({ inquiryId, stockNo }: { inquiryId: string; stockNo: 
       <label className="grid gap-1 text-sm">제외 항목<textarea name="excludedItems" className={field} rows={2} /></label>
       <label className="grid gap-1 text-sm">거래 조건<textarea name="tradeTerms" className={field} rows={2} /></label>
       <label className="grid gap-1 text-sm">유효기간<input name="validUntil" type="date" className={field} /></label>
-      <button className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white">견적 저장</button>
+      <button disabled={pending} className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+        {pending ? "저장 중…" : "견적 저장"}
+      </button>
     </form>
   );
 }
