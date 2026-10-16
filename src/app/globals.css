@@ -1,0 +1,122 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f6f7f9;
+  --foreground: #102033;
+  --card: #ffffff;
+  --primary: #155eef;
+  --line: #e4e7ee;
+  --muted: #5d6b7e;
+  --ink: #0e1c2f;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-primary: var(--primary);
+  --color-line: var(--line);
+  --color-muted: var(--muted);
+  --color-ink: var(--ink);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Noto Sans KR", "Noto Sans", "Noto Sans Khmer", sans-serif;
+}
+
+html[lang="km"] body {
+  font-family: "Noto Sans Khmer", "Noto Sans", sans-serif;
+}
+
+html[lang="mn"] body,
+html[lang="es"] body,
+html[lang="fr"] body,
+html[lang="en"] body {
+  font-family: "Noto Sans", "Noto Sans KR", sans-serif;
+}
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.logo-slot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.25rem;
+  height: 2.25rem;
+  padding: 0 0.4rem;
+  border: 1px solid var(--line);
+  background: #f3f5f8;
+  color: var(--muted);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.media-slot {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-height: 8rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  background: #f3f5f8;
+  color: var(--foreground);
+  text-align: center;
+  padding: 1.25rem;
+}
+
+.media-slot::before,
+.media-slot::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--primary);
+  border-style: solid;
+}
+
+.media-slot::before {
+  top: 12px;
+  left: 12px;
+  border-width: 2px 0 0 2px;
+}
+
+.media-slot::after {
+  right: 12px;
+  bottom: 12px;
+  border-width: 0 2px 2px 0;
+}
+
+.media-kicker {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--primary);
+}
+
+.media-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.media-hint {
+  max-width: 18rem;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
