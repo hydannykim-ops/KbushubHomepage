@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { absoluteUrl, requestOrigin } from "@/lib/http/request-url";
 
 export async function readBody(request: Request): Promise<Record<string, unknown>> {
   const type = request.headers.get("content-type") ?? "";
@@ -17,9 +18,8 @@ export async function readBody(request: Request): Promise<Record<string, unknown
 export function crossOrigin(request: Request): boolean {
   const origin = request.headers.get("origin");
   if (!origin) return false;
-  const host = request.headers.get("host");
   try {
-    return new URL(origin).host !== host;
+    return new URL(origin).origin !== requestOrigin(request);
   } catch {
     return true;
   }
@@ -29,14 +29,14 @@ export function resultResponse(request: Request, result: { status: number; body:
   if ((request.headers.get("accept") ?? "").includes("application/json")) {
     return NextResponse.json(result.body, { status: result.status });
   }
+  const origin = requestOrigin(request);
   const referer = request.headers.get("referer");
   let target: URL;
   try {
-    const candidate = referer ? new URL(referer) : new URL(fallbackPath, request.url);
-    const current = new URL(request.url);
-    target = candidate.host === current.host ? candidate : new URL(fallbackPath, request.url);
+    const candidate = referer ? new URL(referer) : absoluteUrl(request, fallbackPath);
+    target = candidate.origin === origin ? candidate : absoluteUrl(request, fallbackPath);
   } catch {
-    target = new URL(fallbackPath, request.url);
+    target = absoluteUrl(request, fallbackPath);
   }
   if (result.body.ok === true) {
     target.searchParams.set("submitted", result.body.demo ? "demo" : "live");

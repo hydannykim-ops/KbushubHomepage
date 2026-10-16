@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/auth/session";
 import { getRepository } from "@/lib/data/repository";
 import { checkImage } from "@/lib/domain/uploads";
 import type { PhotoCategory } from "@/lib/domain/types";
+import { absoluteUrl } from "@/lib/http/request-url";
 import { photoCategoryList } from "@/lib/labels";
 
 export const runtime = "nodejs";
@@ -12,8 +13,8 @@ const categories = new Set<string>(photoCategoryList);
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const admin = await requireAdmin();
   const { id } = await context.params;
-  const back = new URL(`/admin/vehicles/${id}`, request.url);
-  if (!admin) return NextResponse.redirect(new URL("/admin/login", request.url), 303);
+  const back = absoluteUrl(request, `/admin/vehicles/${id}`);
+  if (!admin) return NextResponse.redirect(absoluteUrl(request, "/admin/login"), 303);
   const form = await request.formData();
   const photoId = String(form.get("photoId") ?? "");
   if (form.get("delete") === "1" && photoId) {
