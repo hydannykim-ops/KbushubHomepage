@@ -142,7 +142,7 @@ export const fr: Messages = {
   },
   "privacyTitle": "Avis de confidentialité",
   "guideTitle": "Achat et export",
-  "guideNote": "Paiement en ligne, enchères, chat en direct, devis de fret automatiques et décisions automatiques de règles d'import ne sont pas proposés. Une annonce concessionnaire n'est publique qu'après validation admin.",
+  "guideNote": "Paiement en ligne, enchères, chat humain en direct, devis de fret automatiques et décisions automatiques de règles d'import ne sont pas proposés. L'assistant à l'écran aide seulement pour stock, export et vente. Une annonce concessionnaire n'est publique qu'après validation admin.",
   "busesTitle": "Bus moyens et grands",
   "busesBody": "Les bus moyens et grands sont des filtres sur le même stock.",
   "partnerNote": "Un code de parrainage ne fixe pas à lui seul une commission. Le personnel vérifie les introductions en double et les clients existants. Il n'y a pas de règlement automatique.",

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { Footer, Header } from "@/components/chrome";
 import { DemoBanner } from "@/components/catalog";
+import { SiteChat } from "@/components/site-chat";
 import { getSession } from "@/lib/auth/session";
 import { getDataSource } from "@/lib/config";
 import { copy } from "@/lib/i18n";
@@ -48,6 +50,9 @@ export default async function LangLayout({
       <Header lang={lang} defaultMode={ctx.mode} refCode={ctx.ref} member={session ? { role: session.role, name: session.name } : null} />
       <main id="content">{children}</main>
       <Footer lang={lang} mode={ctx.mode} refCode={ctx.ref} company={settings} />
+      <Suspense fallback={null}>
+        <SiteChat lang={lang} mode={ctx.mode} refCode={ctx.ref} />
+      </Suspense>
     </>
   );
 }

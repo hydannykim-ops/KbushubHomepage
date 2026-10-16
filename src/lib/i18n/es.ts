@@ -142,7 +142,7 @@ export const es: Messages = {
   },
   "privacyTitle": "Aviso de privacidad",
   "guideTitle": "Compra y exportación",
-  "guideNote": "No se ofrece pago en línea, subastas, chat en vivo, cotizaciones automáticas de flete ni decisiones automáticas de normas de importación. Un anuncio de concesionario es público solo después de la revisión de un administrador.",
+  "guideNote": "No se ofrece pago en línea, subastas, chat humano en vivo, cotizaciones automáticas de flete ni decisiones automáticas de normas de importación. El asistente en pantalla solo orienta inventario, exportación y venta. Un anuncio de concesionario es público solo después de la revisión de un administrador.",
   "busesTitle": "Buses medianos y grandes",
   "busesBody": "Los buses medianos y grandes son filtros del mismo inventario.",
   "partnerNote": "Un código de referido no fija por sí solo una comisión. El personal verifica presentaciones duplicadas y clientes existentes. No hay liquidación automática.",

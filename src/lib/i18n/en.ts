@@ -142,7 +142,7 @@ export const en: Messages = {
   },
   "privacyTitle": "Privacy notice",
   "guideTitle": "Buying and export",
-  "guideNote": "Online payment, auctions, live chat, automatic freight quotes, and automatic import-rule decisions are not offered. A dealer listing is public only after an admin reviews it.",
+  "guideNote": "Online payment, auctions, human live chat, automatic freight quotes, and automatic import-rule decisions are not offered. The on-site guide bot only helps with inventory, export, and selling paths. A dealer listing is public only after an admin reviews it.",
   "busesTitle": "Medium and large buses",
   "busesBody": "Medium and large buses are filters on the same inventory.",
   "partnerNote": "A referral code does not by itself set a commission. Staff check duplicate introductions and existing customers. There is no automatic settlement.",
