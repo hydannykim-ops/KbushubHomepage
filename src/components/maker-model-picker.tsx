@@ -10,7 +10,6 @@ import {
   modelsForSeries,
   seriesForMaker,
   seriesForModel,
-  seriesHasVariants,
 } from "@/lib/domain/vehicle-catalog";
 import type { Lang, VehicleClass } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
@@ -102,13 +101,7 @@ export function MakerModelPicker({
   }
 
   function pickSeries(next: string) {
-    const nextVariants = modelsForSeries(maker, next, vehicleClass);
     setSeries(next);
-    if (nextVariants.length <= 1) {
-      setModel(nextVariants[0] ?? next);
-      setStep("done");
-      return;
-    }
     setModel("");
     setStep("model");
   }
@@ -168,14 +161,8 @@ export function MakerModelPicker({
           type="button"
           className={lockedRowClass(market)}
           onClick={() => {
-            if (series && seriesHasVariants(maker, series, vehicleClass)) {
-              setModel("");
-              setStep("model");
-            } else {
-              setSeries("");
-              setModel("");
-              setStep("series");
-            }
+            setModel("");
+            setStep("model");
           }}
         >
           <span>
@@ -229,19 +216,14 @@ export function MakerModelPicker({
                 {text.all}
               </button>
             ) : null}
-            {seriesList.map((entry) => {
-              const multi = seriesHasVariants(maker, entry, vehicleClass);
-              return (
-                <button key={entry} type="button" className={optionClass(false, market)} onClick={() => pickSeries(entry)}>
-                  <span>{entry}</span>
-                  {multi ? (
-                    <span aria-hidden className="text-[10px] opacity-50">
-                      ›
-                    </span>
-                  ) : null}
-                </button>
-              );
-            })}
+            {seriesList.map((entry) => (
+              <button key={entry} type="button" className={optionClass(false, market)} onClick={() => pickSeries(entry)}>
+                <span>{entry}</span>
+                <span aria-hidden className="text-[10px] opacity-50">
+                  ›
+                </span>
+              </button>
+            ))}
           </div>
         )
       ) : null}

@@ -9,7 +9,6 @@ import {
   modelsForSeries,
   seriesForMaker,
   seriesForModel,
-  seriesHasVariants,
 } from "@/lib/domain/vehicle-catalog";
 import type { Lang, TradeMode, VehicleClass, VehicleQuery } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
@@ -81,9 +80,8 @@ export function BrandSidebar({
   const pickingClass = !classPicked;
   const pickingMaker = Boolean(classPicked && !selectedMaker);
   const pickingSeries = Boolean(classPicked && selectedMaker && !selectedModel && !draftSeries);
-  const pickingVariant =
-    Boolean(classPicked && selectedMaker && draftSeries && !selectedModel) &&
-    seriesHasVariants(selectedMaker, draftSeries, vehicleClass);
+  /** Always require an explicit model tap, even when the series has only one model. */
+  const pickingVariant = Boolean(classPicked && selectedMaker && draftSeries && !selectedModel);
   const variants =
     selectedMaker && lockedSeries ? modelsForSeries(selectedMaker, lockedSeries, vehicleClass) : [];
 
@@ -252,38 +250,23 @@ export function BrandSidebar({
               >
                 <span>{text.all}</span>
               </Link>
-              {seriesList.map((series) => {
-                const multi = seriesHasVariants(selectedMaker, series, vehicleClass);
-                const lone = modelsForSeries(selectedMaker, series, vehicleClass)[0] ?? series;
-                if (multi) {
-                  return (
-                    <button
-                      key={series}
-                      type="button"
-                      data-series={series}
-                      className={optionClass(false)}
-                      onClick={(event) => {
-                        event.preventDefault();
-                        setDraftSeries(series);
-                      }}
-                    >
-                      <span>{series}</span>
-                      <span aria-hidden className="text-[10px] text-muted">
-                        ›
-                      </span>
-                    </button>
-                  );
-                }
-                return (
-                  <Link
-                    key={series}
-                    href={hrefFor(lang, ctx, query, { maker: selectedMaker, model: lone })}
-                    className={optionClass(false)}
-                  >
-                    <span>{series}</span>
-                  </Link>
-                );
-              })}
+              {seriesList.map((series) => (
+                <button
+                  key={series}
+                  type="button"
+                  data-series={series}
+                  className={optionClass(false)}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    setDraftSeries(series);
+                  }}
+                >
+                  <span>{series}</span>
+                  <span aria-hidden className="text-[10px] text-muted">
+                    ›
+                  </span>
+                </button>
+              ))}
             </div>
           ) : null}
 
