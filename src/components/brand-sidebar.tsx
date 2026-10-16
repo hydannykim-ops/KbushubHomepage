@@ -55,8 +55,21 @@ export function BrandSidebar({
   const selectedModel = query.model ?? "";
   const total = Object.values(counts).reduce((sum, value) => sum + value, 0);
 
+  const classLabelMap: Record<VehicleClass | "", string> = {
+    "": text.all,
+    county: text.classCounty,
+    medium: text.classMedium,
+    large: text.classLarge,
+  };
+
+  /** Class is step 1; empty URL class still counts once the user picks “전체”. */
+  const [classPicked, setClassPicked] = useState(() => Boolean(query.vehicleClass || query.maker || query.model));
   /** Intermediate series pick before a concrete model URL is chosen. */
   const [draftSeries, setDraftSeries] = useState("");
+
+  useEffect(() => {
+    if (query.vehicleClass || query.maker || query.model) setClassPicked(true);
+  }, [query.vehicleClass, query.maker, query.model]);
 
   useEffect(() => {
     setDraftSeries("");
@@ -64,23 +77,33 @@ export function BrandSidebar({
 
   const seriesList = selectedMaker ? seriesForMaker(selectedMaker, vehicleClass) : [];
   const lockedSeries = selectedModel ? seriesForModel(selectedModel) : draftSeries;
-  const done = Boolean(selectedMaker && selectedModel);
-  const pickingSeries = Boolean(selectedMaker && !selectedModel && !draftSeries);
+  const done = Boolean(classPicked && selectedMaker && selectedModel);
+  const pickingClass = !classPicked;
+  const pickingMaker = Boolean(classPicked && !selectedMaker);
+  const pickingSeries = Boolean(classPicked && selectedMaker && !selectedModel && !draftSeries);
   const pickingVariant =
-    Boolean(selectedMaker && draftSeries && !selectedModel) && seriesHasVariants(selectedMaker, draftSeries, vehicleClass);
+    Boolean(classPicked && selectedMaker && draftSeries && !selectedModel) &&
+    seriesHasVariants(selectedMaker, draftSeries, vehicleClass);
   const variants =
     selectedMaker && lockedSeries ? modelsForSeries(selectedMaker, lockedSeries, vehicleClass) : [];
+
+  const clearAllHref = hrefFor(lang, ctx, query, { vehicleClass: undefined, maker: undefined, model: undefined });
+  const clearMakerHref = hrefFor(lang, ctx, query, { maker: undefined, model: undefined });
+  const clearSeriesHref = hrefFor(lang, ctx, query, { maker: selectedMaker, model: undefined });
 
   return (
     <aside className="border-b border-[#d8dde6]/80 lg:border-b-0 lg:border-r lg:border-[#d8dde6]/80" data-brand-sidebar>
       <div className="max-h-64 overflow-y-auto px-3 py-4 lg:sticky lg:top-16 lg:max-h-[calc(100vh-4rem)] md:px-4">
         <div className="mb-3 flex items-center justify-between gap-2 px-1">
           <h2 className="text-sm font-semibold text-ink">{text.brandModel}</h2>
-          {(selectedMaker || selectedModel || draftSeries) && (
+          {(classPicked || selectedMaker || selectedModel || draftSeries) && (
             <Link
-              href={hrefFor(lang, ctx, query, { maker: undefined, model: undefined })}
+              href={clearAllHref}
               className="text-xs font-medium text-muted hover:text-ink"
-              onClick={() => setDraftSeries("")}
+              onClick={() => {
+                setClassPicked(false);
+                setDraftSeries("");
+              }}
             >
               {text.reset}
             </Link>
@@ -88,15 +111,111 @@ export function BrandSidebar({
         </div>
 
         <nav className="grid gap-1" aria-label={text.brandModel}>
-          {!selectedMaker ? (
+          {classPicked ? (
+            <Link
+              href={clearAllHref}
+              className={lockedClass()}
+              onClick={() => {
+                setClassPicked(false);
+                setDraftSeries("");
+              }}
+            >
+              <span className="min-w-0">
+                <span className="block text-[11px] font-medium text-muted">{text.classLabel}</span>
+                <span className="block truncate">{classLabelMap[vehicleClass]}</span>
+              </span>
+              <span className="shrink-0 text-xs font-medium text-muted">{text.reset}</span>
+            </Link>
+          ) : null}
+
+          {selectedMaker ? (
+            <Link
+              href={clearMakerHref}
+              className={lockedClass()}
+              onClick={() => setDraftSeries("")}
+            >
+              <span className="flex min-w-0 items-center gap-2.5">
+                <MakerMark maker={selectedMaker} active />
+                <span className="min-w-0">
+                  <span className="block text-[11px] font-medium text-muted">{text.maker}</span>
+                  <span className="block truncate">{makerLabel(selectedMaker, lang)}</span>
+                </span>
+              </span>
+              <span className="shrink-0 text-xs font-medium text-muted">{text.reset}</span>
+            </Link>
+          ) : null}
+
+          {lockedSeries && (done || pickingVariant) ? (
+            done ? (
+              <Link href={clearSeriesHref} className={lockedClass()} onClick={() => setDraftSeries("")}>
+                <span className="min-w-0">
+                  <span className="block text-[11px] font-medium text-muted">{text.series}</span>
+                  <span className="block truncate">{lockedSeries}</span>
+                </span>
+                <span className="shrink-0 text-xs font-medium text-muted">{text.reset}</span>
+              </Link>
+            ) : (
+              <button type="button" className={lockedClass()} onClick={() => setDraftSeries("")}>
+                <span className="min-w-0">
+                  <span className="block text-[11px] font-medium text-muted">{text.series}</span>
+                  <span className="block truncate">{lockedSeries}</span>
+                </span>
+                <span className="shrink-0 text-xs font-medium text-muted">{text.reset}</span>
+              </button>
+            )
+          ) : null}
+
+          {done && selectedModel ? (
+            <Link href={clearSeriesHref} className={lockedClass()} onClick={() => setDraftSeries("")}>
+              <span className="min-w-0">
+                <span className="block text-[11px] font-medium text-muted">{text.model}</span>
+                <span className="block truncate">{selectedModel}</span>
+              </span>
+              <span className="shrink-0 text-xs font-medium text-muted">{text.reset}</span>
+            </Link>
+          ) : null}
+
+          {pickingClass ? (
+            <div className="grid gap-0.5" role="group" aria-label={text.classLabel}>
+              {(["", "county", "medium", "large"] as const).map((value) => {
+                const href = hrefFor(lang, ctx, query, {
+                  vehicleClass: value || undefined,
+                  maker: undefined,
+                  model: undefined,
+                });
+                return (
+                  <Link
+                    key={value || "all"}
+                    href={href}
+                    className={optionClass(false)}
+                    onClick={() => {
+                      setClassPicked(true);
+                      setDraftSeries("");
+                    }}
+                  >
+                    <span>{classLabelMap[value]}</span>
+                    <span aria-hidden className="text-[10px] text-muted">
+                      ›
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : null}
+
+          {pickingMaker ? (
             <>
               <Link
-                href={hrefFor(lang, ctx, query, { maker: undefined, model: undefined })}
+                href={clearMakerHref}
                 className={optionClass(true)}
                 aria-current="page"
+                onClick={() => setDraftSeries("")}
               >
                 <span className="flex items-center gap-2.5">
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#d5dae3] text-[11px] font-bold text-ink" aria-hidden>
+                  <span
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#d5dae3] text-[11px] font-bold text-ink"
+                    aria-hidden
+                  >
                     All
                   </span>
                   {text.all}
@@ -104,7 +223,11 @@ export function BrandSidebar({
                 <span className="tabular-nums text-[#2f6fed]">{total}</span>
               </Link>
               {makers.map((maker) => (
-                <Link key={maker} href={hrefFor(lang, ctx, query, { maker, model: undefined })} className={optionClass(false)}>
+                <Link
+                  key={maker}
+                  href={hrefFor(lang, ctx, query, { maker, model: undefined })}
+                  className={optionClass(false)}
+                >
                   <span className="flex min-w-0 items-center gap-2.5">
                     <MakerMark maker={maker} active={false} />
                     <span className="truncate">{makerLabel(maker, lang)}</span>
@@ -120,47 +243,10 @@ export function BrandSidebar({
             </>
           ) : null}
 
-          {selectedMaker ? (
-            <Link
-              href={hrefFor(lang, ctx, query, { maker: undefined, model: undefined })}
-              className={lockedClass()}
-              onClick={() => setDraftSeries("")}
-            >
-              <span className="flex min-w-0 items-center gap-2.5">
-                <MakerMark maker={selectedMaker} active />
-                <span className="min-w-0">
-                  <span className="block text-[11px] font-medium text-muted">{text.maker}</span>
-                  <span className="block truncate">{makerLabel(selectedMaker, lang)}</span>
-                </span>
-              </span>
-              <span className="shrink-0 text-xs font-medium text-muted">{text.reset}</span>
-            </Link>
-          ) : null}
-
-          {(done || pickingVariant) && lockedSeries ? (
-            done ? (
-              <Link href={hrefFor(lang, ctx, query, { maker: selectedMaker, model: undefined })} className={lockedClass()} onClick={() => setDraftSeries("")}>
-                <span className="min-w-0">
-                  <span className="block text-[11px] font-medium text-muted">{text.model}</span>
-                  <span className="block truncate">{selectedModel}</span>
-                </span>
-                <span className="shrink-0 text-xs font-medium text-muted">{text.reset}</span>
-              </Link>
-            ) : (
-              <button type="button" className={lockedClass()} onClick={() => setDraftSeries("")}>
-                <span className="min-w-0">
-                  <span className="block text-[11px] font-medium text-muted">{text.model}</span>
-                  <span className="block truncate">{lockedSeries}</span>
-                </span>
-                <span className="shrink-0 text-xs font-medium text-muted">{text.reset}</span>
-              </button>
-            )
-          ) : null}
-
           {pickingSeries ? (
-            <div className="grid gap-0.5" role="group" aria-label={`${makerLabel(selectedMaker, lang)} ${text.model}`}>
+            <div className="grid gap-0.5" role="group" aria-label={`${makerLabel(selectedMaker, lang)} ${text.series}`}>
               <Link
-                href={hrefFor(lang, ctx, query, { maker: selectedMaker, model: undefined })}
+                href={clearSeriesHref}
                 className={optionClass(true)}
                 aria-current="page"
               >
@@ -204,7 +290,11 @@ export function BrandSidebar({
           {pickingVariant ? (
             <div className="grid gap-0.5" role="group" aria-label={`${lockedSeries} ${text.model}`}>
               {variants.map((model) => (
-                <Link key={model} href={hrefFor(lang, ctx, query, { maker: selectedMaker, model })} className={optionClass(false)}>
+                <Link
+                  key={model}
+                  href={hrefFor(lang, ctx, query, { maker: selectedMaker, model })}
+                  className={optionClass(false)}
+                >
                   <span>{model}</span>
                 </Link>
               ))}

@@ -17,6 +17,7 @@ export type Messages = {
   search: string;
   maker: string;
   model: string;
+  series: string;
   pickMakerFirst: string;
   pickMakerModel: string;
   noModelsInClass: string;

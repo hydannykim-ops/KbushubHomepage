@@ -146,7 +146,7 @@ export function MakerModelPicker({
         </button>
       ) : null}
 
-      {series && (step === "model" || (step === "done" && seriesHasVariants(maker, series, vehicleClass))) ? (
+      {series && step !== "maker" && step !== "series" ? (
         <button
           type="button"
           className={lockedRowClass(market)}
@@ -156,7 +156,7 @@ export function MakerModelPicker({
           }}
         >
           <span>
-            <span className="text-xs font-semibold text-muted">{text.model}</span>
+            <span className="text-xs font-semibold text-muted">{text.series}</span>
             <span className="mt-0.5 block font-semibold text-ink">{series}</span>
           </span>
           <span className="text-xs font-medium text-muted">{text.reset}</span>
@@ -214,7 +214,7 @@ export function MakerModelPicker({
         seriesList.length === 0 ? (
           <p className="text-sm text-muted">{text.noModelsInClass}</p>
         ) : (
-          <div className={market ? "grid gap-0.5" : "grid gap-2"} role="listbox" aria-label={`${makerLabel(maker, lang)} ${text.model}`}>
+          <div className={market ? "grid gap-0.5" : "grid gap-2"} role="listbox" aria-label={`${makerLabel(maker, lang)} ${text.series}`}>
             {allowEmpty ? (
               <button
                 type="button"

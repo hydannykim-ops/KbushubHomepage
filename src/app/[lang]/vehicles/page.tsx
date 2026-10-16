@@ -5,7 +5,7 @@ import { DataProblem, VehicleCard, sortHref } from "@/components/catalog";
 import { MarketFilterBar } from "@/components/market-filters";
 import { copy } from "@/lib/i18n";
 import { parseVehicleQuery } from "@/lib/domain/filters";
-import { makersForClass } from "@/lib/domain/vehicle-catalog";
+import { makersForClass, seriesForModel } from "@/lib/domain/vehicle-catalog";
 import type { VehicleClass } from "@/lib/domain/types";
 import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
 import { loadSite } from "@/lib/site-load";
@@ -108,7 +108,10 @@ export default async function VehiclesPage({
                 </span>
               ) : null}
               {query.maker ? <span className="text-muted">{query.maker}</span> : null}
-              {query.model ? <span className="text-muted">{query.model}</span> : null}
+              {query.model ? <span className="text-muted">{seriesForModel(query.model)}</span> : null}
+              {query.model && seriesForModel(query.model) !== query.model ? (
+                <span className="text-muted">{query.model}</span>
+              ) : null}
               <Link href={hrefTo(lang, "/vehicles", ctx)} className="font-medium text-muted hover:text-ink">
                 {text.reset}
               </Link>

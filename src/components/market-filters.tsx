@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Lang, TradeMode, VehicleClass, VehicleQuery } from "@/lib/domain/types";
+import type { Lang, TradeMode, VehicleQuery } from "@/lib/domain/types";
 import { localeTag } from "@/lib/i18n/langs";
 import { copy } from "@/lib/i18n";
 import { fuelLabel, statusLabel, transmissionLabel } from "@/lib/labels";
@@ -103,7 +103,6 @@ export function MarketFilterBar({
   const seatsActive = query.seatsMin != null;
   const transmissionActive = Boolean(query.transmission);
   const statusActive = Boolean(query.status);
-  const classActive = Boolean(query.vehicleClass);
 
   const yearLabel = yearActive
     ? `${query.yearMin ?? ""}${query.yearMin != null || query.yearMax != null ? "~" : ""}${query.yearMax ?? ""}`.replace(/^~$/, text.year)
@@ -117,13 +116,6 @@ export function MarketFilterBar({
       }${query.priceMax != null ? Number(query.priceMax).toLocaleString(localeTag(lang)) : ""}`.replace(/^~$/, text.price)
     : text.price;
 
-  const classLabelMap: Record<VehicleClass | "", string> = {
-    "": text.all,
-    county: text.classCounty,
-    medium: text.classMedium,
-    large: text.classLarge,
-  };
-
   const input = "w-full border-0 border-b border-[#cfd5df] bg-transparent px-0 py-2 text-sm outline-none focus:border-ink";
   const applyBtn = "bg-ink px-4 py-2.5 text-sm font-semibold text-white";
   const clearBtn = "px-3 py-2.5 text-sm font-medium text-muted hover:text-ink";
@@ -131,7 +123,6 @@ export function MarketFilterBar({
     ["w-full px-2 py-2.5 text-left text-sm transition-colors", active ? "font-semibold text-ink" : "text-muted hover:text-ink"].join(" ");
 
   const chips: Array<{ key: string; label: string; active: boolean }> = [
-    { key: "class", label: classActive ? classLabelMap[query.vehicleClass ?? ""] : text.classLabel, active: classActive },
     { key: "year", label: yearActive ? yearLabel : text.year, active: yearActive },
     { key: "mileage", label: mileageActive ? mileageLabel : text.mileage, active: mileageActive },
     { key: "price", label: priceActive ? priceLabel : text.price, active: priceActive },
@@ -168,21 +159,6 @@ export function MarketFilterBar({
           aria-labelledby={`${baseId}-${openKey}`}
           className="absolute left-0 top-[calc(100%+0.5rem)] z-30 min-w-[16rem] max-w-[min(100%,24rem)] border border-line bg-white p-4 shadow-[0_12px_32px_rgba(16,32,51,0.14)]"
         >
-          {openKey === "class" ? (
-            <div className="grid max-w-sm gap-1">
-              {(["", "county", "medium", "large"] as const).map((value) => (
-                <button
-                  key={value || "all"}
-                  type="button"
-                  className={optionBtn(draft.vehicleClass === value || (!draft.vehicleClass && value === ""))}
-                  onClick={() => navigate({ ...query, vehicleClass: value, maker: undefined, model: undefined })}
-                >
-                  {classLabelMap[value]}
-                </button>
-              ))}
-            </div>
-          ) : null}
-
           {openKey === "year" ? (
             <div className="max-w-md">
               <div className="grid grid-cols-2 gap-4">
