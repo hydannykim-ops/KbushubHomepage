@@ -21,6 +21,16 @@ export default async function InquiryDetailPage({ params }: { params: Promise<{ 
         <p>구분 {inquiry.tradeMode} / {inquiry.kind}</p>
         <p>목적국 {inquiry.destinationCountry ?? "-"}</p>
         <p>목적항 {inquiry.destinationPortUndecided ? "미정" : inquiry.destinationPort ?? "-"}</p>
+        <p>
+          선적 방식{" "}
+          {inquiry.shippingMethod === "roro"
+            ? "RoRo"
+            : inquiry.shippingMethod === "container"
+              ? "컨테이너"
+              : inquiry.shippingMethod === "undecided"
+                ? "미정"
+                : "-"}
+        </p>
         <p>최초 유입 코드 {inquiry.firstReferralCode ?? "-"}</p>
         <p>제출 시 코드 {inquiry.submitReferralCode ?? "-"}</p>
         <p className="mt-3 whitespace-pre-wrap">{inquiry.message}</p>

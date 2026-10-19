@@ -5,6 +5,10 @@ export type VehicleClass = "county" | "medium" | "large";
 export type Transmission = "manual" | "automatic" | "unknown";
 export type Fuel = "diesel" | "gasoline" | "lpg" | "cng" | "electric" | "hybrid" | "unknown";
 export type Steering = "lhd" | "rhd" | "unknown";
+/** Domestic Korea bus transfer status used by operators and buyers. */
+export type TransferType = "transfer" | "scrap_replace" | "unknown";
+/** Export buyer preference only — staff still quote freight. */
+export type ShippingMethod = "roro" | "container" | "undecided";
 export type PhotoCategory = "front" | "front_side" | "rear" | "exterior" | "interior" | "dashboard" | "engine" | "tires" | "defect";
 export type MemberRole = "customer" | "dealer";
 export type ListingSource = "company" | "dealer";
@@ -53,12 +57,14 @@ export type PublicVehicle = {
   firstRegisteredOn: string | null;
   mileageKm: number | null;
   seats: number | null;
+  horsepowerPs: number | null;
   transmission: Transmission;
   fuel: Fuel;
   engineModel: string | null;
   displacementCc: number | null;
   steering: Steering;
   longBody: boolean | null;
+  transferType: TransferType;
   lengthMm: number | null;
   widthMm: number | null;
   heightMm: number | null;
@@ -142,6 +148,7 @@ export type Inquiry = {
   destinationCountry: string | null;
   destinationPort: string | null;
   destinationPortUndecided: boolean;
+  shippingMethod: ShippingMethod | null;
   firstReferralCode: string | null;
   submitReferralCode: string | null;
   assignedAgentId: string | null;
@@ -266,6 +273,7 @@ export type VehicleQuery = {
   mileageMax?: number | null;
   transmission?: Transmission | "";
   fuel?: Fuel | "";
+  transferType?: TransferType | "";
   status?: SaleStatus | "";
   sort?: SortKey;
 };

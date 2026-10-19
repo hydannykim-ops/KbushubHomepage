@@ -61,6 +61,50 @@ test("filters and shareable query round-trip", () => {
   assert.equal(new URLSearchParams(serialized).get("ref"), "DEMOAGT1");
 });
 
+test("transfer filter and export shipping preference", () => {
+  const seed = buildSeed();
+  const scrap = filterVehicles(seed.vehicles, { transferType: "scrap_replace" }, "domestic");
+  assert.ok(scrap.items.every((item) => item.transferType === "scrap_replace"));
+  assert.ok(scrap.items.some((item) => item.stockNo === "DEMO-M-01"));
+  const county = seed.vehicles.find((item) => item.stockNo === "DEMO-C-01");
+  assert.equal(county?.horsepowerPs, 150);
+  assert.equal(county?.transferType, "transfer");
+
+  const quoteOk = parseInquiry(
+    {
+      kind: "quote",
+      tradeMode: "export",
+      name: "Buyer",
+      email: "buyer@example.com",
+      country: "KH",
+      message: "Need quote",
+      destinationCountry: "KH",
+      destinationPortUndecided: "true",
+      shippingMethod: "roro",
+      consent: "true",
+    },
+    "en",
+  );
+  assert.equal(quoteOk.ok, true);
+  if (quoteOk.ok) assert.equal(quoteOk.data.shippingMethod, "roro");
+
+  const quoteMissingShip = parseInquiry(
+    {
+      kind: "quote",
+      tradeMode: "export",
+      name: "Buyer",
+      email: "buyer@example.com",
+      country: "KH",
+      message: "Need quote",
+      destinationCountry: "KH",
+      destinationPortUndecided: "true",
+      consent: "true",
+    },
+    "en",
+  );
+  assert.equal(quoteMissingShip.ok, false);
+});
+
 test("domestic and export views share one sale status", () => {
   const seed = buildSeed();
   for (const mode of ["domestic", "export"] as const) {
@@ -176,12 +220,14 @@ test("demo inquiry save, referral isolation, and quote snapshot", async () => {
       destinationCountry: "AE",
       destinationPort: null,
       destinationPortUndecided: true,
+      shippingMethod: "undecided",
       consent: true,
       companyWebsite: "",
       lang: "ko",
     },
     { firstReferralCode: "DEMOAGT1", submitReferralCode: "OTHERAGT" },
   );
+  assert.equal(inquiry.shippingMethod, "undecided");
   assert.equal(inquiry.demo, true);
   assert.equal(inquiry.firstReferralCode, "DEMOAGT1");
   assert.equal(inquiry.submitReferralCode, "OTHERAGT");
@@ -216,12 +262,14 @@ test("demo inquiry save, referral isolation, and quote snapshot", async () => {
     firstRegisteredOn: vehicle.firstRegisteredOn,
     mileageKm: vehicle.mileageKm,
     seats: vehicle.seats,
+    horsepowerPs: vehicle.horsepowerPs,
     transmission: vehicle.transmission,
     fuel: vehicle.fuel,
     engineModel: vehicle.engineModel,
     displacementCc: vehicle.displacementCc,
     steering: vehicle.steering,
     longBody: vehicle.longBody,
+    transferType: vehicle.transferType,
     lengthMm: vehicle.lengthMm,
     widthMm: vehicle.widthMm,
     heightMm: vehicle.heightMm,

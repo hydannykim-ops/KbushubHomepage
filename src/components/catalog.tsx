@@ -5,7 +5,7 @@ import { formatKm, priceView, showText } from "@/lib/domain/money";
 import type { Lang, PublicVehicle, TradeMode, VehiclePhoto, VehicleQuery } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
 import { contentFieldLang, localeTag } from "@/lib/i18n/langs";
-import { classLabel, fuelLabel, longBodyLabel, statusLabel, steeringLabel, transmissionLabel } from "@/lib/labels";
+import { classLabel, fuelLabel, longBodyLabel, statusLabel, steeringLabel, transferLabel, transmissionLabel } from "@/lib/labels";
 import { whatsappHref, whatsappMessage } from "@/lib/domain/referral";
 
 export function DemoBanner({ lang }: { lang: Lang }) {
@@ -68,6 +68,14 @@ export function VehicleCard({
   const yearLabel = vehicle.modelYear ? (lang === "ko" ? `${vehicle.modelYear}년` : String(vehicle.modelYear)) : text.unknown;
   const seatsLabel =
     vehicle.seats != null ? `${vehicle.seats}${lang === "ko" ? text.seatsShort : ` ${text.seatsShort}`}` : text.unknown;
+  const hpLabel =
+    vehicle.horsepowerPs != null
+      ? lang === "ko"
+        ? `${vehicle.horsepowerPs}마력`
+        : `${vehicle.horsepowerPs} PS`
+      : null;
+  const meta = [yearLabel, formatKm(vehicle.mileageKm, lang), seatsLabel, hpLabel].filter(Boolean).join(" · ");
+  const transfer = transferLabel(vehicle.transferType, lang);
   return (
     <article className="group overflow-hidden">
       <Link href={href} className="block">
@@ -79,8 +87,10 @@ export function VehicleCard({
               <span className="mt-1 block text-sm font-medium text-muted">{vehicle.trim}</span>
             ) : null}
           </h2>
+          <p className="text-sm text-muted">{meta}</p>
           <p className="text-sm text-muted">
-            {yearLabel} · {formatKm(vehicle.mileageKm, lang)} · {seatsLabel}
+            {vehicle.location ? vehicle.location : text.unknown}
+            {mode === "domestic" ? ` · ${transfer}` : null}
           </p>
           <div className="flex flex-wrap items-end gap-2 pt-0.5">
             <p className="text-2xl font-bold tabular-nums tracking-tight text-ink">{price.primary}</p>
@@ -121,12 +131,21 @@ export function SpecTable({ vehicle, lang }: { vehicle: PublicVehicle; lang: Lan
     [text.firstRegistered, showText(vehicle.firstRegisteredOn, lang)],
     [text.mileage, formatKm(vehicle.mileageKm, lang)],
     [text.seats, vehicle.seats ? String(vehicle.seats) : text.unknown],
+    [
+      text.horsepower,
+      vehicle.horsepowerPs != null
+        ? lang === "ko"
+          ? `${vehicle.horsepowerPs}마력`
+          : `${vehicle.horsepowerPs.toLocaleString(localeTag(lang))} PS`
+        : text.unknown,
+    ],
     [text.transmission, transmissionLabel(vehicle.transmission, lang)],
     [text.fuel, fuelLabel(vehicle.fuel, lang)],
     [text.engine, showText(vehicle.engineModel, lang)],
     [text.displacement, vehicle.displacementCc ? `${vehicle.displacementCc.toLocaleString(localeTag(lang))} cc` : text.unknown],
     [text.steering, steeringLabel(vehicle.steering, lang)],
     [text.longBody, longBodyLabel(vehicle.longBody, lang)],
+    [text.transferType, transferLabel(vehicle.transferType, lang)],
     [text.dimensions, dimension ?? text.unknown],
     [text.previousUse, showText(contentFieldLang(lang) === "ko" ? vehicle.previousUseKo : vehicle.previousUseEn, lang)],
     [text.location, showText(vehicle.location, lang)],
@@ -194,6 +213,7 @@ export function sortHref(base: string, query: VehicleQuery, sort: string, ctx: {
   set("mileageMax", query.mileageMax);
   set("transmission", query.transmission);
   set("fuel", query.fuel);
+  set("transferType", query.transferType);
   set("status", query.status);
   if (sort !== "newest") set("sort", sort);
   params.set("mode", ctx.mode);

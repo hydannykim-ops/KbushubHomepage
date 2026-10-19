@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import type { Lang, TradeMode, VehicleQuery } from "@/lib/domain/types";
 import { localeTag } from "@/lib/i18n/langs";
 import { copy } from "@/lib/i18n";
-import { fuelLabel, statusLabel, transmissionLabel } from "@/lib/labels";
+import { fuelLabel, statusLabel, transferLabel, transmissionLabel } from "@/lib/labels";
 
 type Ctx = { mode: TradeMode; ref: string | null };
 
@@ -30,6 +30,7 @@ function queryToParams(query: VehicleQuery, ctx: Ctx): URLSearchParams {
   set("mileageMax", query.mileageMax);
   set("transmission", query.transmission);
   set("fuel", query.fuel);
+  set("transferType", query.transferType);
   set("status", query.status);
   if (query.sort && query.sort !== "newest") set("sort", query.sort);
   return params;
@@ -102,6 +103,7 @@ export function MarketFilterBar({
   const fuelActive = Boolean(query.fuel);
   const seatsActive = query.seatsMin != null;
   const transmissionActive = Boolean(query.transmission);
+  const transferActive = Boolean(query.transferType);
   const statusActive = Boolean(query.status);
 
   const yearLabel = yearActive
@@ -129,6 +131,11 @@ export function MarketFilterBar({
     { key: "fuel", label: fuelActive ? fuelLabel(query.fuel as "diesel", lang) : text.fuel, active: fuelActive },
     { key: "seats", label: seatsActive ? `${query.seatsMin}+` : text.seats, active: seatsActive },
     { key: "transmission", label: transmissionActive ? transmissionLabel(query.transmission as "automatic", lang) : text.transmission, active: transmissionActive },
+    {
+      key: "transfer",
+      label: transferActive ? transferLabel(query.transferType as "transfer", lang) : text.transferType,
+      active: transferActive,
+    },
     { key: "status", label: statusActive ? statusLabel(query.status as "available", lang) : text.status, active: statusActive },
   ];
 
@@ -309,6 +316,21 @@ export function MarketFilterBar({
                   onClick={() => navigate({ ...query, transmission: value })}
                 >
                   {value ? transmissionLabel(value, lang) : text.all}
+                </button>
+              ))}
+            </div>
+          ) : null}
+
+          {openKey === "transfer" ? (
+            <div className="grid max-w-sm gap-1">
+              {(["", "transfer", "scrap_replace", "unknown"] as const).map((value) => (
+                <button
+                  key={value || "all"}
+                  type="button"
+                  className={optionBtn((draft.transferType || "") === value)}
+                  onClick={() => navigate({ ...query, transferType: value })}
+                >
+                  {value ? transferLabel(value, lang) : text.all}
                 </button>
               ))}
             </div>

@@ -3,11 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { contactActions, DataProblem, Gallery, SpecTable, youtubeId } from "@/components/catalog";
 import { MediaSlot } from "@/components/media-slot";
+import { ExportInquiryFields } from "@/components/export-inquiry-fields";
 import { Consent, EnhanceForm, Field, Honeypot, SubmitBanner } from "@/components/forms";
 import { priceView, showText } from "@/lib/domain/money";
 import { copy } from "@/lib/i18n";
 import { contentFieldLang } from "@/lib/i18n/langs";
-import { statusLabel } from "@/lib/labels";
+import { statusLabel, transferLabel } from "@/lib/labels";
 import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
 import { loadSite } from "@/lib/site-load";
 import { getDataSource, siteUrl } from "@/lib/config";
@@ -111,16 +112,7 @@ export default async function VehicleDetailPage({
       <Field label={text.contact} name="phone" />
       <Field label={text.messenger} name="messenger" />
       <Field label={text.country} name="country" required defaultValue={ctx.mode === "domestic" ? "" : ""} />
-      {ctx.mode === "export" ? (
-        <>
-          <Field label={text.destinationCountry} name="destinationCountry" required />
-          <Field label={text.destinationPort} name="destinationPort" />
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" name="destinationPortUndecided" value="true" />
-            {text.portUndecided}
-          </label>
-        </>
-      ) : null}
+      {ctx.mode === "export" ? <ExportInquiryFields lang={lang} /> : null}
       <Field label={text.message} name="message" as="textarea" required />
       <p className="text-xs text-muted">{text.requiredHint}</p>
       {ctx.ref ? <p className="text-xs text-muted">{text.referralKept}</p> : null}
@@ -143,8 +135,29 @@ export default async function VehicleDetailPage({
           <h1 className="mt-3 text-2xl font-bold">
             {vehicle.maker} {vehicle.model} {vehicle.trim ?? ""}
           </h1>
+          <p className="mt-2 text-sm text-muted">
+            {[
+              vehicle.location || text.unknown,
+              ctx.mode === "domestic" ? transferLabel(vehicle.transferType, lang) : null,
+              vehicle.seats != null ? `${vehicle.seats}${lang === "ko" ? text.seatsShort : ` ${text.seatsShort}`}` : null,
+              vehicle.horsepowerPs != null ? (lang === "ko" ? `${vehicle.horsepowerPs}마력` : `${vehicle.horsepowerPs} PS`) : null,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </p>
           <p className="mt-4 text-3xl font-semibold tabular-nums tracking-tight">{price.primary}</p>
           {price.basis ? <p className="mt-1 text-sm text-muted">{price.basis}</p> : null}
+          <p className="mt-2 text-xs text-muted">
+            {text.photographed}: {vehicle.photographedOn ?? text.unknown} · {text.stockChecked}: {vehicle.stockCheckedOn ?? text.unknown}
+          </p>
+          {ctx.mode === "export" ? (
+            <p className="mt-2 text-xs leading-5 text-muted">
+              {text.exportQuoteNote}{" "}
+              <Link href={hrefTo(lang, "/guide", ctx)} className="font-semibold text-primary">
+                {text.navGuide}
+              </Link>
+            </p>
+          ) : null}
           {sold ? <p className="mt-3 text-sm">{text.soldNote}</p> : null}
           {vehicle.status === "reserved" ? <p className="mt-3 text-sm">{text.reservedNote}</p> : null}
           <div className="mt-4 grid gap-2 text-sm">

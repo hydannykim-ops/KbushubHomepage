@@ -28,7 +28,7 @@ import { DataAccessError } from "./errors";
 import { StoreError } from "../demo/store";
 
 const publicColumns =
-  "id, stock_no, status, vehicle_class, maker, model, trim, model_year, first_registered_on, mileage_km, seats, transmission, fuel, engine_model, displacement_cc, steering, long_body, length_mm, width_mm, height_mm, previous_use_ko, previous_use_en, location, maintenance_ko, maintenance_en, defects_ko, defects_en, description_ko, description_en, photographed_on, stock_checked_on, featured, domestic_price_krw, export_price_amount, export_price_currency, export_price_terms_ko, export_price_terms_en, video_url, created_at, updated_at, vehicle_photos(id, vehicle_id, category, storage_path, content_type, sort_order, is_cover, alt_ko, alt_en)";
+  "id, stock_no, status, vehicle_class, maker, model, trim, model_year, first_registered_on, mileage_km, seats, horsepower_ps, transmission, fuel, engine_model, displacement_cc, steering, long_body, transfer_type, length_mm, width_mm, height_mm, previous_use_ko, previous_use_en, location, maintenance_ko, maintenance_en, defects_ko, defects_en, description_ko, description_en, photographed_on, stock_checked_on, featured, domestic_price_krw, export_price_amount, export_price_currency, export_price_terms_ko, export_price_terms_en, video_url, created_at, updated_at, vehicle_photos(id, vehicle_id, category, storage_path, content_type, sort_order, is_cover, alt_ko, alt_en)";
 
 const adminColumns = `${publicColumns}, owner_id, listing_source, seller_name, seller_email, seller_company`;
 
@@ -125,12 +125,17 @@ function mapVehicle(row: Record<string, unknown>, includeInternal: boolean): Adm
     firstRegisteredOn: day(row.first_registered_on),
     mileageKm: num(row.mileage_km),
     seats: num(row.seats),
+    horsepowerPs: num(row.horsepower_ps),
     transmission: row.transmission as AdminVehicle["transmission"],
     fuel: row.fuel as AdminVehicle["fuel"],
     engineModel: text(row.engine_model),
     displacementCc: num(row.displacement_cc),
     steering: row.steering as AdminVehicle["steering"],
     longBody: typeof row.long_body === "boolean" ? row.long_body : null,
+    transferType:
+      row.transfer_type === "transfer" || row.transfer_type === "scrap_replace" || row.transfer_type === "unknown"
+        ? row.transfer_type
+        : "unknown",
     lengthMm: num(row.length_mm),
     widthMm: num(row.width_mm),
     heightMm: num(row.height_mm),
@@ -177,12 +182,14 @@ function vehicleRow(input: VehicleInput) {
     first_registered_on: input.firstRegisteredOn,
     mileage_km: input.mileageKm,
     seats: input.seats,
+    horsepower_ps: input.horsepowerPs,
     transmission: input.transmission,
     fuel: input.fuel,
     engine_model: input.engineModel,
     displacement_cc: input.displacementCc,
     steering: input.steering,
     long_body: input.longBody,
+    transfer_type: input.transferType,
     length_mm: input.lengthMm,
     width_mm: input.widthMm,
     height_mm: input.heightMm,
@@ -257,6 +264,10 @@ function mapInquiry(row: Record<string, unknown>): Inquiry {
     destinationCountry: text(row.destination_country),
     destinationPort: text(row.destination_port),
     destinationPortUndecided: Boolean(row.destination_port_undecided),
+    shippingMethod:
+      row.shipping_method === "roro" || row.shipping_method === "container" || row.shipping_method === "undecided"
+        ? row.shipping_method
+        : null,
     firstReferralCode: text(row.first_referral_code),
     submitReferralCode: text(row.submit_referral_code),
     assignedAgentId: text(row.assigned_agent_id),
@@ -528,6 +539,7 @@ export function createSupabaseRepository() {
           destination_country: input.destinationCountry,
           destination_port: input.destinationPort,
           destination_port_undecided: input.destinationPortUndecided,
+          shipping_method: input.shippingMethod,
           first_referral_code: referral.firstReferralCode,
           submit_referral_code: referral.submitReferralCode,
           assigned_agent_id: assigned,

@@ -18,6 +18,7 @@ const classes = ["county", "medium", "large"] as const;
 const transmissions = ["manual", "automatic", "unknown"] as const;
 const fuels = ["diesel", "gasoline", "lpg", "cng", "electric", "hybrid", "unknown"] as const;
 const steerings = ["lhd", "rhd", "unknown"] as const;
+const transferTypes = ["transfer", "scrap_replace", "unknown"] as const;
 const statuses = ["available", "reserved", "sold", "hidden", "review"] as const;
 const photoCategories = ["front", "front_side", "rear", "exterior", "interior", "dashboard", "engine", "tires", "defect"] as const;
 const inquiryKinds = ["purchase", "visit", "quote", "video", "general"] as const;
@@ -106,6 +107,7 @@ export type InquiryInput = {
   destinationCountry: string | null;
   destinationPort: string | null;
   destinationPortUndecided: boolean;
+  shippingMethod: "roro" | "container" | "undecided" | null;
   consent: boolean;
   companyWebsite: string;
   lang: Lang;
@@ -126,6 +128,7 @@ export function parseInquiry(body: unknown, lang: Lang): { ok: true; data: Inqui
       destinationCountry: z.string().trim().max(80).optional().or(z.literal("")),
       destinationPort: z.string().trim().max(80).optional().or(z.literal("")),
       destinationPortUndecided: z.union([z.boolean(), z.string()]).optional(),
+      shippingMethod: z.enum(["roro", "container", "undecided", ""]).optional(),
       consent: z.union([z.boolean(), z.string()]),
       companyWebsite: z.string().optional(),
       lang: z.enum(langs).optional(),
@@ -167,11 +170,20 @@ export function parseInquiry(body: unknown, lang: Lang): { ok: true; data: Inqui
           message: text(lang, "목적항을 입력하거나 미정을 선택해 주세요.", "Enter a destination port or mark it as undecided."),
         });
       }
+      if (exportLike && !(value.shippingMethod ?? "").trim()) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["shippingMethod"],
+          message: text(lang, "선적 방식을 선택해 주세요. 미정도 가능합니다.", "Choose a shipping method, or mark it undecided."),
+        });
+      }
     });
   const parsed = schema.safeParse(body);
   if (!parsed.success) return { ok: false, errors: fieldErrors(parsed.error) };
   const value = parsed.data;
   const undecided = value.destinationPortUndecided === true || value.destinationPortUndecided === "true" || value.destinationPortUndecided === "on";
+  const shipping = value.shippingMethod?.trim() || "";
+  const exportLike = value.tradeMode === "export" || value.kind === "quote";
   return {
     ok: true,
     data: {
@@ -187,6 +199,7 @@ export function parseInquiry(body: unknown, lang: Lang): { ok: true; data: Inqui
       destinationCountry: value.destinationCountry?.trim() || null,
       destinationPort: undecided ? null : value.destinationPort?.trim() || null,
       destinationPortUndecided: undecided,
+      shippingMethod: exportLike && (shipping === "roro" || shipping === "container" || shipping === "undecided") ? shipping : null,
       consent: true,
       companyWebsite: "",
       lang,
@@ -466,12 +479,14 @@ export type VehicleInput = {
   firstRegisteredOn: string | null;
   mileageKm: number | null;
   seats: number | null;
+  horsepowerPs: number | null;
   transmission: Transmission;
   fuel: Fuel;
   engineModel: string | null;
   displacementCc: number | null;
   steering: Steering;
   longBody: boolean | null;
+  transferType: "transfer" | "scrap_replace" | "unknown";
   lengthMm: number | null;
   widthMm: number | null;
   heightMm: number | null;
@@ -528,12 +543,14 @@ export function parseVehicle(body: unknown): { ok: true; data: VehicleInput } | 
       firstRegisteredOn: optionalDate(),
       mileageKm: optionalInt(0, 5_000_000),
       seats: optionalInt(1, 80),
+      horsepowerPs: optionalInt(0, 2000),
       transmission: z.enum(transmissions),
       fuel: z.enum(fuels),
       engineModel: optionalText(80),
       displacementCc: optionalInt(0, 30_000),
       steering: z.enum(steerings),
       longBody: optionalBool(),
+      transferType: z.enum(transferTypes).optional(),
       lengthMm: optionalInt(1000, 20000),
       widthMm: optionalInt(1000, 4000),
       heightMm: optionalInt(1000, 5000),
@@ -597,12 +614,14 @@ export function parseVehicle(body: unknown): { ok: true; data: VehicleInput } | 
       firstRegisteredOn: value.firstRegisteredOn,
       mileageKm: value.mileageKm,
       seats: value.seats,
+      horsepowerPs: value.horsepowerPs,
       transmission: value.transmission,
       fuel: value.fuel,
       engineModel: value.engineModel,
       displacementCc: value.displacementCc,
       steering: value.steering,
       longBody: value.longBody,
+      transferType: value.transferType ?? "unknown",
       lengthMm: value.lengthMm,
       widthMm: value.widthMm,
       heightMm: value.heightMm,

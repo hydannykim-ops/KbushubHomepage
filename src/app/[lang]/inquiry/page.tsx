@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { DataProblem } from "@/components/catalog";
+import { ExportInquiryFields } from "@/components/export-inquiry-fields";
 import { Consent, EnhanceForm, Field, Honeypot, SubmitBanner } from "@/components/forms";
 import { copy } from "@/lib/i18n";
 import { parseLang, requestContext } from "@/lib/request-context";
@@ -46,11 +47,7 @@ export default async function InquiryPage({
           <Field label={text.contact} name="phone" />
           <Field label={text.messenger} name="messenger" />
           <Field label={text.country} name="country" required />
-          <Field label={text.destinationCountry} name="destinationCountry" required={ctx.mode === "export"} />
-          <Field label={text.destinationPort} name="destinationPort" />
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" name="destinationPortUndecided" value="true" /> {text.portUndecided}
-          </label>
+          {ctx.mode === "export" ? <ExportInquiryFields lang={lang} /> : null}
           <Field label={text.message} name="message" as="textarea" required />
           <Consent lang={lang} />
           <Honeypot lang={lang} />
