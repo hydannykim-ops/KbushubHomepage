@@ -75,7 +75,7 @@ export function CountrySelect({
   }, [open]);
 
   return (
-    <div ref={rootRef} className="grid gap-1 text-sm font-medium">
+    <div ref={rootRef} data-country-select={name} className="grid gap-1 text-sm font-medium">
       <span id={`${listId}-label`}>{label}</span>
       {/* Keeps FormData + HTML5 required validation working. */}
       <select
@@ -97,6 +97,7 @@ export function CountrySelect({
       </select>
       <button
         type="button"
+        data-country-trigger={name}
         aria-labelledby={`${listId}-label`}
         aria-haspopup="listbox"
         aria-expanded={open}
