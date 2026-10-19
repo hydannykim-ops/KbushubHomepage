@@ -89,10 +89,10 @@ export default async function AccountPage({
         </section>
       ) : (
         <section className="border border-line bg-white p-5">
-          <h2 className="text-xl font-semibold">{text.consultTitle}</h2>
-          <p className="mt-2 text-sm leading-6 text-muted">{text.customerBlocked}</p>
+          <h2 className="text-xl font-semibold">{text.navSell}</h2>
+          <p className="mt-2 text-sm leading-6 text-muted">{text.consultBody}</p>
           <Link href={hrefTo(lang, "/sell", ctx, { consult: "1" })} className="mt-4 inline-flex bg-primary px-4 py-3 text-sm font-semibold text-white">
-            {text.consultButton}
+            {text.navSell}
           </Link>
         </section>
       )}

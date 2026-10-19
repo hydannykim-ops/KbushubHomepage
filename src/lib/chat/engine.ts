@@ -122,7 +122,7 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       suggestions: ["수입 절차", "내 차 팔기"],
     },
     sell: {
-      text: "판매 사업자(딜러)는 회원가입 후 정면·정측면·후면 사진으로 매물을 등록합니다. 관리자 검토 후에만 공개됩니다. 일반 고객은 매입 상담만 남길 수 있습니다.",
+      text: "판매 사업자(딜러)는 회원가입 후 정면·정측면·후면 사진으로 매물을 등록합니다. 관리자 검토 후에만 공개됩니다. 일반 고객은 내 차 팔기 요청을 남길 수 있습니다.",
       links: [
         { href: "/sell", label: "내 차 팔기" },
         { href: "/account/signup", label: "회원가입" },
@@ -202,7 +202,7 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       suggestions: ["Import steps", "Sell a bus"],
     },
     sell: {
-      text: "Dealers sign up, then register with front, front three-quarter, and rear photos. Listings go public only after admin review. Customers can leave a buy-back consultation instead.",
+      text: "Dealers sign up, then register with front, front three-quarter, and rear photos. Listings go public only after admin review. Customers can leave a sell-my-bus request instead.",
       links: [
         { href: "/sell", label: "Sell your bus" },
         { href: "/account/signup", label: "Sign up" },
