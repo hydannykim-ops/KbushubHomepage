@@ -10,7 +10,7 @@ import { internalProfit, summarizeQuote } from "../src/lib/domain/money";
 import { normalizeReferralCode, referralForInquiry, rememberReferral, whatsappHref, whatsappMessage } from "../src/lib/domain/referral";
 import { acceptOrReject, submissionGate } from "../src/lib/domain/submit";
 import { checkImage } from "../src/lib/domain/uploads";
-import { isKnownCountry } from "../src/lib/domain/countries";
+import { countryFlag, countryOptionLabel, isKnownCountry } from "../src/lib/domain/countries";
 import { parseInquiry, parseQuote, parseSignup } from "../src/lib/domain/validation";
 import { makersForClass, modelsForMaker, modelsForSeries, seriesForMaker, seriesHasVariants } from "../src/lib/domain/vehicle-catalog";
 import { buildSeed } from "../src/lib/demo/seed";
@@ -297,6 +297,13 @@ test("session token rejects tampering", () => {
   assert.equal(readSession(token, "secret")?.role, "admin");
   assert.equal(readSession(token, "other"), null);
   assert.equal(readSession(`${token}x`, "secret"), null);
+});
+
+test("country options include flag emoji and dial code", () => {
+  assert.equal(countryFlag("KR"), "🇰🇷");
+  assert.equal(countryOptionLabel("KR", "ko"), "🇰🇷 대한민국 (+82)");
+  assert.equal(countryOptionLabel("GH", "en"), "🇬🇭 Ghana (+233)");
+  assert.match(countryOptionLabel("OTHER", "ko"), /🌐/);
 });
 
 test("signup requires a known country code", () => {
