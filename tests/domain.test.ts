@@ -10,7 +10,7 @@ import { internalProfit, summarizeQuote } from "../src/lib/domain/money";
 import { normalizeReferralCode, referralForInquiry, rememberReferral, whatsappHref, whatsappMessage } from "../src/lib/domain/referral";
 import { acceptOrReject, submissionGate } from "../src/lib/domain/submit";
 import { checkImage } from "../src/lib/domain/uploads";
-import { countryFlag, countryOptionLabel, isKnownCountry } from "../src/lib/domain/countries";
+import { countryFlag, countryFlagUrl, countryOptionLabel, isKnownCountry } from "../src/lib/domain/countries";
 import { parseInquiry, parseQuote, parseSignup } from "../src/lib/domain/validation";
 import { makersForClass, modelsForMaker, modelsForSeries, seriesForMaker, seriesHasVariants } from "../src/lib/domain/vehicle-catalog";
 import { buildSeed } from "../src/lib/demo/seed";
@@ -299,11 +299,12 @@ test("session token rejects tampering", () => {
   assert.equal(readSession(`${token}x`, "secret"), null);
 });
 
-test("country options include flag emoji and dial code", () => {
+test("country options include flagcdn URL and dial code", () => {
   assert.equal(countryFlag("KR"), "🇰🇷");
-  assert.equal(countryOptionLabel("KR", "ko"), "🇰🇷 대한민국 (+82)");
-  assert.equal(countryOptionLabel("GH", "en"), "🇬🇭 Ghana (+233)");
-  assert.match(countryOptionLabel("OTHER", "ko"), /🌐/);
+  assert.equal(countryFlagUrl("KR"), "https://flagcdn.com/16x12/kr.png");
+  assert.equal(countryFlagUrl("OTHER"), null);
+  assert.equal(countryOptionLabel("KR", "ko"), "대한민국 (+82)");
+  assert.equal(countryOptionLabel("GH", "en"), "Ghana (+233)");
 });
 
 test("signup requires a known country code", () => {

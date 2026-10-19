@@ -135,6 +135,16 @@ export function countryFlag(code: string): string {
   return String.fromCodePoint(...[...cc].map((ch) => 0x1f1e6 - 65 + ch.charCodeAt(0)));
 }
 
+/**
+ * Small PNG from flagcdn.com (ISO alpha-2, lowercase).
+ * Used instead of emoji so flags render on Windows and stay crisp at 16×12.
+ */
+export function countryFlagUrl(code: string, size: "16x12" | "20x15" | "24x18" = "16x12"): string | null {
+  const cc = code.trim().toLowerCase();
+  if (cc.length !== 2 || !/^[a-z]{2}$/.test(cc) || cc === "other") return null;
+  return `https://flagcdn.com/${size}/${cc}.png`;
+}
+
 export function countryDial(code: string): string | null {
   return byCode.get(code.trim().toUpperCase())?.dial ?? null;
 }
@@ -145,14 +155,13 @@ export function countryLabel(code: string, lang: Lang): string {
   return lang === "ko" ? item.ko : item.en;
 }
 
-/** Option / display line: 🇰🇷 대한민국 (+82) */
+/** Plain-text option line (tests / fallbacks): 대한민국 (+82) */
 export function countryOptionLabel(code: string, lang: Lang): string {
   const item = byCode.get(code.trim().toUpperCase());
   if (!item) return code;
   const name = lang === "ko" ? item.ko : item.en;
-  const flag = countryFlag(item.code);
-  if (!item.dial) return `${flag} ${name}`;
-  return `${flag} ${name} (+${item.dial})`;
+  if (!item.dial) return name;
+  return `${name} (+${item.dial})`;
 }
 
 export function normalizeCountryCode(value: string): string {

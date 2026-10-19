@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { countries, countryDial, countryFlag, countryLabel } from "@/lib/domain/countries";
+import { CountryFlag } from "@/components/country-flag";
+import { countries, countryDial, countryLabel } from "@/lib/domain/countries";
 import type { Lang } from "@/lib/domain/types";
 
 function Dial({ code }: { code: string }) {
@@ -13,9 +14,7 @@ function Dial({ code }: { code: string }) {
 function OptionRow({ code, lang }: { code: string; lang: Lang }) {
   return (
     <span className="flex min-w-0 items-center gap-2">
-      <span className="shrink-0 text-[15px] leading-none" aria-hidden="true">
-        {countryFlag(code)}
-      </span>
+      <CountryFlag code={code} lang={lang} />
       <span className="truncate font-normal">{countryLabel(code, lang)}</span>
       <Dial code={code} />
     </span>

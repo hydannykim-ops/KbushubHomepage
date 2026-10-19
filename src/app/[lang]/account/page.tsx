@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
-import { countryOptionLabel } from "@/lib/domain/countries";
+import { CountryFlag } from "@/components/country-flag";
+import { countryDial, countryLabel } from "@/lib/domain/countries";
 import { copy } from "@/lib/i18n";
 import { statusLabel } from "@/lib/labels";
 import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
@@ -43,15 +44,25 @@ export default async function AccountPage({
   }
   const listings = session.role === "dealer" ? await site.repo.listOwned(session.sub) : [];
   const member = await site.repo.getMember(session.sub);
-  const memberCountry = member?.country ? countryOptionLabel(member.country, lang) : null;
+  const memberCountryCode = member?.country ?? null;
+  const memberDial = memberCountryCode ? countryDial(memberCountryCode) : null;
   return (
     <div className="mx-auto grid max-w-3xl gap-8 px-4 py-10">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">{text.accountTitle}</h1>
-        <p className="mt-2 text-sm text-muted">
-          {session.name ? `${session.name} · ` : ""}
-          {session.email} · {session.role === "dealer" ? text.roleDealer : text.roleCustomer}
-          {memberCountry ? ` · ${text.country}: ${memberCountry}` : ""}
+        <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
+          <span>
+            {session.name ? `${session.name} · ` : ""}
+            {session.email} · {session.role === "dealer" ? text.roleDealer : text.roleCustomer}
+          </span>
+          {memberCountryCode ? (
+            <span className="inline-flex items-center gap-1.5">
+              · {text.country}:
+              <CountryFlag code={memberCountryCode} lang={lang} />
+              <span>{countryLabel(memberCountryCode, lang)}</span>
+              {memberDial ? <span className="text-[11px] tabular-nums">+{memberDial}</span> : null}
+            </span>
+          ) : null}
         </p>
       </div>
       {session.role === "dealer" ? (
