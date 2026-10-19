@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
+import { countryLabel } from "@/lib/domain/countries";
 import { copy } from "@/lib/i18n";
 import { statusLabel } from "@/lib/labels";
 import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
@@ -41,6 +42,8 @@ export default async function AccountPage({
     );
   }
   const listings = session.role === "dealer" ? await site.repo.listOwned(session.sub) : [];
+  const member = await site.repo.getMember(session.sub);
+  const memberCountry = member?.country ? countryLabel(member.country, lang) : null;
   return (
     <div className="mx-auto grid max-w-3xl gap-8 px-4 py-10">
       <div>
@@ -48,6 +51,7 @@ export default async function AccountPage({
         <p className="mt-2 text-sm text-muted">
           {session.name ? `${session.name} · ` : ""}
           {session.email} · {session.role === "dealer" ? text.roleDealer : text.roleCustomer}
+          {memberCountry ? ` · ${text.country}: ${memberCountry}` : ""}
         </p>
       </div>
       {session.role === "dealer" ? (

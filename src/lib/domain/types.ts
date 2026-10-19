@@ -103,6 +103,8 @@ export type Member = {
   email: string;
   phone: string | null;
   company: string | null;
+  /** ISO country code for the member's market / buyer destination preference. */
+  country: string | null;
   createdAt: string;
 };
 

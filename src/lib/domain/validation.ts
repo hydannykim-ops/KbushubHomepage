@@ -10,6 +10,7 @@ import type {
   Transmission,
   VehicleClass,
 } from "./types";
+import { isKnownCountry, normalizeCountryCode } from "./countries";
 import { knownMakerModel } from "./vehicle-catalog";
 
 export type FieldErrors = Record<string, string>;
@@ -120,7 +121,7 @@ export function parseInquiry(body: unknown, lang: Lang): { ok: true; data: Inqui
       email: z.string().trim().max(120).optional().or(z.literal("")),
       phone: z.string().trim().max(40).optional().or(z.literal("")),
       messenger: z.string().trim().max(80).optional().or(z.literal("")),
-      country: z.string().trim().min(1, text(lang, "국가를 입력해 주세요.", "Enter a country.")).max(80),
+      country: z.string().trim().min(1, text(lang, "국가를 선택해 주세요.", "Choose a country.")).max(80),
       stockNo: z.string().trim().max(40).optional().or(z.literal("")),
       message: z.string().trim().min(1, text(lang, "문의 내용을 입력해 주세요.", "Enter a message.")).max(4000),
       destinationCountry: z.string().trim().max(80).optional().or(z.literal("")),
@@ -151,20 +152,26 @@ export function parseInquiry(body: unknown, lang: Lang): { ok: true; data: Inqui
       if ((value.companyWebsite ?? "").trim() !== "") {
         ctx.addIssue({ code: "custom", path: ["form"], message: "invalid" });
       }
+      if (!isKnownCountry(value.country)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["country"],
+          message: text(lang, "목록에서 국가를 선택해 주세요.", "Choose a country from the list."),
+        });
+      }
       const exportLike = value.tradeMode === "export" || value.kind === "quote";
-      if (exportLike && !(value.destinationCountry ?? "").trim()) {
+      const destination = (value.destinationCountry ?? "").trim();
+      if (exportLike && !destination) {
         ctx.addIssue({
           code: "custom",
           path: ["destinationCountry"],
-          message: text(lang, "목적국을 입력해 주세요.", "Enter the destination country."),
+          message: text(lang, "구매하고 싶은 국가를 선택해 주세요.", "Choose the country you want to buy for."),
         });
-      }
-      const undecided = value.destinationPortUndecided === true || value.destinationPortUndecided === "true" || value.destinationPortUndecided === "on";
-      if (exportLike && !undecided && !(value.destinationPort ?? "").trim()) {
+      } else if (destination && !isKnownCountry(destination)) {
         ctx.addIssue({
           code: "custom",
-          path: ["destinationPort"],
-          message: text(lang, "목적항을 입력하거나 미정을 선택해 주세요.", "Enter a destination port or mark it as undecided."),
+          path: ["destinationCountry"],
+          message: text(lang, "목록에서 국가를 선택해 주세요.", "Choose a country from the list."),
         });
       }
     });
@@ -181,12 +188,12 @@ export function parseInquiry(body: unknown, lang: Lang): { ok: true; data: Inqui
       email: value.email?.trim() || null,
       phone: value.phone?.trim() || null,
       messenger: value.messenger?.trim() || null,
-      country: value.country,
+      country: normalizeCountryCode(value.country),
       stockNo: value.stockNo?.trim() || null,
       message: value.message,
-      destinationCountry: value.destinationCountry?.trim() || null,
+      destinationCountry: value.destinationCountry?.trim() ? normalizeCountryCode(value.destinationCountry) : null,
       destinationPort: undecided ? null : value.destinationPort?.trim() || null,
-      destinationPortUndecided: undecided,
+      destinationPortUndecided: undecided || !(value.destinationPort ?? "").trim(),
       consent: true,
       companyWebsite: "",
       lang,
@@ -220,7 +227,7 @@ export function parseWanted(body: unknown, lang: Lang): { ok: true; data: Wanted
       modelYear: optionalInt(1980, 2035),
       seats: optionalInt(1, 80),
       quantity: z.union([z.string(), z.number()]).transform((value) => Number(value)),
-      destinationCountry: z.string().trim().min(1).max(80),
+      destinationCountry: z.string().trim().min(1, text(lang, "구매하고 싶은 국가를 선택해 주세요.", "Choose the country you want to buy for.")).max(80),
       desiredTime: optionalText(80),
       name: z.string().trim().min(1).max(80),
       email: z.string().trim().max(120).optional().or(z.literal("")),
@@ -244,6 +251,13 @@ export function parseWanted(body: unknown, lang: Lang): { ok: true; data: Wanted
       if (value.budgetAmount != null && !(value.budgetCurrency ?? "").trim()) {
         ctx.addIssue({ code: "custom", path: ["budgetCurrency"], message: text(lang, "예산 통화를 선택해 주세요.", "Choose a budget currency.") });
       }
+      if (!isKnownCountry(value.destinationCountry)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["destinationCountry"],
+          message: text(lang, "목록에서 국가를 선택해 주세요.", "Choose a country from the list."),
+        });
+      }
       const consent = value.consent === true || value.consent === "true" || value.consent === "on";
       if (!consent) ctx.addIssue({ code: "custom", path: ["consent"], message: text(lang, "안내를 확인하고 동의해 주세요.", "Please confirm the notice.") });
       if ((value.companyWebsite ?? "").trim()) ctx.addIssue({ code: "custom", path: ["form"], message: "invalid" });
@@ -260,7 +274,7 @@ export function parseWanted(body: unknown, lang: Lang): { ok: true; data: Wanted
       modelYear: value.modelYear,
       seats: value.seats,
       quantity: value.quantity,
-      destinationCountry: value.destinationCountry,
+      destinationCountry: normalizeCountryCode(value.destinationCountry),
       desiredTime: value.desiredTime,
       name: value.name,
       email: value.email?.trim() || null,
@@ -794,6 +808,7 @@ export type SignupInput = {
   password: string;
   phone: string | null;
   company: string | null;
+  country: string;
   consent: boolean;
   companyWebsite: string;
 };
@@ -807,6 +822,7 @@ export function parseSignup(body: unknown, lang: Lang): { ok: true; data: Signup
       password: z.string().min(8, text(lang, "비밀번호는 8자 이상으로 해 주세요.", "Use at least 8 characters.")).max(80),
       phone: z.string().trim().max(40).optional().or(z.literal("")),
       company: z.string().trim().max(80).optional().or(z.literal("")),
+      country: z.string().trim().min(1, text(lang, "국가를 선택해 주세요.", "Choose a country.")).max(80),
       consent: z.union([z.boolean(), z.string()]),
       companyWebsite: z.string().optional(),
     })
@@ -816,6 +832,13 @@ export function parseSignup(body: unknown, lang: Lang): { ok: true; data: Signup
       }
       if (value.role === "dealer" && !(value.company ?? "").trim()) {
         ctx.addIssue({ code: "custom", path: ["company"], message: text(lang, "판매 사업자는 상호를 입력해 주세요.", "Enter the business name.") });
+      }
+      if (!isKnownCountry(value.country)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["country"],
+          message: text(lang, "목록에서 국가를 선택해 주세요.", "Choose a country from the list."),
+        });
       }
       const consent = value.consent === true || value.consent === "true" || value.consent === "on";
       if (!consent) ctx.addIssue({ code: "custom", path: ["consent"], message: text(lang, "안내를 확인하고 동의해 주세요.", "Please confirm the notice.") });
@@ -832,6 +855,7 @@ export function parseSignup(body: unknown, lang: Lang): { ok: true; data: Signup
       password: parsed.data.password,
       phone: parsed.data.phone?.trim() || null,
       company: parsed.data.role === "dealer" ? parsed.data.company?.trim() || null : null,
+      country: normalizeCountryCode(parsed.data.country),
       consent: true,
       companyWebsite: "",
     },

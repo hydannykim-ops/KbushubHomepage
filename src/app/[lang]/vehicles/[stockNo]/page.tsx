@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { contactActions, DataProblem, Gallery, SpecTable, youtubeId } from "@/components/catalog";
 import { MediaSlot } from "@/components/media-slot";
+import { CountrySelect } from "@/components/country-select";
 import { Consent, EnhanceForm, Field, Honeypot, SubmitBanner } from "@/components/forms";
 import { priceView, showText } from "@/lib/domain/money";
 import { copy } from "@/lib/i18n";
@@ -110,13 +111,14 @@ export default async function VehicleDetailPage({
       <Field label={text.email} name="email" type="email" />
       <Field label={text.contact} name="phone" />
       <Field label={text.messenger} name="messenger" />
-      <Field label={text.country} name="country" required defaultValue={ctx.mode === "domestic" ? "" : ""} />
+      <CountrySelect lang={lang} name="country" label={text.country} required />
       {ctx.mode === "export" ? (
         <>
-          <Field label={text.destinationCountry} name="destinationCountry" required />
+          <CountrySelect lang={lang} name="destinationCountry" label={text.destinationCountry} required />
+          <p className="text-xs text-muted">{text.destinationCountryHint}</p>
           <Field label={text.destinationPort} name="destinationPort" />
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" name="destinationPortUndecided" value="true" />
+            <input type="checkbox" name="destinationPortUndecided" value="true" defaultChecked />
             {text.portUndecided}
           </label>
         </>

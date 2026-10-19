@@ -108,8 +108,10 @@ export type Messages = {
   contact: string;
   messenger: string;
   country: string;
+  countrySignupHint: string;
   message: string;
   destinationCountry: string;
+  destinationCountryHint: string;
   destinationPort: string;
   portUndecided: string;
   consent: string;

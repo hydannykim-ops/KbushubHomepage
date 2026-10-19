@@ -10,7 +10,8 @@ import { internalProfit, summarizeQuote } from "../src/lib/domain/money";
 import { normalizeReferralCode, referralForInquiry, rememberReferral, whatsappHref, whatsappMessage } from "../src/lib/domain/referral";
 import { acceptOrReject, submissionGate } from "../src/lib/domain/submit";
 import { checkImage } from "../src/lib/domain/uploads";
-import { parseInquiry, parseQuote } from "../src/lib/domain/validation";
+import { isKnownCountry } from "../src/lib/domain/countries";
+import { parseInquiry, parseQuote, parseSignup } from "../src/lib/domain/validation";
 import { makersForClass, modelsForMaker, modelsForSeries, seriesForMaker, seriesHasVariants } from "../src/lib/domain/vehicle-catalog";
 import { buildSeed } from "../src/lib/demo/seed";
 import { createDemoStore } from "../src/lib/demo/store";
@@ -298,6 +299,38 @@ test("session token rejects tampering", () => {
   assert.equal(readSession(`${token}x`, "secret"), null);
 });
 
+test("signup requires a known country code", () => {
+  assert.equal(isKnownCountry("GH"), true);
+  assert.equal(isKnownCountry("XX"), false);
+  const ok = parseSignup(
+    {
+      role: "customer",
+      name: "Buyer",
+      email: "buyer@example.com",
+      password: "password1",
+      country: "gh",
+      consent: true,
+      companyWebsite: "",
+    },
+    "en",
+  );
+  assert.equal(ok.ok, true);
+  if (ok.ok) assert.equal(ok.data.country, "GH");
+  const bad = parseSignup(
+    {
+      role: "customer",
+      name: "Buyer",
+      email: "buyer@example.com",
+      password: "password1",
+      country: "Narnia",
+      consent: true,
+      companyWebsite: "",
+    },
+    "en",
+  );
+  assert.equal(bad.ok, false);
+});
+
 test("dealer listings stay in review and customers cannot publish", async () => {
   const dir = await mkdtemp(path.join(tmpdir(), "kbus-member-"));
   const store = createDemoStore(dir);
@@ -308,6 +341,7 @@ test("dealer listings stay in review and customers cannot publish", async () => 
     password: "password1",
     phone: null,
     company: "데모상사",
+    country: "KR",
     consent: true,
     companyWebsite: "",
   });
@@ -318,9 +352,12 @@ test("dealer listings stay in review and customers cannot publish", async () => 
     password: "password1",
     phone: null,
     company: null,
+    country: "GH",
     consent: true,
     companyWebsite: "",
   });
+  assert.equal(dealer.country, "KR");
+  assert.equal(customer.country, "GH");
   const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0]);
   const input = {
     vehicleClass: "county" as const,
@@ -363,11 +400,13 @@ test("dealer listings stay in review and customers cannot publish", async () => 
 
 test("migration locks down internal tables and admin role grants", async () => {
   const sql = await readFile(path.join(process.cwd(), "supabase/migrations/0001_init.sql"), "utf8");
+  const memberCountry = await readFile(path.join(process.cwd(), "supabase/migrations/0003_member_country.sql"), "utf8");
   assert.match(sql, /revoke all on table public\.vehicle_internal from anon, authenticated/i);
   assert.match(sql, /revoke all on table public\.inquiries from anon, authenticated/i);
   assert.match(sql, /enable row level security/i);
   assert.doesNotMatch(sql, /create policy[^;]+insert[^;]+user_roles/i);
   assert.match(sql, /agent_my_referrals/);
+  assert.match(memberCountry, /member_profiles[\s\S]*country/i);
   assert.match(sql, /privacy_collection_enabled boolean not null default false/i);
   const members = await readFile(path.join(process.cwd(), "supabase/migrations/0002_members_and_review.sql"), "utf8");
   assert.match(members, /revoke all on table public\.member_profiles from anon, authenticated/i);

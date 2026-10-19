@@ -27,7 +27,7 @@ export default async function RequestsPage() {
             <p>연식 {request.modelYear ?? "-"} / 주행 {request.mileageKm ?? "-"} / 인승 {request.seats ?? "-"} / 대수 {request.quantity ?? "-"}</p>
             <p>예산 {request.budgetAmount ?? "-"} {request.budgetCurrency ?? ""}</p>
             <p>희망가 {request.askingPriceAmount ?? "-"} {request.askingPriceCurrency ?? ""}</p>
-            <p>위치 {request.location ?? "-"} / 목적국 {request.destinationCountry ?? "-"} / 시기 {request.desiredTime ?? "-"}</p>
+            <p>위치 {request.location ?? "-"} / 구매 희망 국가 {request.destinationCountry ?? "-"} / 시기 {request.desiredTime ?? "-"}</p>
             <p>추천 코드 {request.firstReferralCode ?? "-"}</p>
             <p className="whitespace-pre-wrap">{request.message}</p>
             {request.files.length ? (

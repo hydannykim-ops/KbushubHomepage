@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CountrySelect } from "@/components/country-select";
 import { MakerModelPicker } from "@/components/maker-model-picker";
 import type { Lang } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
@@ -81,6 +82,8 @@ export function SignupForm({
         </>
       )}
 
+      <CountrySelect lang={lang} name="country" label={`${text.country} *`} required className={field} />
+      <p className="text-xs text-muted">{text.countrySignupHint}</p>
       <label className="grid gap-1 text-sm font-medium">
         {text.email} *
         <input name="email" type="email" required autoComplete="username" className={field} />

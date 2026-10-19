@@ -74,6 +74,7 @@ function mapMember(row: Record<string, unknown>): Member {
     email: String(row.email ?? ""),
     phone: text(row.phone),
     company: text(row.company),
+    country: text(row.country),
     createdAt: String(row.created_at ?? new Date().toISOString()),
   };
 }
@@ -809,7 +810,7 @@ export function createSupabaseRepository() {
     },
     async getMember(id: string): Promise<Member | null> {
       const service = createServiceClient();
-      const result = await service.from("member_profiles").select("user_id, role, name, email, phone, company, created_at").eq("user_id", id).maybeSingle();
+      const result = await service.from("member_profiles").select("user_id, role, name, email, phone, company, country, created_at").eq("user_id", id).maybeSingle();
       if (result.error) fail(result.error, "member_get");
       return result.data ? mapMember(result.data as Record<string, unknown>) : null;
     },
@@ -835,6 +836,7 @@ export function createSupabaseRepository() {
         email: input.email,
         phone: input.phone,
         company: input.company,
+        country: input.country,
       });
       if (inserted.error) {
         await service.auth.admin.deleteUser(userId);
@@ -848,6 +850,7 @@ export function createSupabaseRepository() {
         email: input.email,
         phone: input.phone,
         company: input.company,
+        country: input.country,
         createdAt: new Date().toISOString(),
       };
     },
@@ -856,7 +859,7 @@ export function createSupabaseRepository() {
       const signed = await anon.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
       if (signed.error || !signed.data.user) return null;
       const service = createServiceClient();
-      const profile = await service.from("member_profiles").select("user_id, role, name, email, phone, company, created_at").eq("user_id", signed.data.user.id).maybeSingle();
+      const profile = await service.from("member_profiles").select("user_id, role, name, email, phone, company, country, created_at").eq("user_id", signed.data.user.id).maybeSingle();
       await anon.auth.signOut();
       if (!profile.data) return null;
       return mapMember(profile.data as Record<string, unknown>);

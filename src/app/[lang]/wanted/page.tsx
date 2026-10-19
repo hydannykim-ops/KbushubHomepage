@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { DataProblem } from "@/components/catalog";
+import { CountrySelect } from "@/components/country-select";
 import { Consent, EnhanceForm, Field, Honeypot, SubmitBanner } from "@/components/forms";
 import { MakerModelPicker } from "@/components/maker-model-picker";
 import { copy } from "@/lib/i18n";
@@ -43,7 +44,8 @@ export default async function WantedPage({
           <Field label={text.modelYear} name="modelYear" />
           <Field label={text.seats} name="seats" />
           <Field label={text.quantity} name="quantity" required defaultValue="1" />
-          <Field label={text.destinationCountry} name="destinationCountry" required />
+          <CountrySelect lang={lang} name="destinationCountry" label={text.destinationCountry} required />
+          <p className="text-xs text-muted">{text.destinationCountryHint}</p>
           <Field label={text.desiredTime} name="desiredTime" />
           <Field label={text.name} name="name" required />
           <Field label={text.email} name="email" type="email" />
