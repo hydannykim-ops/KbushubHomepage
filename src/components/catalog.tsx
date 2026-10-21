@@ -10,7 +10,7 @@ import { whatsappHref, whatsappMessage } from "@/lib/domain/referral";
 
 export function DemoBanner({ lang }: { lang: Lang }) {
   return (
-    <p className="bg-[#e8eef8] px-3 py-1.5 text-center text-[11px] leading-snug text-foreground sm:px-4 sm:py-2 sm:text-sm" role="status">
+    <p className="bg-[#e8eef8] px-3 py-1 text-center text-[10px] leading-snug text-foreground sm:px-4 sm:py-2 sm:text-sm" role="status">
       {copy(lang).demoBanner}
     </p>
   );
@@ -47,7 +47,11 @@ function PhotoFrame({ vehicle, lang }: { vehicle: PublicVehicle; lang: Lang }) {
       {vehicle.status !== "available" ? (
         <span className="absolute left-3 top-3 bg-white/95 px-2 py-1 text-xs font-semibold text-ink">{statusLabel(vehicle.status, lang)}</span>
       ) : null}
-      {cover?.placeholder ? <span className="absolute bottom-3 left-3 bg-white/90 px-2 py-1 text-[11px] font-semibold text-muted">{text.placeholderNote}</span> : null}
+      {cover?.placeholder ? (
+        <span className="absolute bottom-2 left-2 max-w-[70%] truncate bg-white/90 px-2 py-1 text-[10px] font-semibold text-muted sm:bottom-3 sm:left-3 sm:max-w-none sm:text-[11px]">
+          {text.placeholderNote}
+        </span>
+      ) : null}
     </div>
   );
 }

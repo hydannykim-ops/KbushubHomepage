@@ -67,12 +67,12 @@ export default async function VehiclesPage({
       <div className="mx-auto grid max-w-7xl lg:grid-cols-[15.5rem_minmax(0,1fr)]">
         <BrandSidebar lang={lang} ctx={ctx} query={query} counts={counts} />
 
-        <div className="min-w-0 px-4 py-5 md:px-6 md:py-6">
-          <div className="mb-4">
-            <h1 className="text-2xl font-bold tracking-tight text-ink md:text-3xl">{text.navVehicles}</h1>
+        <div className="min-w-0 px-3 py-4 sm:px-4 sm:py-5 md:px-6 md:py-6">
+          <div className="mb-3 sm:mb-4">
+            <h1 className="text-xl font-bold tracking-tight text-ink sm:text-2xl md:text-3xl">{text.navVehicles}</h1>
           </div>
 
-          <div className="mb-5">
+          <div className="mb-4 sm:mb-5">
             <MarketFilterBar lang={lang} ctx={ctx} query={query} />
           </div>
 

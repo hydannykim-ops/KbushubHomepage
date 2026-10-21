@@ -36,53 +36,75 @@ export default async function HomePage({
   ] as const;
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-10 px-4 py-6 sm:gap-14 sm:py-10 md:gap-16 md:py-14">
-      <section className="relative min-h-[22rem] overflow-hidden border border-line bg-[#0f172a] text-white sm:min-h-[28rem] lg:min-h-[32rem]">
+    <div className="mx-auto grid max-w-6xl gap-8 sm:gap-14 sm:px-4 sm:py-10 md:gap-16 md:py-14">
+      <section className="relative min-h-[70svh] overflow-hidden bg-[#0f172a] text-white sm:min-h-[28rem] sm:border sm:border-line lg:min-h-[32rem]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/demo/hero-yard.jpg" alt={text.mediaHero} className="absolute inset-0 h-full w-full object-cover object-center" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/55 to-black/35 sm:bg-gradient-to-r sm:from-black/75 sm:via-black/55 sm:to-black/25" />
-        <div className="relative flex min-h-[22rem] max-w-2xl flex-col justify-end px-4 py-8 sm:min-h-[28rem] sm:justify-center sm:px-6 sm:py-14 lg:min-h-[32rem] lg:px-10">
-          <p className="text-xs font-semibold tracking-[0.22em] text-white/90 sm:text-sm sm:tracking-[0.28em]">K-BUS HUB</p>
-          <h1 className="mt-3 text-[1.75rem] font-semibold leading-tight tracking-tight sm:mt-4 sm:text-4xl md:text-5xl">{text.heroTitle}</h1>
-          <p className="mt-3 max-w-xl text-sm leading-6 text-white/85 sm:mt-5 sm:text-base sm:leading-7">{text.heroBody}</p>
-          <div className="mt-6 grid grid-cols-2 gap-2 sm:mt-8 sm:flex sm:flex-wrap sm:gap-3">
-            <Link href={hrefTo(lang, "/vehicles", ctx)} className="bg-primary px-4 py-3 text-center text-sm font-semibold text-white sm:px-5">
+        <img
+          src="/demo/hero-yard.jpg"
+          alt={text.mediaHero}
+          className="absolute inset-0 h-full w-full object-cover object-[center_35%] sm:object-center"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/25 sm:bg-gradient-to-r sm:from-black/75 sm:via-black/55 sm:to-black/25" />
+        <div className="relative flex min-h-[70svh] max-w-2xl flex-col justify-end px-5 pb-10 pt-16 sm:min-h-[28rem] sm:justify-center sm:px-6 sm:py-14 lg:min-h-[32rem] lg:px-10">
+          <p className="hero-reveal text-xs font-semibold tracking-[0.22em] text-white/90 sm:text-sm sm:tracking-[0.28em]">K-BUS HUB</p>
+          <h1 className="hero-reveal hero-reveal-delay-1 mt-3 max-w-[14ch] text-[1.85rem] font-semibold leading-[1.15] tracking-tight sm:mt-4 sm:max-w-none sm:text-4xl md:text-5xl">
+            {text.heroTitle}
+          </h1>
+          <p className="hero-reveal hero-reveal-delay-2 mt-3 line-clamp-2 max-w-xl text-sm leading-6 text-white/85 sm:mt-5 sm:line-clamp-none sm:text-base sm:leading-7">
+            {text.heroBody}
+          </p>
+          <div className="hero-reveal hero-reveal-delay-3 mt-5 flex flex-col gap-2 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-3">
+            <Link
+              href={hrefTo(lang, "/vehicles", ctx)}
+              className="bg-primary px-5 py-3.5 text-center text-sm font-semibold text-white sm:px-5 sm:py-3"
+            >
               {text.browseInventory}
             </Link>
-            <Link href={hrefTo(lang, "/vehicles", ctx, { class: "county" })} className="border border-white/40 bg-white/10 px-4 py-3 text-center text-sm font-semibold text-white backdrop-blur-sm sm:px-5">
+            <Link
+              href={hrefTo(lang, "/vehicles", ctx, { class: "county" })}
+              className="border border-white/35 bg-white/10 px-5 py-3 text-center text-sm font-semibold text-white backdrop-blur-sm sm:px-5"
+            >
               {text.classCounty}
             </Link>
           </div>
         </div>
-        <span className="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] truncate bg-white/90 px-2 py-1 text-[10px] font-semibold text-muted sm:bottom-3 sm:left-3 sm:max-w-none sm:text-[11px]">{text.placeholderNote}</span>
+        <span className="absolute bottom-3 right-3 max-w-[45%] truncate bg-black/45 px-2 py-1 text-[10px] font-medium text-white/80 sm:bottom-3 sm:left-3 sm:right-auto sm:max-w-none sm:bg-white/90 sm:font-semibold sm:text-muted">
+          {text.placeholderNote}
+        </span>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid gap-0 px-4 sm:gap-4 sm:px-0 md:grid-cols-3">
         {(
           [
             [...classes[0], "/demo/county-cover.jpg"],
             [...classes[1], "/demo/medium-cover.jpg"],
             [...classes[2], "/demo/large-cover.jpg"],
           ] as const
-        ).map(([title, body, slot, href, image]) => (
-          <Link key={title} href={href} className="overflow-hidden border border-line bg-white">
-            <div className="relative aspect-[16/9] overflow-hidden bg-[#f3f5f8]">
+        ).map(([title, body, slot, href, image], index) => (
+          <Link
+            key={title}
+            href={href}
+            className={`group grid grid-cols-[5.5rem_1fr] items-center gap-3 border-b border-line py-3.5 sm:grid-cols-1 sm:gap-0 sm:overflow-hidden sm:border sm:border-line sm:bg-white sm:py-0 ${
+              index === 0 ? "border-t sm:border-t" : ""
+            }`}
+          >
+            <div className="relative aspect-square overflow-hidden bg-[#f3f5f8] sm:aspect-[16/9]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={image} alt={slot} className="h-full w-full object-cover" />
+              <img src={image} alt={slot} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
               <span className="sr-only">{text.placeholderNote}</span>
             </div>
-            <div className="p-5">
-              <h2 className="text-xl font-semibold">{title}</h2>
-              <p className="mt-2 text-sm leading-6 text-muted">{body}</p>
+            <div className="min-w-0 sm:p-5">
+              <h2 className="text-lg font-semibold sm:text-xl">{title}</h2>
+              <p className="mt-1 line-clamp-2 text-sm leading-5 text-muted sm:mt-2 sm:leading-6">{body}</p>
             </div>
           </Link>
         ))}
       </section>
 
-      <section>
-        <h2 className="text-2xl font-semibold tracking-tight">{text.newArrivals}</h2>
+      <section className="px-4 sm:px-0">
+        <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">{text.newArrivals}</h2>
         {fresh.length ? (
-          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-4 grid gap-5 sm:mt-5 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
             {fresh.map((vehicle) => (
               <VehicleCard key={vehicle.id} vehicle={vehicle} lang={lang} mode={ctx.mode} href={cardHref(vehicle)} />
             ))}
@@ -92,10 +114,10 @@ export default async function HomePage({
         )}
       </section>
 
-      <section>
-        <h2 className="text-2xl font-semibold tracking-tight">{text.featured}</h2>
+      <section className="px-4 sm:px-0">
+        <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">{text.featured}</h2>
         {featured.length ? (
-          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-4 grid gap-5 sm:mt-5 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
             {featured.map((vehicle) => (
               <VehicleCard key={vehicle.id} vehicle={vehicle} lang={lang} mode={ctx.mode} href={cardHref(vehicle)} />
             ))}
@@ -105,25 +127,25 @@ export default async function HomePage({
         )}
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2">
-        <Link href={hrefTo(lang, "/wanted", ctx)} className="border border-line bg-white p-6">
-          <h2 className="text-xl font-semibold">{text.wantedTitle}</h2>
-          <p className="mt-2 text-sm leading-6 text-muted">{text.wantedBody}</p>
+      <section className="grid gap-0 px-4 sm:gap-4 sm:px-0 md:grid-cols-2">
+        <Link href={hrefTo(lang, "/wanted", ctx)} className="border-b border-line py-5 sm:border sm:border-line sm:bg-white sm:p-6">
+          <h2 className="text-lg font-semibold sm:text-xl">{text.wantedTitle}</h2>
+          <p className="mt-1.5 text-sm leading-6 text-muted sm:mt-2">{text.wantedBody}</p>
         </Link>
-        <Link href={hrefTo(lang, "/sell", ctx)} className="border border-line bg-white p-6">
-          <h2 className="text-xl font-semibold">{text.sellTitle}</h2>
-          <p className="mt-2 text-sm leading-6 text-muted">{text.sellBody}</p>
+        <Link href={hrefTo(lang, "/sell", ctx)} className="border-b border-line py-5 sm:border sm:border-line sm:bg-white sm:p-6">
+          <h2 className="text-lg font-semibold sm:text-xl">{text.sellTitle}</h2>
+          <p className="mt-1.5 text-sm leading-6 text-muted sm:mt-2">{text.sellBody}</p>
         </Link>
       </section>
 
-      <section className="grid gap-6 border border-line bg-white p-6 md:grid-cols-[0.8fr_1.2fr]">
-        <div className="relative min-h-48 overflow-hidden border border-line bg-[#f3f5f8]">
+      <section className="mx-4 grid gap-5 border-t border-line bg-transparent py-8 sm:mx-0 sm:gap-6 sm:border sm:border-line sm:bg-white sm:p-6 md:grid-cols-[0.8fr_1.2fr]">
+        <div className="relative min-h-44 overflow-hidden bg-[#f3f5f8] sm:min-h-48 sm:border sm:border-line">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/demo/hero-yard.jpg" alt={text.mediaYard} className="h-full min-h-48 w-full object-cover" />
+          <img src="/demo/hero-yard.jpg" alt={text.mediaYard} className="h-full min-h-44 w-full object-cover sm:min-h-48" />
           <span className="absolute bottom-3 left-3 bg-white/90 px-2 py-1 text-[11px] font-semibold text-muted">{text.placeholderNote}</span>
         </div>
         <div>
-          <h2 className="text-xl font-semibold">{text.companyTitle}</h2>
+          <h2 className="text-lg font-semibold sm:text-xl">{text.companyTitle}</h2>
           <p className="mt-3 text-sm leading-6">{contentFieldLang(lang) === "ko" ? site.settings.aboutKo : site.settings.aboutEn}</p>
           <div className="mt-4 text-sm text-muted">
             {site.settings.address ? <p>{site.settings.address}</p> : null}

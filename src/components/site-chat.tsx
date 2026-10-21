@@ -108,12 +108,12 @@ export function SiteChat({ lang, mode, refCode }: { lang: Lang; mode: TradeMode;
 
   return (
     <div
-      className="pointer-events-none fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-3 z-50 flex flex-col items-end gap-3 sm:bottom-5 sm:right-5 md:bottom-6 md:right-6"
+      className="pointer-events-none fixed bottom-[max(0.85rem,env(safe-area-inset-bottom))] right-3 z-50 flex flex-col items-end gap-2.5 sm:bottom-5 sm:right-5 sm:gap-3 md:bottom-6 md:right-6"
       data-site-chat
     >
       {open ? (
         <section
-          className="pointer-events-auto flex h-[min(28rem,calc(100dvh-7rem))] w-[min(22rem,calc(100vw-1.5rem))] flex-col overflow-hidden border border-line bg-white shadow-[0_16px_40px_rgba(16,32,51,0.18)] sm:h-[min(32rem,calc(100vh-6rem))]"
+          className="pointer-events-auto flex h-[min(32rem,calc(100dvh-6.5rem))] w-[min(22rem,calc(100vw-1.5rem))] flex-col overflow-hidden border border-line bg-white shadow-[0_16px_40px_rgba(16,32,51,0.18)] sm:h-[min(32rem,calc(100vh-6rem))]"
           aria-label={ui.title}
         >
           <header className="flex items-start justify-between gap-3 border-b border-line bg-ink px-4 py-3 text-white">
@@ -202,11 +202,28 @@ export function SiteChat({ lang, mode, refCode }: { lang: Lang; mode: TradeMode;
 
       <button
         type="button"
-        className="pointer-events-auto bg-ink px-3.5 py-2.5 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(16,32,51,0.22)] sm:px-4 sm:py-3 sm:text-sm"
+        className="pointer-events-auto inline-flex h-12 w-12 items-center justify-center bg-ink text-white shadow-[0_10px_24px_rgba(16,32,51,0.22)] sm:h-auto sm:w-auto sm:px-4 sm:py-3 sm:text-sm sm:font-semibold"
         aria-expanded={open}
+        aria-label={open ? ui.close : ui.open}
         onClick={() => setOpen((value) => !value)}
       >
-        {open ? ui.close : ui.open}
+        <span className="sm:hidden" aria-hidden="true">
+          {open ? (
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
+              <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
+          ) : (
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M5 7.5A2.5 2.5 0 0 1 7.5 5h9A2.5 2.5 0 0 1 19 7.5v6A2.5 2.5 0 0 1 16.5 16H11l-3.2 2.4c-.55.4-1.3.01-1.3-.66V16H7.5A2.5 2.5 0 0 1 5 13.5v-6Z"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
+        </span>
+        <span className="hidden sm:inline">{open ? ui.close : ui.open}</span>
       </button>
     </div>
   );

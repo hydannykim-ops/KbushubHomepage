@@ -236,12 +236,13 @@ export function Header({
 
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/90">
-      <div className="relative mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 py-2.5 sm:gap-4 sm:px-4 sm:py-3">
-        <Link href={href("")} className="flex min-w-0 items-center gap-2 text-foreground sm:gap-3" onClick={() => setMenuOpen(false)}>
+      <div className="relative mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2.5 sm:gap-4 sm:py-3">
+        <Link href={href("")} className="flex min-w-0 items-center gap-2.5 text-foreground sm:gap-3" onClick={() => setMenuOpen(false)}>
           <LogoSlot label={text.mediaLogo} />
-          <span className="min-w-0">
-            <span className="block text-[10px] font-semibold tracking-[0.18em] text-muted sm:text-[11px]">K-BUS</span>
-            <span className="block text-base font-semibold leading-none tracking-wide sm:text-lg">HUB</span>
+          <span className="min-w-0 truncate text-[1.05rem] font-semibold tracking-wide sm:hidden">K-BUS HUB</span>
+          <span className="hidden min-w-0 sm:block">
+            <span className="block text-[11px] font-semibold tracking-[0.18em] text-muted">K-BUS</span>
+            <span className="block text-lg font-semibold leading-none tracking-wide">HUB</span>
           </span>
         </Link>
 
@@ -265,25 +266,25 @@ export function Header({
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 md:hidden">
-          <ModeToggle mode={mode} pathname={pathname} text={text} href={href} lang={lang} compact />
-          <button
-            type="button"
-            className="inline-flex h-10 w-10 items-center justify-center border border-line text-ink"
-            aria-expanded={menuOpen}
-            aria-controls={menuId}
-            aria-label={text.menu}
-            onClick={() => setMenuOpen((value) => !value)}
-          >
-            <MenuIcon open={menuOpen} />
-          </button>
-        </div>
+        <button
+          type="button"
+          className="inline-flex h-10 w-10 shrink-0 items-center justify-center border border-line text-ink md:hidden"
+          aria-expanded={menuOpen}
+          aria-controls={menuId}
+          aria-label={text.menu}
+          onClick={() => setMenuOpen((value) => !value)}
+        >
+          <MenuIcon open={menuOpen} />
+        </button>
       </div>
 
       {menuOpen ? (
         <div id={menuId} className="border-t border-line bg-white md:hidden">
-          <div className="mx-auto grid max-w-6xl gap-1 px-3 py-3">
-            <nav className="grid gap-0.5" aria-label="main mobile">
+          <div className="mx-auto grid max-w-6xl gap-1 px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+            <div className="mb-1 px-1">
+              <ModeToggle mode={mode} pathname={pathname} text={text} href={href} lang={lang} onPicked={() => setMenuOpen(false)} />
+            </div>
+            <nav className="grid gap-0.5 border-t border-line pt-2" aria-label="main mobile">
               {links.map(([label, hrefValue]) => (
                 <Link
                   key={label}
@@ -307,7 +308,6 @@ export function Header({
             </nav>
             <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-line px-1 pt-3">
               <LanguageMenu lang={lang} label={text.language} switchLang={switchLang} align="left" onPicked={() => setMenuOpen(false)} />
-              <ModeToggle mode={mode} pathname={pathname} text={text} href={href} lang={lang} onPicked={() => setMenuOpen(false)} />
             </div>
           </div>
         </div>
@@ -332,8 +332,8 @@ export function Footer({
   if (refCode) query.set("ref", refCode);
   const href = (path: string) => `/${lang}${path}?${query.toString()}`;
   return (
-    <footer className="mt-12 bg-ink text-white sm:mt-20">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 text-sm md:grid-cols-3">
+    <footer className="mt-10 bg-ink text-white sm:mt-20">
+      <div className="mx-auto grid max-w-6xl gap-7 px-4 py-9 text-sm sm:gap-8 sm:py-10 md:grid-cols-3">
         <div>
           <p className="text-base font-semibold tracking-wide">K-BUS HUB</p>
           <p className="mt-3 max-w-xs leading-6 text-white/70">{text.footerNote}</p>

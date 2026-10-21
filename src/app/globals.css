@@ -134,3 +134,39 @@ summary::-webkit-details-marker {
   line-height: 1.45;
   color: var(--muted);
 }
+
+@keyframes hero-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(0.6rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-reveal {
+  animation: hero-reveal 0.55s ease-out both;
+}
+
+.hero-reveal-delay-1 {
+  animation-delay: 0.08s;
+}
+
+.hero-reveal-delay-2 {
+  animation-delay: 0.16s;
+}
+
+.hero-reveal-delay-3 {
+  animation-delay: 0.24s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-reveal,
+  .hero-reveal-delay-1,
+  .hero-reveal-delay-2,
+  .hero-reveal-delay-3 {
+    animation: none;
+  }
+}
