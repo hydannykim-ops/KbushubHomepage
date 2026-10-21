@@ -89,10 +89,17 @@ export function BrandSidebar({
   const clearMakerHref = hrefFor(lang, ctx, query, { maker: undefined, model: undefined });
   const clearSeriesHref = hrefFor(lang, ctx, query, { maker: selectedMaker, model: undefined });
 
+  function chipClass(active: boolean) {
+    return [
+      "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-sm transition-colors",
+      active ? "bg-ink font-semibold text-white" : "bg-white text-ink ring-1 ring-[#cfd5df]",
+    ].join(" ");
+  }
+
   return (
-    <aside className="border-b border-[#d8dde6]/80 lg:border-b-0 lg:border-r lg:border-[#d8dde6]/80" data-brand-sidebar>
-      <div className="max-h-64 overflow-y-auto px-3 py-4 lg:sticky lg:top-16 lg:max-h-[calc(100vh-4rem)] md:px-4">
-        <div className="mb-3 flex items-center justify-between gap-2 px-1">
+    <aside className="border-b border-[#d8dde6]/80 bg-white lg:border-b-0 lg:border-r lg:border-[#d8dde6]/80 lg:bg-transparent" data-brand-sidebar>
+      <div className="px-3 py-3 lg:sticky lg:top-16 lg:max-h-[calc(100vh-4rem)] lg:overflow-y-auto lg:px-4 lg:py-4">
+        <div className="mb-2 flex items-center justify-between gap-2 px-0.5 lg:mb-3 lg:px-1">
           <h2 className="text-sm font-semibold text-ink">{text.brandModel}</h2>
           {(classPicked || selectedMaker || selectedModel || draftSeries) && (
             <Link
@@ -112,7 +119,7 @@ export function BrandSidebar({
           {classPicked ? (
             <Link
               href={clearAllHref}
-              className={lockedClass()}
+              className={`${lockedClass()} lg:flex`}
               onClick={() => {
                 setClassPicked(false);
                 setDraftSeries("");
@@ -174,7 +181,11 @@ export function BrandSidebar({
           ) : null}
 
           {pickingClass ? (
-            <div className="grid gap-0.5" role="group" aria-label={text.classLabel}>
+            <div
+              className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] lg:mx-0 lg:grid lg:gap-0.5 lg:overflow-visible lg:px-0 lg:pb-0 [&::-webkit-scrollbar]:hidden"
+              role="group"
+              aria-label={text.classLabel}
+            >
               {(["", "county", "medium", "large"] as const).map((value) => {
                 const href = hrefFor(lang, ctx, query, {
                   vehicleClass: value || undefined,
@@ -185,14 +196,14 @@ export function BrandSidebar({
                   <Link
                     key={value || "all"}
                     href={href}
-                    className={optionClass(false)}
+                    className={`${chipClass(false)} lg:flex lg:w-full lg:justify-between lg:rounded-md lg:bg-transparent lg:px-2 lg:py-2.5 lg:ring-0 lg:hover:bg-[#e4e8ef]/50`}
                     onClick={() => {
                       setClassPicked(true);
                       setDraftSeries("");
                     }}
                   >
                     <span>{classLabelMap[value]}</span>
-                    <span aria-hidden className="text-[10px] text-muted">
+                    <span aria-hidden className="hidden text-[10px] text-muted lg:inline">
                       ›
                     </span>
                   </Link>
@@ -202,7 +213,7 @@ export function BrandSidebar({
           ) : null}
 
           {pickingMaker ? (
-            <>
+            <div className="max-h-48 overflow-y-auto lg:max-h-none lg:overflow-visible">
               <Link
                 href={clearMakerHref}
                 className={optionClass(true)}
@@ -238,7 +249,7 @@ export function BrandSidebar({
                   </span>
                 </Link>
               ))}
-            </>
+            </div>
           ) : null}
 
           {pickingSeries ? (

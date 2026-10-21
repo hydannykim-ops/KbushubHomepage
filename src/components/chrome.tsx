@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { LogoSlot } from "@/components/media-slot";
 import type { Lang, SessionRole, TradeMode } from "@/lib/domain/types";
@@ -23,16 +23,30 @@ function GlobeIcon({ className }: { className?: string }) {
   );
 }
 
+function MenuIcon({ open }: { open: boolean }) {
+  return (
+    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      {open ? (
+        <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      ) : (
+        <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      )}
+    </svg>
+  );
+}
+
 function LanguageMenu({
   lang,
   label,
   switchLang,
   align = "right",
+  onPicked,
 }: {
   lang: Lang;
   label: string;
   switchLang: (next: Lang) => string;
   align?: "left" | "right";
+  onPicked?: () => void;
 }) {
   const rootRef = useRef<HTMLDetailsElement>(null);
   const listId = useId();
@@ -87,6 +101,7 @@ function LanguageMenu({
               }`}
               onClick={() => {
                 if (rootRef.current) rootRef.current.open = false;
+                onPicked?.();
               }}
             >
               <span>{meta.native}</span>
@@ -99,25 +114,49 @@ function LanguageMenu({
   );
 }
 
+function shortLabel(label: string, lang: Lang, kind: "domestic" | "export") {
+  if (!label) return label;
+  if (lang === "ko") return kind === "domestic" ? "국내" : "수입";
+  const part = label.split(/[\s·/_-]+/)[0];
+  return part || label;
+}
+
 function ModeToggle({
   mode,
   pathname,
   text,
   href,
+  lang,
+  compact = false,
+  onPicked,
 }: {
   mode: TradeMode;
   pathname: string;
   text: ReturnType<typeof copy>;
   href: (path: string, extra?: Record<string, string>) => string;
+  lang: Lang;
+  compact?: boolean;
+  onPicked?: () => void;
 }) {
   const stripped = pathname.replace(new RegExp(`^/(${langPathPattern})`), "") || "";
+  const pad = compact ? "px-2 py-1 text-xs" : "px-2.5 py-1 text-sm";
+  const domestic = compact ? shortLabel(text.modeDomestic, lang, "domestic") : text.modeDomestic;
+  const exported = compact ? shortLabel(text.modeExport, lang, "export") : text.modeExport;
   return (
-    <div className="flex border border-line p-0.5 text-sm" role="group" aria-label={text.modeDomestic}>
-      <Link className={mode === "domestic" ? "bg-primary px-2 py-1 text-white" : "px-2 py-1"} href={href(stripped, { mode: "domestic" })}>
-        {text.modeDomestic}
+    <div className="flex shrink-0 border border-line p-0.5" role="group" aria-label={text.modeDomestic}>
+      <Link
+        className={mode === "domestic" ? `bg-primary ${pad} font-medium text-white` : `${pad} text-foreground`}
+        href={href(stripped, { mode: "domestic" })}
+        onClick={onPicked}
+      >
+        {domestic}
       </Link>
-      <Link className={mode === "export" ? "bg-primary px-2 py-1 text-white" : "px-2 py-1"} href={href(stripped, { mode: "export" })}>
-        {text.modeExport}
+      <Link
+        className={mode === "export" ? `bg-primary ${pad} font-medium text-white` : `${pad} text-foreground`}
+        href={href(stripped, { mode: "export" })}
+        onClick={onPicked}
+      >
+        {exported}
       </Link>
     </div>
   );
@@ -139,6 +178,26 @@ export function Header({
   const mode = defaultMode;
   const ref = refCode || "";
   const signedIn = member?.role === "customer" || member?.role === "dealer";
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuId = useId();
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") setMenuOpen(false);
+    }
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
 
   function href(path: string, extra?: Record<string, string>) {
     const query = new URLSearchParams();
@@ -176,15 +235,16 @@ export function Header({
       ] as const);
 
   return (
-    <header className="sticky top-0 z-40 overflow-visible border-b border-line bg-white">
-      <div className="relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <Link href={href("")} className="flex items-center gap-3 text-foreground">
+    <header className="sticky top-0 z-40 border-b border-line bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/90">
+      <div className="relative mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 py-2.5 sm:gap-4 sm:px-4 sm:py-3">
+        <Link href={href("")} className="flex min-w-0 items-center gap-2 text-foreground sm:gap-3" onClick={() => setMenuOpen(false)}>
           <LogoSlot label={text.mediaLogo} />
-          <span>
-            <span className="block text-[11px] font-semibold tracking-[0.18em] text-muted">K-BUS</span>
-            <span className="block text-lg font-semibold leading-none tracking-wide">HUB</span>
+          <span className="min-w-0">
+            <span className="block text-[10px] font-semibold tracking-[0.18em] text-muted sm:text-[11px]">K-BUS</span>
+            <span className="block text-base font-semibold leading-none tracking-wide sm:text-lg">HUB</span>
           </span>
         </Link>
+
         <nav className="hidden items-center gap-5 text-sm font-medium md:flex" aria-label="main">
           {links.map(([label, hrefValue]) => (
             <Link key={label} href={hrefValue} className="hover:text-primary">
@@ -192,6 +252,7 @@ export function Header({
             </Link>
           ))}
         </nav>
+
         <div className="hidden items-center gap-3 md:flex">
           {accountLinks.map(([label, hrefValue]) => (
             <Link key={label} href={hrefValue} className="text-sm font-semibold text-foreground hover:text-primary">
@@ -200,31 +261,57 @@ export function Header({
           ))}
           <div className="flex flex-wrap items-center gap-2">
             <LanguageMenu lang={lang} label={text.language} switchLang={switchLang} />
-            <ModeToggle mode={mode} pathname={pathname} text={text} href={href} />
+            <ModeToggle mode={mode} pathname={pathname} text={text} href={href} lang={lang} />
           </div>
         </div>
-        <details className="md:hidden">
-          <summary className="cursor-pointer border border-line px-3 py-2 text-sm">{text.menu}</summary>
-          <div className="absolute inset-x-0 top-full z-50 border-b border-line bg-white px-4 py-4">
-            <nav className="grid gap-3 text-sm" aria-label="main mobile">
+
+        <div className="flex items-center gap-1.5 md:hidden">
+          <ModeToggle mode={mode} pathname={pathname} text={text} href={href} lang={lang} compact />
+          <button
+            type="button"
+            className="inline-flex h-10 w-10 items-center justify-center border border-line text-ink"
+            aria-expanded={menuOpen}
+            aria-controls={menuId}
+            aria-label={text.menu}
+            onClick={() => setMenuOpen((value) => !value)}
+          >
+            <MenuIcon open={menuOpen} />
+          </button>
+        </div>
+      </div>
+
+      {menuOpen ? (
+        <div id={menuId} className="border-t border-line bg-white md:hidden">
+          <div className="mx-auto grid max-w-6xl gap-1 px-3 py-3">
+            <nav className="grid gap-0.5" aria-label="main mobile">
               {links.map(([label, hrefValue]) => (
-                <Link key={label} href={hrefValue}>
+                <Link
+                  key={label}
+                  href={hrefValue}
+                  className="rounded-md px-3 py-3 text-base font-medium text-ink hover:bg-[#f3f5f8]"
+                  onClick={() => setMenuOpen(false)}
+                >
                   {label}
                 </Link>
               ))}
               {accountLinks.map(([label, hrefValue]) => (
-                <Link key={label} href={hrefValue} className="font-semibold">
+                <Link
+                  key={label}
+                  href={hrefValue}
+                  className="rounded-md px-3 py-3 text-base font-semibold text-ink hover:bg-[#f3f5f8]"
+                  onClick={() => setMenuOpen(false)}
+                >
                   {label}
                 </Link>
               ))}
             </nav>
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <LanguageMenu lang={lang} label={text.language} switchLang={switchLang} align="left" />
-              <ModeToggle mode={mode} pathname={pathname} text={text} href={href} />
+            <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-line px-1 pt-3">
+              <LanguageMenu lang={lang} label={text.language} switchLang={switchLang} align="left" onPicked={() => setMenuOpen(false)} />
+              <ModeToggle mode={mode} pathname={pathname} text={text} href={href} lang={lang} onPicked={() => setMenuOpen(false)} />
             </div>
           </div>
-        </details>
-      </div>
+        </div>
+      ) : null}
     </header>
   );
 }
@@ -245,7 +332,7 @@ export function Footer({
   if (refCode) query.set("ref", refCode);
   const href = (path: string) => `/${lang}${path}?${query.toString()}`;
   return (
-    <footer className="mt-20 bg-ink text-white">
+    <footer className="mt-12 bg-ink text-white sm:mt-20">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 text-sm md:grid-cols-3">
         <div>
           <p className="text-base font-semibold tracking-wide">K-BUS HUB</p>

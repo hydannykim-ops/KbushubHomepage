@@ -53,15 +53,29 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 3.25rem;
-  height: 2.25rem;
-  padding: 0 0.4rem;
+  min-width: 2.6rem;
+  height: 2rem;
+  padding: 0 0.35rem;
   border: 1px solid var(--line);
   background: #f3f5f8;
   color: var(--muted);
-  font-size: 0.65rem;
+  font-size: 0.58rem;
   font-weight: 700;
   letter-spacing: 0.14em;
+}
+
+@media (min-width: 640px) {
+  .logo-slot {
+    min-width: 3.25rem;
+    height: 2.25rem;
+    padding: 0 0.4rem;
+    font-size: 0.65rem;
+  }
+}
+
+/* Avoid ugly native disclosure triangles on custom menus. */
+summary::-webkit-details-marker {
+  display: none;
 }
 
 .media-slot {

@@ -134,7 +134,7 @@ export function MarketFilterBar({
 
   return (
     <div className="relative z-20" data-market-filter-bar ref={rootRef}>
-      <div className="flex flex-wrap gap-2">
+      <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0 [&::-webkit-scrollbar]:hidden">
         {chips.map((chip) => (
           <button
             key={chip.key}
@@ -157,7 +157,7 @@ export function MarketFilterBar({
           role="dialog"
           aria-modal="false"
           aria-labelledby={`${baseId}-${openKey}`}
-          className="absolute left-0 top-[calc(100%+0.5rem)] z-30 min-w-[16rem] max-w-[min(100%,24rem)] border border-line bg-white p-4 shadow-[0_12px_32px_rgba(16,32,51,0.14)]"
+          className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-30 border border-line bg-white p-4 shadow-[0_12px_32px_rgba(16,32,51,0.14)] sm:right-auto sm:min-w-[16rem] sm:max-w-[min(100%,24rem)]"
         >
           {openKey === "year" ? (
             <div className="max-w-md">

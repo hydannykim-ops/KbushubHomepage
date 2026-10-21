@@ -10,7 +10,7 @@ import { whatsappHref, whatsappMessage } from "@/lib/domain/referral";
 
 export function DemoBanner({ lang }: { lang: Lang }) {
   return (
-    <p className="bg-[#e8eef8] px-4 py-2 text-center text-sm text-foreground" role="status">
+    <p className="bg-[#e8eef8] px-3 py-1.5 text-center text-[11px] leading-snug text-foreground sm:px-4 sm:py-2 sm:text-sm" role="status">
       {copy(lang).demoBanner}
     </p>
   );

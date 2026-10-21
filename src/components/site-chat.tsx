@@ -107,10 +107,13 @@ export function SiteChat({ lang, mode, refCode }: { lang: Lang; mode: TradeMode;
   }
 
   return (
-    <div className="pointer-events-none fixed bottom-4 right-4 z-50 flex flex-col items-end gap-3 md:bottom-6 md:right-6" data-site-chat>
+    <div
+      className="pointer-events-none fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-3 z-50 flex flex-col items-end gap-3 sm:bottom-5 sm:right-5 md:bottom-6 md:right-6"
+      data-site-chat
+    >
       {open ? (
         <section
-          className="pointer-events-auto flex h-[min(32rem,calc(100vh-6rem))] w-[min(22rem,calc(100vw-2rem))] flex-col overflow-hidden border border-line bg-white shadow-[0_16px_40px_rgba(16,32,51,0.18)]"
+          className="pointer-events-auto flex h-[min(28rem,calc(100dvh-7rem))] w-[min(22rem,calc(100vw-1.5rem))] flex-col overflow-hidden border border-line bg-white shadow-[0_16px_40px_rgba(16,32,51,0.18)] sm:h-[min(32rem,calc(100vh-6rem))]"
           aria-label={ui.title}
         >
           <header className="flex items-start justify-between gap-3 border-b border-line bg-ink px-4 py-3 text-white">
@@ -199,7 +202,7 @@ export function SiteChat({ lang, mode, refCode }: { lang: Lang; mode: TradeMode;
 
       <button
         type="button"
-        className="pointer-events-auto bg-ink px-4 py-3 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(16,32,51,0.22)]"
+        className="pointer-events-auto bg-ink px-3.5 py-2.5 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(16,32,51,0.22)] sm:px-4 sm:py-3 sm:text-sm"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
       >

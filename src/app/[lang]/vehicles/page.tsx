@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { BrandSidebar } from "@/components/brand-sidebar";
 import { DataProblem, VehicleCard, sortHref } from "@/components/catalog";
 import { MarketFilterBar } from "@/components/market-filters";
+import { SortSelect } from "@/components/sort-select";
 import { copy } from "@/lib/i18n";
 import { parseVehicleQuery } from "@/lib/domain/filters";
 import { makersForClass, seriesForModel } from "@/lib/domain/vehicle-catalog";
@@ -81,9 +82,23 @@ export default async function VehiclesPage({
             </p>
           ) : null}
 
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-lg font-bold tabular-nums text-ink">{text.resultCount.replace("{n}", String(result.items.length))}</p>
-            <div className="flex flex-wrap gap-1 text-sm">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <p className="text-base font-bold tabular-nums text-ink sm:text-lg">{text.resultCount.replace("{n}", String(result.items.length))}</p>
+            <SortSelect
+              label={text.sort}
+              value={query.sort || "newest"}
+              options={(["newest", "year_desc", "year_asc", "price_asc", "price_desc", "mileage_asc"] as const).map((sort) => ({
+                value: sort,
+                label: text.sorts[sort],
+              }))}
+              hrefByValue={Object.fromEntries(
+                (["newest", "year_desc", "year_asc", "price_asc", "price_desc", "mileage_asc"] as const).map((sort) => [
+                  sort,
+                  sortHref(`/${lang}/vehicles`, query, sort, ctx),
+                ]),
+              )}
+            />
+            <div className="hidden flex-wrap gap-1 text-sm sm:flex">
               {(["newest", "year_desc", "year_asc", "price_asc", "price_desc", "mileage_asc"] as const).map((sort) => {
                 const active = query.sort === sort || (!query.sort && sort === "newest");
                 return (

@@ -36,25 +36,25 @@ export default async function HomePage({
   ] as const;
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-16 px-4 py-10 md:py-14">
-      <section className="relative min-h-[70vh] overflow-hidden border border-line bg-[#0f172a] text-white lg:min-h-[32rem]">
+    <div className="mx-auto grid max-w-6xl gap-10 px-4 py-6 sm:gap-14 sm:py-10 md:gap-16 md:py-14">
+      <section className="relative min-h-[22rem] overflow-hidden border border-line bg-[#0f172a] text-white sm:min-h-[28rem] lg:min-h-[32rem]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/demo/hero-yard.jpg" alt={text.mediaHero} className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/55 to-black/25" />
-        <div className="relative flex min-h-[70vh] max-w-2xl flex-col justify-center px-6 py-14 lg:min-h-[32rem] lg:px-10">
-          <p className="text-sm font-semibold tracking-[0.28em] text-white/90">K-BUS HUB</p>
-          <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tight md:text-5xl">{text.heroTitle}</h1>
-          <p className="mt-5 max-w-xl text-base leading-7 text-white/85">{text.heroBody}</p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href={hrefTo(lang, "/vehicles", ctx)} className="bg-primary px-5 py-3 text-sm font-semibold text-white">
+        <img src="/demo/hero-yard.jpg" alt={text.mediaHero} className="absolute inset-0 h-full w-full object-cover object-center" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/55 to-black/35 sm:bg-gradient-to-r sm:from-black/75 sm:via-black/55 sm:to-black/25" />
+        <div className="relative flex min-h-[22rem] max-w-2xl flex-col justify-end px-4 py-8 sm:min-h-[28rem] sm:justify-center sm:px-6 sm:py-14 lg:min-h-[32rem] lg:px-10">
+          <p className="text-xs font-semibold tracking-[0.22em] text-white/90 sm:text-sm sm:tracking-[0.28em]">K-BUS HUB</p>
+          <h1 className="mt-3 text-[1.75rem] font-semibold leading-tight tracking-tight sm:mt-4 sm:text-4xl md:text-5xl">{text.heroTitle}</h1>
+          <p className="mt-3 max-w-xl text-sm leading-6 text-white/85 sm:mt-5 sm:text-base sm:leading-7">{text.heroBody}</p>
+          <div className="mt-6 grid grid-cols-2 gap-2 sm:mt-8 sm:flex sm:flex-wrap sm:gap-3">
+            <Link href={hrefTo(lang, "/vehicles", ctx)} className="bg-primary px-4 py-3 text-center text-sm font-semibold text-white sm:px-5">
               {text.browseInventory}
             </Link>
-            <Link href={hrefTo(lang, "/vehicles", ctx, { class: "county" })} className="border border-white/40 bg-white/10 px-5 py-3 text-sm font-semibold text-white backdrop-blur-sm">
+            <Link href={hrefTo(lang, "/vehicles", ctx, { class: "county" })} className="border border-white/40 bg-white/10 px-4 py-3 text-center text-sm font-semibold text-white backdrop-blur-sm sm:px-5">
               {text.classCounty}
             </Link>
           </div>
         </div>
-        <span className="absolute bottom-3 left-3 bg-white/90 px-2 py-1 text-[11px] font-semibold text-muted">{text.placeholderNote}</span>
+        <span className="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] truncate bg-white/90 px-2 py-1 text-[10px] font-semibold text-muted sm:bottom-3 sm:left-3 sm:max-w-none sm:text-[11px]">{text.placeholderNote}</span>
       </section>
 
       <section className="grid gap-4 md:grid-cols-3">
