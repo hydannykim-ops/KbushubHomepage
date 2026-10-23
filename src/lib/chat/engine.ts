@@ -41,7 +41,7 @@ const intents: Intent[] = [
   },
   {
     id: "export",
-    keywords: ["수출", "export", "해상", "freight", "cif", "fob", "해외", "abroad", "destination", "수출 절차"],
+    keywords: ["수출", "export", "exportación", "cotización", "해상", "freight", "cif", "fob", "해외", "abroad", "destination", "수출 절차", "견적 문의"],
   },
   {
     id: "domestic",
@@ -70,19 +70,18 @@ const intents: Intent[] = [
   {
     id: "admin",
     keywords: ["관리자", "admin", "승인", "검토"],
-  },
-];
+  }];
 
 const replies: Record<Lang, Record<IntentId, ChatReply>> = {
   ko: {
     greeting: {
       text: "안녕하세요. K-BUS HUB 안내 챗봇입니다. 매물·수출·판매·연락처를 짧게 도와드릴게요.",
-      suggestions: ["매물 보기", "수출 절차", "내 차 팔기", "회사 연락처"],
+      suggestions: ["매물 보기", "견적 문의", "내 차 팔기", "회사 연락처"],
     },
     inventory: {
       text: "회사 확인 매물은 매물 보기에서 차급 → 제조사 → 차종류 → 차모델 순으로 고를 수 있습니다. 국내 거래와 수출은 같은 재고입니다.",
       links: [{ href: "/vehicles", label: "매물 보기" }],
-      suggestions: ["카운티", "수출 절차", "가격 문의"],
+      suggestions: ["카운티", "견적 문의", "가격 문의"],
     },
     county: {
       text: "현대 카운티는 차급에서 카운티를 고른 뒤 제조사·모델로 좁히면 됩니다.",
@@ -92,47 +91,41 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
     export: {
       text: "수출은 목적국·목적항을 남겨 주시면 담당자가 차량대금·국내운송·수출비용·해상운임·보험·검사를 구분해 견적합니다. 확인되지 않은 비용은 총액에 넣지 않고, 운임 자동 계산은 하지 않습니다.",
       links: [
-        { href: "/guide", label: "구매·수출 안내" },
-        { href: "/inquiry", label: "견적·문의" },
-      ],
+        { href: "/inquiry", label: "견적·문의" }],
       suggestions: ["매물 보기", "회사 연락처"],
     },
     domestic: {
       text: "국내 거래는 매물을 고른 뒤 구매 상담 또는 방문 예약을 남기면 담당자가 상태와 일정을 안내합니다. 계약·인도 조건은 상담 후 정합니다.",
       links: [
         { href: "/vehicles", label: "매물 보기" },
-        { href: "/inquiry", label: "상담 남기기" },
-      ],
-      suggestions: ["수출 절차", "내 차 팔기"],
+        { href: "/inquiry", label: "상담 남기기" }],
+      suggestions: ["견적 문의", "내 차 팔기"],
     },
     sell: {
       text: "판매 사업자(딜러)는 회원가입 후 정면·정측면·후면 사진으로 매물을 등록합니다. 관리자 검토 후에만 공개됩니다. 일반 고객은 매입 상담만 남길 수 있습니다.",
       links: [
         { href: "/sell", label: "내 차 팔기" },
-        { href: "/account/signup", label: "회원가입" },
-      ],
+        { href: "/account/signup", label: "회원가입" }],
       suggestions: ["회사 연락처", "매물 보기"],
     },
     wanted: {
       text: "재고에 없어도 원하는 조건(모델·대수·목적국 등)을 남기면 상담 목록으로 접수됩니다.",
       links: [{ href: "/wanted", label: "원하는 차량 요청" }],
-      suggestions: ["매물 보기", "수출 절차"],
+      suggestions: ["매물 보기", "견적 문의"],
     },
     contact: {
       text: "케이BUS HUB · 사업자등록번호 445-08-03206 · 경기도 오산시 역광장로 46-1, 206호 · kbushub@naver.com. 전화·메신저는 관리자 설정 후 표시됩니다.",
       links: [
         { href: "/inquiry", label: "문의 폼" },
-        { href: "/privacy", label: "개인정보 안내" },
-      ],
-      suggestions: ["매물 보기", "수출 절차"],
+        { href: "/privacy", label: "개인정보 안내" }],
+      suggestions: ["매물 보기", "견적 문의"],
     },
     price: {
       text: "표시 가격이 없으면 가격 문의입니다. 수출 견적은 목적국·항을 알려 주시면 항목별로 작성하고, 미확인 비용은 합산하지 않습니다.",
       links: [
         { href: "/inquiry", label: "견적 요청" },
-        { href: "/vehicles", label: "매물 보기" },
-      ],
-      suggestions: ["수출 절차", "회사 연락처"],
+        { href: "/vehicles", label: "매물 보기" }],
+      suggestions: ["견적 문의", "회사 연락처"],
     },
     agent: {
       text: "해외 에이전트는 파트너 가입 후 관리자 승인을 받으면 매물별 공유 링크를 만들고, 본인이 소개한 문의 상태만 볼 수 있습니다.",
@@ -148,21 +141,19 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       text: "아직 그 내용은 자동으로 답하기 어렵습니다. 아래 중에서 고르시거나, 문의 폼으로 남겨 주시면 담당자가 확인합니다.",
       links: [
         { href: "/inquiry", label: "문의 남기기" },
-        { href: "/vehicles", label: "매물 보기" },
-        { href: "/guide", label: "구매·수출 안내" },
-      ],
-      suggestions: ["매물 보기", "수출 절차", "내 차 팔기", "회사 연락처"],
+        { href: "/vehicles", label: "매물 보기" }],
+      suggestions: ["매물 보기", "견적 문의", "내 차 팔기", "회사 연락처"],
     },
   },
   en: {
     greeting: {
-      text: "Hi — I’m the K-BUS HUB guide bot. I can point you to inventory, export steps, selling, and contact details.",
-      suggestions: ["Browse inventory", "Export steps", "Sell a bus", "Company contact"],
+      text: "Hi — I’m the K-BUS HUB guide bot. I can point you to inventory, quotes, selling, and contact details.",
+      suggestions: ["Browse inventory", "Ask for a quote", "Sell a bus", "Company contact"],
     },
     inventory: {
       text: "Browse company-checked stock under Inventory. Pick class → maker → series → model. Domestic and export share one inventory.",
       links: [{ href: "/vehicles", label: "Browse inventory" }],
-      suggestions: ["County", "Export steps", "Price"],
+      suggestions: ["County", "Ask for a quote", "Price"],
     },
     county: {
       text: "For Hyundai County, choose the County class first, then maker and model.",
@@ -172,47 +163,41 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
     export: {
       text: "For export, leave a destination country and port. Staff quote vehicle, inland, export costs, ocean freight, and insurance/inspection separately. Unknown costs are not rolled into a total, and freight is not auto-calculated.",
       links: [
-        { href: "/guide", label: "Buying & export guide" },
-        { href: "/inquiry", label: "Ask for a quote" },
-      ],
+        { href: "/inquiry", label: "Ask for a quote" }],
       suggestions: ["Browse inventory", "Company contact"],
     },
     domestic: {
       text: "For domestic deals, pick a vehicle and leave a purchase or visit request. Staff confirm known condition and schedule; contract terms come after consultation.",
       links: [
         { href: "/vehicles", label: "Browse inventory" },
-        { href: "/inquiry", label: "Leave a request" },
-      ],
-      suggestions: ["Export steps", "Sell a bus"],
+        { href: "/inquiry", label: "Leave a request" }],
+      suggestions: ["Ask for a quote", "Sell a bus"],
     },
     sell: {
       text: "Dealers sign up, then register with front, front three-quarter, and rear photos. Listings go public only after admin review. Customers can leave a buy-back consultation instead.",
       links: [
         { href: "/sell", label: "Sell your bus" },
-        { href: "/account/signup", label: "Sign up" },
-      ],
+        { href: "/account/signup", label: "Sign up" }],
       suggestions: ["Company contact", "Browse inventory"],
     },
     wanted: {
       text: "If it’s not in stock, leave model, quantity, destination, and other needs — it stays on the consultation list.",
       links: [{ href: "/wanted", label: "Request a vehicle" }],
-      suggestions: ["Browse inventory", "Export steps"],
+      suggestions: ["Browse inventory", "Ask for a quote"],
     },
     contact: {
       text: "K-BUS HUB · Business Reg. No. 445-08-03206 · 206, 46-1 Yeokgwangjang-ro, Osan-si · kbushub@naver.com. Phone/messenger appear after admin settings.",
       links: [
         { href: "/inquiry", label: "Inquiry form" },
-        { href: "/privacy", label: "Privacy" },
-      ],
-      suggestions: ["Browse inventory", "Export steps"],
+        { href: "/privacy", label: "Privacy" }],
+      suggestions: ["Browse inventory", "Ask for a quote"],
     },
     price: {
       text: "If no price is shown, ask for pricing. Export quotes are itemized once you share destination country/port; unknown costs are not summed automatically.",
       links: [
         { href: "/inquiry", label: "Request a quote" },
-        { href: "/vehicles", label: "Browse inventory" },
-      ],
-      suggestions: ["Export steps", "Company contact"],
+        { href: "/vehicles", label: "Browse inventory" }],
+      suggestions: ["Ask for a quote", "Company contact"],
     },
     agent: {
       text: "Overseas agents apply, wait for approval, then get share links per vehicle and see only inquiries they introduced.",
@@ -228,45 +213,40 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       text: "I can’t answer that automatically yet. Pick a topic below or leave an inquiry for staff.",
       links: [
         { href: "/inquiry", label: "Leave an inquiry" },
-        { href: "/vehicles", label: "Browse inventory" },
-        { href: "/guide", label: "Buying & export guide" },
-      ],
-      suggestions: ["Browse inventory", "Export steps", "Sell a bus", "Company contact"],
+        { href: "/vehicles", label: "Browse inventory" }],
+      suggestions: ["Browse inventory", "Ask for a quote", "Sell a bus", "Company contact"],
     },
   },
   es: {
     greeting: {
-      text: "Hola. Soy el asistente de K-BUS HUB. Puedo orientar sobre inventario, exportación, venta y contacto.",
-      suggestions: ["Ver inventario", "Exportación", "Vender", "Contacto"],
+      text: "Hola. Soy el asistente de K-BUS HUB. Puedo ayudarle con el inventario, cotizaciones, venta y contacto.",
+      suggestions: ["Ver inventario", "Pedir cotización", "Vender", "Contacto"],
     },
     inventory: {
-      text: "En inventario elija clase → marca → serie → modelo. Hay un solo stock para nacional y exportación.",
+      text: "En Inventario elija clase → marca → serie → modelo. Hay un solo stock para venta nacional y exportación.",
       links: [{ href: "/vehicles", label: "Ver inventario" }],
-      suggestions: ["County", "Exportación", "Precio"],
+      suggestions: ["County", "Pedir cotización", "Precio"],
     },
     county: {
-      text: "Para Hyundai County, elija primero la clase County y luego marca y modelo.",
+      text: "Para Hyundai County, elija primero la clase County y después la marca y el modelo.",
       links: [{ href: "/vehicles?class=county", label: "Stock County" }],
       suggestions: ["Ver inventario", "Solicitar vehículo"],
     },
     export: {
-      text: "Para exportar, indique país y puerto. El personal cotiza vehículo, transporte interno, costos de exportación, flete e inspección por separado. Los costos desconocidos no se suman automáticamente.",
-      links: [
-        { href: "/guide", label: "Guía de compra y exportación" },
-        { href: "/inquiry", label: "Pedir cotización" },
-      ],
+      text: "Para exportación, indique país y puerto. El personal cotiza por separado el vehículo, el transporte interno, los costos de exportación, el flete y la inspección. Los costos sin confirmar no se suman automáticamente.",
+      links: [{ href: "/inquiry", label: "Pedir cotización" }],
       suggestions: ["Ver inventario", "Contacto"],
     },
     domestic: {
-      text: "En compra nacional, elija un vehículo y deje una consulta o visita. El personal confirma estado y agenda; el contrato se acuerda después.",
+      text: "En compra nacional, elija un vehículo y deje una consulta o visita. El personal confirma el estado y la agenda; el contrato se acuerda después.",
       links: [
         { href: "/vehicles", label: "Ver inventario" },
         { href: "/inquiry", label: "Dejar consulta" },
       ],
-      suggestions: ["Exportación", "Vender"],
+      suggestions: ["Pedir cotización", "Vender"],
     },
     sell: {
-      text: "Los concesionarios se registran y suben fotos frontal, tres cuartos y trasera. Solo se publica tras revisión admin.",
+      text: "Los concesionarios se registran y suben fotos frontal, tres cuartos y trasera. Solo se publica tras la revisión del administrador.",
       links: [
         { href: "/sell", label: "Vender su bus" },
         { href: "/account/signup", label: "Registrarse" },
@@ -274,9 +254,9 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       suggestions: ["Contacto", "Ver inventario"],
     },
     wanted: {
-      text: "Si no hay stock, deje modelo, cantidad y destino; queda en la lista de consulta.",
+      text: "Si no hay stock, deje modelo, cantidad y destino; la solicitud queda en la lista de consulta.",
       links: [{ href: "/wanted", label: "Solicitar vehículo" }],
-      suggestions: ["Ver inventario", "Exportación"],
+      suggestions: ["Ver inventario", "Pedir cotización"],
     },
     contact: {
       text: "K-BUS HUB · Reg. 445-08-03206 · Osan, Gyeonggi · kbushub@naver.com.",
@@ -284,18 +264,18 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
         { href: "/inquiry", label: "Formulario" },
         { href: "/privacy", label: "Privacidad" },
       ],
-      suggestions: ["Ver inventario", "Exportación"],
+      suggestions: ["Ver inventario", "Pedir cotización"],
     },
     price: {
-      text: "Si no hay precio, solicite cotización. La exportación se detalla por ítem según país/puerto.",
+      text: "Si no hay precio publicado, pida una cotización. En exportación el detalle va por ítem según país y puerto.",
       links: [
         { href: "/inquiry", label: "Pedir cotización" },
         { href: "/vehicles", label: "Ver inventario" },
       ],
-      suggestions: ["Exportación", "Contacto"],
+      suggestions: ["Pedir cotización", "Contacto"],
     },
     agent: {
-      text: "Los agentes solicitan alta, esperan aprobación y reciben enlaces por vehículo.",
+      text: "Los agentes solicitan el alta, esperan la aprobación y reciben enlaces por vehículo.",
       links: [{ href: "/partner", label: "Ser socio" }],
       suggestions: ["Ver inventario", "Contacto"],
     },
@@ -309,9 +289,8 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       links: [
         { href: "/inquiry", label: "Consulta" },
         { href: "/vehicles", label: "Inventario" },
-        { href: "/guide", label: "Guía" },
       ],
-      suggestions: ["Ver inventario", "Exportación", "Vender", "Contacto"],
+      suggestions: ["Ver inventario", "Pedir cotización", "Vender", "Contacto"],
     },
   },
   fr: {
@@ -332,25 +311,21 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
     export: {
       text: "Pour l’export, indiquez pays et port. Le devis sépare véhicule, transport intérieur, frais d’export, fret et inspection. Les coûts inconnus ne sont pas totalisés automatiquement.",
       links: [
-        { href: "/guide", label: "Guide achat & export" },
-        { href: "/inquiry", label: "Demander un devis" },
-      ],
+        { href: "/inquiry", label: "Demander un devis" }],
       suggestions: ["Voir le stock", "Contact"],
     },
     domestic: {
       text: "En achat national, choisissez un véhicule puis laissez une demande. Le contrat se décide après consultation.",
       links: [
         { href: "/vehicles", label: "Voir le stock" },
-        { href: "/inquiry", label: "Laisser une demande" },
-      ],
+        { href: "/inquiry", label: "Laisser une demande" }],
       suggestions: ["Export", "Vendre"],
     },
     sell: {
       text: "Les concessionnaires s’inscrivent et envoient photos avant, trois-quarts et arrière. Publication après validation admin.",
       links: [
         { href: "/sell", label: "Vendre votre bus" },
-        { href: "/account/signup", label: "Inscription" },
-      ],
+        { href: "/account/signup", label: "Inscription" }],
       suggestions: ["Contact", "Voir le stock"],
     },
     wanted: {
@@ -362,16 +337,14 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       text: "K-BUS HUB · n° 445-08-03206 · Osan · kbushub@naver.com.",
       links: [
         { href: "/inquiry", label: "Formulaire" },
-        { href: "/privacy", label: "Confidentialité" },
-      ],
+        { href: "/privacy", label: "Confidentialité" }],
       suggestions: ["Voir le stock", "Export"],
     },
     price: {
       text: "Sans prix affiché, demandez un devis. L’export est détaillé par poste selon pays/port.",
       links: [
         { href: "/inquiry", label: "Demander un devis" },
-        { href: "/vehicles", label: "Voir le stock" },
-      ],
+        { href: "/vehicles", label: "Voir le stock" }],
       suggestions: ["Export", "Contact"],
     },
     agent: {
@@ -388,9 +361,7 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       text: "Je ne peux pas répondre automatiquement. Choisissez un sujet ou laissez une demande.",
       links: [
         { href: "/inquiry", label: "Demande" },
-        { href: "/vehicles", label: "Stock" },
-        { href: "/guide", label: "Guide" },
-      ],
+        { href: "/vehicles", label: "Stock" }],
       suggestions: ["Voir le stock", "Export", "Vendre", "Contact"],
     },
   },
@@ -412,25 +383,21 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
     export: {
       text: "សម្រាប់នាំចេញ បញ្ចូលប្រទេស និងច្រក។ បុគ្គលិកបំបែកថ្លៃយានយន្ត ការដឹកក្នុងស្រុក ថ្លៃនាំចេញ ថ្លៃសមុទ្រ និងការត្រួតពិនិត្យ។",
       links: [
-        { href: "/guide", label: "ការណែនាំ" },
-        { href: "/inquiry", label: "ស្នើសម្រង់" },
-      ],
+        { href: "/inquiry", label: "ស្នើសម្រង់" }],
       suggestions: ["មើលស្តុក", "ទំនាក់ទំនង"],
     },
     domestic: {
       text: "ទិញក្នុងស្រុក៖ ជ្រើសយានយន្ត រួចទុកសំណួរ។ កិច្ចសន្យាក្រោយពិគ្រោះ។",
       links: [
         { href: "/vehicles", label: "មើលស្តុក" },
-        { href: "/inquiry", label: "ទុកសំណួរ" },
-      ],
+        { href: "/inquiry", label: "ទុកសំណួរ" }],
       suggestions: ["នាំចេញ", "លក់"],
     },
     sell: {
       text: "អ្នកលក់ចុះឈ្មោះ រួចផ្ទុករូបខាងមុខ បីភាគបួន និងខាងក្រោយ។ ផ្សាយបន្ទាប់ពីអ្នកគ្រប់គ្រងពិនិត្យ។",
       links: [
         { href: "/sell", label: "លក់ឡាន" },
-        { href: "/account/signup", label: "ចុះឈ្មោះ" },
-      ],
+        { href: "/account/signup", label: "ចុះឈ្មោះ" }],
       suggestions: ["ទំនាក់ទំនង", "មើលស្តុក"],
     },
     wanted: {
@@ -442,16 +409,14 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       text: "K-BUS HUB · 445-08-03206 · Osan · kbushub@naver.com។",
       links: [
         { href: "/inquiry", label: "ទម្រង់សំណួរ" },
-        { href: "/privacy", label: "ឯកជនភាព" },
-      ],
+        { href: "/privacy", label: "ឯកជនភាព" }],
       suggestions: ["មើលស្តុក", "នាំចេញ"],
     },
     price: {
       text: "បើគ្មានតម្លៃ ស្នើសម្រង់។ នាំចេញបំបែកតាមប្រទេស/ច្រក។",
       links: [
         { href: "/inquiry", label: "ស្នើសម្រង់" },
-        { href: "/vehicles", label: "មើលស្តុក" },
-      ],
+        { href: "/vehicles", label: "មើលស្តុក" }],
       suggestions: ["នាំចេញ", "ទំនាក់ទំនង"],
     },
     agent: {
@@ -468,9 +433,7 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       text: "មិនអាចឆ្លើយស្វ័យប្រវត្តិទេ។ ជ្រើសប្រធានបទ ឬទុកសំណួរ។",
       links: [
         { href: "/inquiry", label: "សំណួរ" },
-        { href: "/vehicles", label: "ស្តុក" },
-        { href: "/guide", label: "ការណែនាំ" },
-      ],
+        { href: "/vehicles", label: "ស្តុក" }],
       suggestions: ["មើលស្តុក", "នាំចេញ", "លក់", "ទំនាក់ទំនង"],
     },
   },
@@ -492,25 +455,21 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
     export: {
       text: "Экспортод очих улс, боомтыг үлдээнэ. Үнийн санал тээврийн хэрэгсэл, дотоод тээвэр, экспортын зардал, далайн тээвэр, шалгалтыг тусад нь гаргана.",
       links: [
-        { href: "/guide", label: "Худалдан авалт & экспорт" },
-        { href: "/inquiry", label: "Үнийн санал" },
-      ],
+        { href: "/inquiry", label: "Үнийн санал" }],
       suggestions: ["Нөөц үзэх", "Холбоо барих"],
     },
     domestic: {
       text: "Дотоод худалдан авалтад машин сонгоод асуулга үлдээнэ. Гэрээг зөвлөгөөний дараа тохирно.",
       links: [
         { href: "/vehicles", label: "Нөөц үзэх" },
-        { href: "/inquiry", label: "Асуулга" },
-      ],
+        { href: "/inquiry", label: "Асуулга" }],
       suggestions: ["Экспорт", "Зарах"],
     },
     sell: {
       text: "Дилер бүртгүүлж урд/гурван дөрөв/ард зураг илгээнэ. Админ шалгасны дараа нийтлэнэ.",
       links: [
         { href: "/sell", label: "Автобусаа зараарай" },
-        { href: "/account/signup", label: "Бүртгүүлэх" },
-      ],
+        { href: "/account/signup", label: "Бүртгүүлэх" }],
       suggestions: ["Холбоо барих", "Нөөц үзэх"],
     },
     wanted: {
@@ -522,16 +481,14 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       text: "K-BUS HUB · 445-08-03206 · Osan · kbushub@naver.com.",
       links: [
         { href: "/inquiry", label: "Асуулгын маягт" },
-        { href: "/privacy", label: "Нууцлал" },
-      ],
+        { href: "/privacy", label: "Нууцлал" }],
       suggestions: ["Нөөц үзэх", "Экспорт"],
     },
     price: {
       text: "Үнэ байхгүй бол үнийн санал авна. Экспорт улс/боомтоор задална.",
       links: [
         { href: "/inquiry", label: "Үнийн санал" },
-        { href: "/vehicles", label: "Нөөц үзэх" },
-      ],
+        { href: "/vehicles", label: "Нөөц үзэх" }],
       suggestions: ["Экспорт", "Холбоо барих"],
     },
     agent: {
@@ -548,9 +505,7 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       text: "Автоматаар хариулж чадахгүй байна. Сэдэв сонгох эсвэл асуулга үлдээнэ үү.",
       links: [
         { href: "/inquiry", label: "Асуулга" },
-        { href: "/vehicles", label: "Нөөц" },
-        { href: "/guide", label: "Заавар" },
-      ],
+        { href: "/vehicles", label: "Нөөц" }],
       suggestions: ["Нөөц үзэх", "Экспорт", "Зарах", "Холбоо барих"],
     },
   },

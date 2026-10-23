@@ -105,34 +105,6 @@ export default async function HomePage({
         )}
       </section>
 
-      <section className={`grid gap-4 ${ctx.mode === "export" ? "md:grid-cols-2" : ""}`}>
-        <article className="border border-line bg-white p-6">
-          <h2 className="text-xl font-semibold">{text.processTitle}</h2>
-          <p className="mt-3 text-sm font-semibold">{ctx.mode === "export" ? text.exportProcess : text.domesticProcess}</p>
-          <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-muted">
-            {(ctx.mode === "export" ? text.exportSteps : text.domesticSteps).map((step) => (
-              <li key={step}>{step}</li>
-            ))}
-          </ol>
-          <Link href={hrefTo(lang, "/guide", ctx)} className="mt-4 inline-block text-sm font-semibold text-primary">
-            {text.navGuide}
-          </Link>
-        </article>
-        {ctx.mode === "export" ? (
-          <article className="border border-line bg-white p-6">
-            <h2 className="text-xl font-semibold">{text.exportTrustTitle}</h2>
-            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-muted">
-              {text.exportTrustPoints.slice(0, 3).map((point) => (
-                <li key={point}>{point}</li>
-              ))}
-            </ul>
-            <Link href={hrefTo(lang, "/inquiry", ctx, { kind: "quote" })} className="mt-4 inline-block text-sm font-semibold text-primary">
-              {text.guideCtaQuote}
-            </Link>
-          </article>
-        ) : null}
-      </section>
-
       <section className="grid gap-4 md:grid-cols-2">
         <Link href={hrefTo(lang, "/wanted", ctx)} className="border border-line bg-white p-6">
           <h2 className="text-xl font-semibold">{text.wantedTitle}</h2>

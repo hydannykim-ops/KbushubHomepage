@@ -149,14 +149,7 @@ export default async function VehicleDetailPage({
           <p className="mt-2 text-xs text-muted">
             {text.photographed}: {vehicle.photographedOn ?? text.unknown} · {text.stockChecked}: {vehicle.stockCheckedOn ?? text.unknown}
           </p>
-          {ctx.mode === "export" ? (
-            <p className="mt-2 text-xs leading-5 text-muted">
-              {text.exportQuoteNote}{" "}
-              <Link href={hrefTo(lang, "/guide", ctx)} className="font-semibold text-primary">
-                {text.navGuide}
-              </Link>
-            </p>
-          ) : null}
+          {ctx.mode === "export" ? <p className="mt-2 text-xs leading-5 text-muted">{text.exportQuoteNote}</p> : null}
           {sold ? <p className="mt-3 text-sm">{text.soldNote}</p> : null}
           {vehicle.status === "reserved" ? <p className="mt-3 text-sm">{text.reservedNote}</p> : null}
           {!sold ? (

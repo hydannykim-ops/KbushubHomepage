@@ -1,7 +1,8 @@
 import type { Lang } from "@/lib/domain/types";
 
 /** UI languages for Korea plus export target markets. */
-export const langs = ["ko", "en", "es", "fr", "km", "mn"] as const;
+/** Spanish is listed early — Dominican Republic is a primary export market. */
+export const langs = ["ko", "es", "en", "fr", "km", "mn"] as const;
 
 export type AppLang = (typeof langs)[number];
 

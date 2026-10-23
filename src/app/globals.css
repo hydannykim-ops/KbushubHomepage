@@ -31,10 +31,22 @@ html[lang="km"] body {
 }
 
 html[lang="mn"] body,
-html[lang="es"] body,
 html[lang="fr"] body,
 html[lang="en"] body {
   font-family: "Noto Sans", "Noto Sans KR", sans-serif;
+}
+
+/* Spanish: latin-ext glyphs + slightly heavier weight so accents stay crisp. */
+html[lang="es"] body {
+  font-family: "Noto Sans", "Noto Sans KR", sans-serif;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+html[lang="es"] .font-semibold,
+html[lang="es"] .font-bold {
+  font-weight: 700;
 }
 
 input,
