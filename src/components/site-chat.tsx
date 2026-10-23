@@ -57,11 +57,11 @@ export function SiteChat({ lang, mode, refCode }: { lang: Lang; mode: TradeMode;
   // Hide on admin routes.
   if (pathname.startsWith("/admin")) return null;
 
-  // Vehicle detail has a fixed mobile CTA bar — lift the FAB above it.
+  // Vehicle detail has a fixed mobile CTA bar (~90px) — clear it with room for the FAB height.
   const onVehicleDetail = /\/vehicles\/[^/]+$/.test(pathname);
   const shellClass = [
     "pointer-events-none fixed right-4 z-50 flex flex-col items-end gap-3 md:right-6",
-    onVehicleDetail ? "bottom-20 md:bottom-6" : "bottom-4 md:bottom-6",
+    onVehicleDetail ? "bottom-28 md:bottom-6" : "bottom-4 md:bottom-6",
   ].join(" ");
 
   async function ask(text: string) {

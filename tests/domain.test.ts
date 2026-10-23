@@ -11,7 +11,17 @@ import { normalizeReferralCode, referralForInquiry, rememberReferral, whatsappHr
 import { acceptOrReject, submissionGate } from "../src/lib/domain/submit";
 import { checkImage } from "../src/lib/domain/uploads";
 import { parseInquiry, parseQuote } from "../src/lib/domain/validation";
-import { makersForClass, modelsForMaker, modelsForSeries, seriesForMaker, seriesHasVariants } from "../src/lib/domain/vehicle-catalog";
+import {
+  makerLabel,
+  makersForClass,
+  modelLabel,
+  modelsForMaker,
+  modelsForSeries,
+  seriesForMaker,
+  seriesHasVariants,
+  seriesLabel,
+  vehicleTitle,
+} from "../src/lib/domain/vehicle-catalog";
 import { buildSeed } from "../src/lib/demo/seed";
 import { createDemoStore } from "../src/lib/demo/store";
 
@@ -465,4 +475,15 @@ test("maker series drill-down groups shared model lines", () => {
     "유니버스 프라임EX",
     "유니버스 럭셔리",
   ]);
+});
+
+test("catalog labels localize maker model series for non-Korean UI", () => {
+  assert.equal(makerLabel("현대", "ko"), "현대");
+  assert.equal(makerLabel("현대", "en"), "Hyundai");
+  assert.equal(modelLabel("유니버스 프라임", "ko"), "유니버스 프라임");
+  assert.equal(modelLabel("유니버스 프라임", "en"), "Universe Prime");
+  assert.equal(seriesLabel("그랜버드", "en"), "Granbird");
+  assert.equal(vehicleTitle({ maker: "현대", model: "카운티", trim: "데모" }, "en"), "Hyundai County 데모");
+  assert.equal(vehicleTitle({ maker: "현대", model: "카운티", trim: "데모" }, "en", { includeTrim: false }), "Hyundai County");
+  assert.equal(vehicleTitle({ maker: "현대", model: "카운티" }, "ko"), "현대 카운티");
 });
