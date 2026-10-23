@@ -6,9 +6,11 @@ import { MakerMark } from "@/components/maker-mark";
 import {
   makerLabel,
   makersForClass,
+  modelLabel,
   modelsForSeries,
   seriesForMaker,
   seriesForModel,
+  seriesLabel,
 } from "@/lib/domain/vehicle-catalog";
 import type { Lang, TradeMode, VehicleClass, VehicleQuery } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
@@ -148,7 +150,7 @@ export function BrandSidebar({
               <Link href={clearSeriesHref} className={lockedClass()} onClick={() => setDraftSeries("")}>
                 <span className="min-w-0">
                   <span className="block text-[11px] font-medium text-muted">{text.series}</span>
-                  <span className="block truncate">{lockedSeries}</span>
+                  <span className="block truncate">{seriesLabel(lockedSeries, lang)}</span>
                 </span>
                 <span className="shrink-0 text-xs font-medium text-muted">{text.reset}</span>
               </Link>
@@ -156,7 +158,7 @@ export function BrandSidebar({
               <button type="button" className={lockedClass()} onClick={() => setDraftSeries("")}>
                 <span className="min-w-0">
                   <span className="block text-[11px] font-medium text-muted">{text.series}</span>
-                  <span className="block truncate">{lockedSeries}</span>
+                  <span className="block truncate">{seriesLabel(lockedSeries, lang)}</span>
                 </span>
                 <span className="shrink-0 text-xs font-medium text-muted">{text.reset}</span>
               </button>
@@ -167,7 +169,7 @@ export function BrandSidebar({
             <Link href={clearSeriesHref} className={lockedClass()} onClick={() => setDraftSeries("")}>
               <span className="min-w-0">
                 <span className="block text-[11px] font-medium text-muted">{text.model}</span>
-                <span className="block truncate">{selectedModel}</span>
+                <span className="block truncate">{modelLabel(selectedModel, lang)}</span>
               </span>
               <span className="shrink-0 text-xs font-medium text-muted">{text.reset}</span>
             </Link>
@@ -261,7 +263,7 @@ export function BrandSidebar({
                     setDraftSeries(series);
                   }}
                 >
-                  <span>{series}</span>
+                  <span>{seriesLabel(series, lang)}</span>
                   <span aria-hidden className="text-[10px] text-muted">
                     ›
                   </span>
@@ -271,14 +273,14 @@ export function BrandSidebar({
           ) : null}
 
           {pickingVariant ? (
-            <div className="grid gap-0.5" role="group" aria-label={`${lockedSeries} ${text.model}`}>
+            <div className="grid gap-0.5" role="group" aria-label={`${seriesLabel(lockedSeries, lang)} ${text.model}`}>
               {variants.map((model) => (
                 <Link
                   key={model}
                   href={hrefFor(lang, ctx, query, { maker: selectedMaker, model })}
                   className={optionClass(false)}
                 >
-                  <span>{model}</span>
+                  <span>{modelLabel(model, lang)}</span>
                 </Link>
               ))}
             </div>

@@ -5,6 +5,7 @@ import { formatKm, priceView, showText } from "@/lib/domain/money";
 import type { Lang, PublicVehicle, TradeMode, VehiclePhoto, VehicleQuery } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
 import { contentFieldLang, localeTag } from "@/lib/i18n/langs";
+import { makerLabel, modelLabel, vehicleTitle } from "@/lib/domain/vehicle-catalog";
 import { classLabel, fuelLabel, longBodyLabel, statusLabel, steeringLabel, transferLabel, transmissionLabel } from "@/lib/labels";
 import { whatsappHref, whatsappMessage } from "@/lib/domain/referral";
 
@@ -82,7 +83,7 @@ export function VehicleCard({
         <PhotoFrame vehicle={vehicle} lang={lang} />
         <div className="space-y-2 pt-3">
           <h2 className="text-[1.05rem] font-semibold leading-snug tracking-tight text-ink">
-            {vehicle.maker} {vehicle.model}
+            {vehicleTitle(vehicle, lang, { includeTrim: false })}
             {vehicle.trim ? (
               <span className="mt-1 block text-sm font-medium text-muted">{vehicle.trim}</span>
             ) : null}
@@ -124,8 +125,8 @@ export function SpecTable({ vehicle, lang }: { vehicle: PublicVehicle; lang: Lan
       ? `${vehicle.lengthMm ?? "-"} / ${vehicle.widthMm ?? "-"} / ${vehicle.heightMm ?? "-"} mm`
       : null;
   const rows: Array<[string, string]> = [
-    [text.maker, vehicle.maker],
-    [text.model, `${vehicle.model}${vehicle.trim ? ` / ${vehicle.trim}` : ""}`],
+    [text.maker, makerLabel(vehicle.maker, lang)],
+    [text.model, `${modelLabel(vehicle.model, lang)}${vehicle.trim ? ` / ${vehicle.trim}` : ""}`],
     [text.classLabel, classLabel(vehicle.vehicleClass, lang)],
     [text.year, vehicle.modelYear ? String(vehicle.modelYear) : text.unknown],
     [text.firstRegistered, showText(vehicle.firstRegisteredOn, lang)],

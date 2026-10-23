@@ -4,6 +4,7 @@ import { requireAgent } from "@/lib/auth/session";
 import { getRepository } from "@/lib/data/repository";
 import { copy } from "@/lib/i18n";
 import { inquiryStatusLabel } from "@/lib/labels";
+import { vehicleTitle } from "@/lib/domain/vehicle-catalog";
 import { hrefTo, parseLang } from "@/lib/request-context";
 import { siteUrl } from "@/lib/config";
 
@@ -39,7 +40,7 @@ export default async function AgentHome({ params }: { params: Promise<{ lang: st
               return (
                 <li key={vehicle.id} className="rounded-md border border-line bg-white p-3">
                   <p className="font-medium">
-                    {vehicle.stockNo} · {vehicle.maker} {vehicle.model}
+                    {vehicle.stockNo} · {vehicleTitle(vehicle, lang)}
                   </p>
                   <Link href={path} className="break-all text-primary">
                     {absolute}

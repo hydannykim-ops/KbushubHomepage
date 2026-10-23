@@ -57,6 +57,13 @@ export function SiteChat({ lang, mode, refCode }: { lang: Lang; mode: TradeMode;
   // Hide on admin routes.
   if (pathname.startsWith("/admin")) return null;
 
+  // Vehicle detail has a fixed mobile CTA bar — lift the FAB above it.
+  const onVehicleDetail = /\/vehicles\/[^/]+$/.test(pathname);
+  const shellClass = [
+    "pointer-events-none fixed right-4 z-50 flex flex-col items-end gap-3 md:right-6",
+    onVehicleDetail ? "bottom-20 md:bottom-6" : "bottom-4 md:bottom-6",
+  ].join(" ");
+
   async function ask(text: string) {
     const trimmed = text.trim();
     if (!trimmed || pending) return;
@@ -107,7 +114,7 @@ export function SiteChat({ lang, mode, refCode }: { lang: Lang; mode: TradeMode;
   }
 
   return (
-    <div className="pointer-events-none fixed bottom-4 right-4 z-50 flex flex-col items-end gap-3 md:bottom-6 md:right-6" data-site-chat>
+    <div className={shellClass} data-site-chat>
       {open ? (
         <section
           className="pointer-events-auto flex h-[min(32rem,calc(100vh-6rem))] w-[min(22rem,calc(100vw-2rem))] flex-col overflow-hidden border border-line bg-white shadow-[0_16px_40px_rgba(16,32,51,0.18)]"

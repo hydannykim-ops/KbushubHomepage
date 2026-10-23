@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { copy } from "@/lib/i18n";
 import { statusLabel } from "@/lib/labels";
+import { vehicleTitle } from "@/lib/domain/vehicle-catalog";
 import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
 import { loadSite } from "@/lib/site-load";
 import { DataProblem } from "@/components/catalog";
@@ -59,7 +60,7 @@ export default async function AccountPage({
               {listings.map((listing) => (
                 <li key={listing.id} className="flex items-center justify-between gap-3 py-3 text-sm">
                   <span>
-                    {listing.stockNo} · {listing.maker} {listing.model}
+                    {listing.stockNo} · {vehicleTitle(listing, lang)}
                   </span>
                   <span className="font-semibold">{statusLabel(listing.status, lang)}</span>
                 </li>

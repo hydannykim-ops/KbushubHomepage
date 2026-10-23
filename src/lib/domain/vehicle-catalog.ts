@@ -134,6 +134,77 @@ const makerEn: Record<BusMaker, string> = {
   기타: "Other",
 };
 
+/** Latin / common export names for catalog models. Stored values stay Korean. */
+const modelEn: Record<string, string> = {
+  카운티: "County",
+  "카운티 롱바디": "County Long Body",
+  쏠라티: "Solati",
+  에어로타운: "Aero Town",
+  "에어로타운 롱바디": "Aero Town Long Body",
+  에어로시티: "Aero City",
+  유니시티: "Universe City",
+  글로벌900: "Global 900",
+  유니버스: "Universe",
+  "유니버스 노블": "Universe Noble",
+  "유니버스 노블EX": "Universe Noble EX",
+  "유니버스 프라임": "Universe Prime",
+  "유니버스 프라임EX": "Universe Prime EX",
+  "유니버스 럭셔리": "Universe Luxury",
+  일렉시티: "Elec City",
+  그랜버드: "Granbird",
+  "뉴그랜버드 실크로드": "New Granbird Silk Road",
+  "뉴그랜버드 파크웨이": "New Granbird Parkway",
+  "뉴그랜버드 썬샤인": "New Granbird Sunshine",
+  레스타: "Lesta",
+  BH090: "BH090",
+  BS106: "BS106",
+  BX212: "BX212",
+  FX: "FX",
+  스페이스콤비: "Space Combi",
+  로얄시티: "Royal City",
+  스프린터: "Sprinter",
+  투리스모: "Tourismo",
+  트라베고: "Travego",
+  슬로프: "Slope",
+  시티: "City",
+  코치: "Coach",
+  볼보: "Volvo",
+  스카니아: "Scania",
+  만: "MAN",
+  이베코: "Iveco",
+  기타: "Other",
+};
+
+const seriesEn: Record<string, string> = {
+  카운티: "County",
+  쏠라티: "Solati",
+  에어로타운: "Aero Town",
+  에어로시티: "Aero City",
+  유니시티: "Universe City",
+  글로벌900: "Global 900",
+  유니버스: "Universe",
+  일렉시티: "Elec City",
+  그랜버드: "Granbird",
+  레스타: "Lesta",
+  BH090: "BH090",
+  BS106: "BS106",
+  BX212: "BX212",
+  FX: "FX",
+  스페이스콤비: "Space Combi",
+  로얄시티: "Royal City",
+  스프린터: "Sprinter",
+  투리스모: "Tourismo",
+  트라베고: "Travego",
+  슬로프: "Slope",
+  시티: "City",
+  코치: "Coach",
+  볼보: "Volvo",
+  스카니아: "Scania",
+  만: "MAN",
+  이베코: "Iveco",
+  기타: "Other",
+};
+
 export function isBusMaker(value: string): value is BusMaker {
   return (busMakers as readonly string[]).includes(value);
 }
@@ -157,6 +228,27 @@ export function makersForClass(vehicleClass: VehicleClass | "" = ""): readonly B
 export function makerLabel(maker: string, lang: Lang): string {
   if (!isBusMaker(maker)) return maker;
   return lang === "ko" ? maker : makerEn[maker];
+}
+
+export function modelLabel(model: string, lang: Lang): string {
+  if (lang === "ko") return model;
+  return modelEn[model] ?? model;
+}
+
+export function seriesLabel(series: string, lang: Lang): string {
+  if (lang === "ko") return series;
+  return seriesEn[series] ?? modelEn[series] ?? series;
+}
+
+/** Public listing title: localized maker + model (+ optional trim as stored). */
+export function vehicleTitle(
+  vehicle: { maker: string; model: string; trim?: string | null },
+  lang: Lang,
+  options?: { includeTrim?: boolean },
+): string {
+  const base = `${makerLabel(vehicle.maker, lang)} ${modelLabel(vehicle.model, lang)}`.trim();
+  if (options?.includeTrim === false || !vehicle.trim) return base;
+  return `${base} ${vehicle.trim}`.trim();
 }
 
 export function knownMakerModel(maker: string, model: string, vehicleClass: VehicleClass | "" = ""): boolean {

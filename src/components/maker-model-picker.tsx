@@ -6,10 +6,12 @@ import {
   makerForModel,
   makerLabel,
   makersForClass,
+  modelLabel,
   modelsForMaker,
   modelsForSeries,
   seriesForMaker,
   seriesForModel,
+  seriesLabel,
 } from "@/lib/domain/vehicle-catalog";
 import type { Lang, VehicleClass } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
@@ -150,7 +152,7 @@ export function MakerModelPicker({
         >
           <span>
             <span className="text-xs font-semibold text-muted">{text.series}</span>
-            <span className="mt-0.5 block font-semibold text-ink">{series}</span>
+            <span className="mt-0.5 block font-semibold text-ink">{seriesLabel(series, lang)}</span>
           </span>
           <span className="text-xs font-medium text-muted">{text.reset}</span>
         </button>
@@ -167,7 +169,7 @@ export function MakerModelPicker({
         >
           <span>
             <span className="text-xs font-semibold text-muted">{text.model}</span>
-            <span className="mt-0.5 block font-semibold text-ink">{model}</span>
+            <span className="mt-0.5 block font-semibold text-ink">{modelLabel(model, lang)}</span>
           </span>
           <span className="text-xs font-medium text-muted">{text.reset}</span>
         </button>
@@ -218,7 +220,7 @@ export function MakerModelPicker({
             ) : null}
             {seriesList.map((entry) => (
               <button key={entry} type="button" className={optionClass(false, market)} onClick={() => pickSeries(entry)}>
-                <span>{entry}</span>
+                <span>{seriesLabel(entry, lang)}</span>
                 <span aria-hidden className="text-[10px] opacity-50">
                   ›
                 </span>
@@ -229,7 +231,7 @@ export function MakerModelPicker({
       ) : null}
 
       {step === "model" && maker && series ? (
-        <div className={market ? "grid gap-0.5" : "grid gap-2"} role="listbox" aria-label={`${series} ${text.model}`}>
+        <div className={market ? "grid gap-0.5" : "grid gap-2"} role="listbox" aria-label={`${seriesLabel(series, lang)} ${text.model}`}>
           {variants.map((entry) => (
             <button
               key={entry}
@@ -238,7 +240,7 @@ export function MakerModelPicker({
               aria-pressed={model === entry}
               onClick={() => pickModel(entry)}
             >
-              <span>{entry}</span>
+              <span>{modelLabel(entry, lang)}</span>
             </button>
           ))}
         </div>

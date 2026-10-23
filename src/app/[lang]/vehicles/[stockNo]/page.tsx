@@ -6,6 +6,7 @@ import { MediaSlot } from "@/components/media-slot";
 import { ExportInquiryFields } from "@/components/export-inquiry-fields";
 import { Consent, EnhanceForm, Field, Honeypot, SubmitBanner } from "@/components/forms";
 import { priceView, showText } from "@/lib/domain/money";
+import { vehicleTitle } from "@/lib/domain/vehicle-catalog";
 import { copy } from "@/lib/i18n";
 import { contentFieldLang } from "@/lib/i18n/langs";
 import { statusLabel, transferLabel } from "@/lib/labels";
@@ -24,7 +25,7 @@ export async function generateMetadata({
   if (!site.ok) return { title: stockNo, robots: { index: false, follow: false } };
   const vehicle = await site.repo.getPublicByStockNo(stockNo);
   if (!vehicle) return { title: stockNo, robots: { index: false, follow: false } };
-  const title = `${vehicle.maker} ${vehicle.model} ${vehicle.modelYear ?? ""} ${vehicle.stockNo}`.replace(/\s+/g, " ").trim();
+  const title = `${vehicleTitle(vehicle, lang)} ${vehicle.modelYear ?? ""} ${vehicle.stockNo}`.replace(/\s+/g, " ").trim();
   const description = (contentFieldLang(lang) === "ko" ? vehicle.descriptionKo : vehicle.descriptionEn) || title;
   const cover = vehicle.photos.find((photo) => photo.isCover && !photo.placeholder);
   return {
@@ -132,9 +133,7 @@ export default async function VehicleDetailPage({
             {text.stockNo} {vehicle.stockNo}
           </p>
           <p className="mt-2 inline-block rounded bg-[#e8eef8] px-2 py-1 text-sm font-semibold">{statusLabel(vehicle.status, lang)}</p>
-          <h1 className="mt-3 text-2xl font-bold">
-            {vehicle.maker} {vehicle.model} {vehicle.trim ?? ""}
-          </h1>
+          <h1 className="mt-3 text-2xl font-bold">{vehicleTitle(vehicle, lang)}</h1>
           <p className="mt-2 text-sm text-muted">
             {[
               vehicle.location || text.unknown,
@@ -160,6 +159,20 @@ export default async function VehicleDetailPage({
           ) : null}
           {sold ? <p className="mt-3 text-sm">{text.soldNote}</p> : null}
           {vehicle.status === "reserved" ? <p className="mt-3 text-sm">{text.reservedNote}</p> : null}
+          {!sold ? (
+            <div className="mt-4 grid gap-2">
+              <a href="#inquiry" className="rounded-md bg-primary px-4 py-3 text-center text-sm font-semibold text-white">
+                {ctx.mode === "export" ? text.quote : text.purchase}
+              </a>
+              <a href="#inquiry" className="rounded-md border border-line px-4 py-3 text-center text-sm font-semibold">
+                {ctx.mode === "export" ? text.videoRequest : text.visit}
+              </a>
+            </div>
+          ) : (
+            <Link href={hrefTo(lang, "/wanted", ctx, { model: vehicle.model })} className="mt-4 inline-flex rounded-md bg-primary px-4 py-3 text-sm font-semibold text-white">
+              {text.similar}
+            </Link>
+          )}
           <div className="mt-4 grid gap-2 text-sm">
             {ctx.mode === "domestic" ? (
               contacts.phone ? (
@@ -167,7 +180,7 @@ export default async function VehicleDetailPage({
                   {text.phone} {contacts.phone}
                 </a>
               ) : (
-                <p>{text.contactMissing}</p>
+                <p className="text-muted">{text.contactMissing}</p>
               )
             ) : null}
             {ctx.mode === "domestic" && contacts.kakao ? (
@@ -181,16 +194,11 @@ export default async function VehicleDetailPage({
                   {text.whatsapp}
                 </a>
               ) : (
-                <p>{text.contactMissing}</p>
+                <p className="text-muted">{text.contactMissing}</p>
               )
             ) : null}
             {ctx.mode === "export" && contacts.whatsapp ? <p className="text-xs text-muted">{text.whatsappNote}</p> : null}
           </div>
-          {sold ? (
-            <Link href={hrefTo(lang, "/wanted", ctx, { model: vehicle.model })} className="mt-4 inline-flex rounded-md bg-primary px-4 py-3 text-sm font-semibold text-white">
-              {text.similar}
-            </Link>
-          ) : null}
         </aside>
       </div>
       <section>
