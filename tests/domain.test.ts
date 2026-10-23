@@ -30,9 +30,9 @@ test("price sort keeps currencies apart and puts ask-price last", () => {
   const domestic = filterVehicles(seed.vehicles, { sort: "price_asc" }, "domestic");
   assert.deepEqual(
     domestic.items.map((item) => item.stockNo),
-    ["DEMO-L-01", "DEMO-C-01", "DEMO-L-02", "DEMO-C-02", "DEMO-M-01"],
+    ["HB-L-01", "HB-C-01", "HB-L-02", "HB-C-02", "HB-M-01"],
   );
-  assert.equal(domestic.items.some((item) => item.stockNo === "DEMO-M-02"), false);
+  assert.equal(domestic.items.some((item) => item.stockNo === "HB-M-02"), false);
   assert.equal(containsInternalKey(domestic.items), false);
 
   const exported = filterVehicles(seed.vehicles, { sort: "price_asc" }, "export");
@@ -54,7 +54,7 @@ test("export price filter does not compare different currencies", () => {
   assert.equal(usd.ignoredPriceFilter, false);
   assert.deepEqual(
     usd.items.map((item) => item.stockNo),
-    ["DEMO-C-01"],
+    ["HB-C-01"],
   );
 });
 
@@ -63,7 +63,7 @@ test("filters and shareable query round-trip", () => {
   const query = parseVehicleQuery(new URLSearchParams(raw));
   const seed = buildSeed();
   const result = filterVehicles(seed.vehicles, query, "export");
-  assert.deepEqual(result.items.map((item) => item.stockNo).sort(), ["DEMO-C-01", "DEMO-C-02"]);
+  assert.deepEqual(result.items.map((item) => item.stockNo).sort(), ["HB-C-01", "HB-C-02"]);
   const serialized = serializeVehicleQuery(query, { mode: "export", ref: "DEMOAGT1" });
   const again = parseVehicleQuery(new URLSearchParams(serialized));
   assert.equal(again.vehicleClass, "county");
@@ -75,8 +75,8 @@ test("transfer filter and export shipping preference", () => {
   const seed = buildSeed();
   const scrap = filterVehicles(seed.vehicles, { transferType: "scrap_replace" }, "domestic");
   assert.ok(scrap.items.every((item) => item.transferType === "scrap_replace"));
-  assert.ok(scrap.items.some((item) => item.stockNo === "DEMO-M-01"));
-  const county = seed.vehicles.find((item) => item.stockNo === "DEMO-C-01");
+  assert.ok(scrap.items.some((item) => item.stockNo === "HB-M-01"));
+  const county = seed.vehicles.find((item) => item.stockNo === "HB-C-01");
   assert.equal(county?.horsepowerPs, 150);
   assert.equal(county?.transferType, "transfer");
 
@@ -119,16 +119,16 @@ test("domestic and export views share one sale status", () => {
   const seed = buildSeed();
   for (const mode of ["domestic", "export"] as const) {
     const rows = filterVehicles(seed.vehicles, {}, mode).items;
-    assert.equal(rows.find((item) => item.stockNo === "DEMO-L-01")?.status, "sold");
-    assert.equal(rows.find((item) => item.stockNo === "DEMO-M-01")?.status, "reserved");
+    assert.equal(rows.find((item) => item.stockNo === "HB-L-01")?.status, "sold");
+    assert.equal(rows.find((item) => item.stockNo === "HB-M-01")?.status, "reserved");
   }
 });
 
 test("public payload excludes internal finance and hidden stock", () => {
-  const hidden = buildSeed().vehicles.find((item) => item.stockNo === "DEMO-M-02");
+  const hidden = buildSeed().vehicles.find((item) => item.stockNo === "HB-M-02");
   assert.ok(hidden);
   assert.equal(publicJson(hidden), null);
-  const visible = buildSeed().vehicles.find((item) => item.stockNo === "DEMO-L-01");
+  const visible = buildSeed().vehicles.find((item) => item.stockNo === "HB-L-01");
   assert.ok(visible);
   const json = publicJson(visible);
   assert.ok(json);
@@ -170,9 +170,9 @@ test("quote total stays unconfirmed when a line is unknown and keeps zero distin
 
 test("profit is unknown when currencies differ or amounts are missing", () => {
   const seed = buildSeed();
-  const sold = seed.vehicles.find((item) => item.stockNo === "DEMO-L-01");
-  const mixed = seed.vehicles.find((item) => item.stockNo === "DEMO-L-02");
-  const open = seed.vehicles.find((item) => item.stockNo === "DEMO-C-01");
+  const sold = seed.vehicles.find((item) => item.stockNo === "HB-L-01");
+  const mixed = seed.vehicles.find((item) => item.stockNo === "HB-L-02");
+  const open = seed.vehicles.find((item) => item.stockNo === "HB-C-01");
   assert.ok(sold && mixed && open);
   assert.deepEqual(internalProfit(sold.internal), { status: "amount", amount: 4500000, currency: "KRW" });
   assert.deepEqual(internalProfit(mixed.internal), { status: "unknown", reason: "currency" });
@@ -189,8 +189,8 @@ test("referral first touch is kept and whatsapp text includes stock and code", (
   const attached = referralForInquiry(next.first, next.latest);
   assert.equal(attached.firstReferralCode, "DEMOAGT1");
   assert.equal(attached.submitReferralCode, "OTHERAGT");
-  const message = whatsappMessage({ lang: "en", stockNo: "DEMO-C-01", referralCode: attached.firstReferralCode });
-  assert.match(message, /DEMO-C-01/);
+  const message = whatsappMessage({ lang: "en", stockNo: "HB-C-01", referralCode: attached.firstReferralCode });
+  assert.match(message, /HB-C-01/);
   assert.match(message, /DEMOAGT1/);
   assert.equal(whatsappHref("", message), null);
   assert.match(whatsappHref("971500000000", message) ?? "", /DEMOAGT1/);
@@ -225,7 +225,7 @@ test("demo inquiry save, referral isolation, and quote snapshot", async () => {
       phone: null,
       messenger: null,
       country: "AE",
-      stockNo: "DEMO-C-01",
+      stockNo: "HB-C-01",
       message: "견적 요청",
       destinationCountry: "AE",
       destinationPort: null,
@@ -453,7 +453,7 @@ test("maker model catalog stays inside the selected vehicle class", () => {
   const seed = buildSeed();
   const medium = filterVehicles(seed.vehicles, { vehicleClass: "medium", sort: "newest" }, "domestic");
   assert.ok(medium.items.every((item) => item.vehicleClass === "medium"));
-  assert.ok(medium.items.some((item) => item.stockNo === "DEMO-M-01"));
+  assert.ok(medium.items.some((item) => item.stockNo === "HB-M-01"));
   assert.equal(medium.items.some((item) => item.model === "유니버스"), false);
 });
 
