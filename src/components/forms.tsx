@@ -50,7 +50,7 @@ export function EnhanceForm({
           if (data.errors) setFieldErrors(data.errors);
           else setFieldErrors({});
           if (response.ok && data.ok) {
-            setMessage({ ok: true, text: data.demo ? text.submittedDemo : text.submittedLive });
+            setMessage({ ok: true, text: text.submittedLive });
             form.reset();
           } else {
             setMessage({ ok: false, text: text.errors[(data.code ?? "save_failed") as keyof typeof text.errors] ?? text.errors.save_failed });

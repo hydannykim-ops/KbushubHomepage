@@ -25,7 +25,9 @@ export default async function InquiryPage({
   return (
     <div className="mx-auto max-w-xl px-4 py-8">
       <h1 className="text-3xl font-bold">{text.inquiry}</h1>
-      <p className="mt-2 text-sm text-muted">{site.source === "demo" ? text.demoFormNote : site.settings.privacyCollectionEnabled ? null : text.liveClosedNote}</p>
+      {site.source !== "demo" && !site.settings.privacyCollectionEnabled ? (
+        <p className="mt-2 text-sm text-muted">{text.liveClosedNote}</p>
+      ) : null}
       <div className="mt-6">
         <SubmitBanner lang={lang} submitted={sp.get("submitted") ?? undefined} error={sp.get("error") ?? undefined} />
         <EnhanceForm action="/api/inquiries" lang={lang}>

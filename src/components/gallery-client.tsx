@@ -54,7 +54,7 @@ export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: 
             )}
           </div>
           <figcaption className="flex items-center justify-between gap-3 px-3 py-2 text-sm text-muted">
-            <span>{current.placeholder ? text.placeholderNote : photoLabel(current.category, lang)}</span>
+            <span>{photoLabel(current.category, lang)}</span>
             <span>
               <button type="button" className="px-2" onClick={() => setIndex((value) => (value - 1 + visible.length) % visible.length)} aria-label="previous">
                 ‹

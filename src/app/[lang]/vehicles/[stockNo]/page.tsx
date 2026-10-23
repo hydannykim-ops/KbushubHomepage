@@ -117,7 +117,9 @@ export default async function VehicleDetailPage({
       <Field label={text.message} name="message" as="textarea" required />
       <p className="text-xs text-muted">{text.requiredHint}</p>
       {ctx.ref ? <p className="text-xs text-muted">{text.referralKept}</p> : null}
-      <p className="text-xs text-muted">{site.source === "demo" ? text.demoFormNote : site.settings.privacyCollectionEnabled ? null : text.liveClosedNote}</p>
+      {site.source !== "demo" && !site.settings.privacyCollectionEnabled ? (
+        <p className="text-xs text-muted">{text.liveClosedNote}</p>
+      ) : null}
       <Consent lang={lang} />
       <Honeypot lang={lang} />
     </EnhanceForm>

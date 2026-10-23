@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { Footer, Header } from "@/components/chrome";
-import { DemoBanner } from "@/components/catalog";
 import { SiteChat } from "@/components/site-chat";
 import { getSession } from "@/lib/auth/session";
 import { getDataSource } from "@/lib/config";
@@ -46,7 +45,6 @@ export default async function LangLayout({
     : { name: "hey! Bus", phone: null, email: null, address: null };
   return (
     <>
-      {getDataSource() === "demo" ? <DemoBanner lang={lang} /> : null}
       <Header lang={lang} defaultMode={ctx.mode} refCode={ctx.ref} member={session ? { role: session.role, name: session.name } : null} />
       <main id="content">{children}</main>
       <Footer lang={lang} mode={ctx.mode} refCode={ctx.ref} company={settings} />

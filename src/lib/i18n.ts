@@ -17,8 +17,8 @@ export function copy(lang: Lang): Messages {
 
 export function submitMessage(lang: Lang, submitted?: string, error?: string): string | null {
   const text = copy(lang);
-  if (submitted === "demo") return text.submittedDemo;
-  if (submitted === "live") return text.submittedLive;
+  // Demo submissions use the same confirmation copy so review screens stay clean.
+  if (submitted === "demo" || submitted === "live") return text.submittedLive;
   if (!error) return null;
   return text.errors[error as keyof typeof text.errors] ?? text.errors.save_failed;
 }

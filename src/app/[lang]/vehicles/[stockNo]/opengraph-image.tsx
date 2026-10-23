@@ -19,7 +19,7 @@ export default async function VehicleOg({ params }: { params: Promise<{ lang: st
   const price = vehicle ? priceView(vehicle, "domestic", lang).primary : "";
   return new ImageResponse(
     <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", background: "#f4f6f8", color: "#0b1f3a", padding: 64 }}>
-      <div style={{ display: "flex", fontSize: 28 }}>hey! Bus{site.ok && site.source === "demo" ? " · DEMO" : ""}</div>
+      <div style={{ display: "flex", fontSize: 28 }}>hey! Bus</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ display: "flex", fontSize: 64, fontWeight: 700 }}>{title}</div>
         <div style={{ display: "flex", fontSize: 32 }}>{vehicle ? `${vehicle.stockNo} · ${vehicle.modelYear ?? ""}` : stockNo}</div>

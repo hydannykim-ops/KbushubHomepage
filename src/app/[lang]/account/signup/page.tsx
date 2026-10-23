@@ -30,7 +30,9 @@ export default async function SignupPage({
       <div className="mx-auto max-w-3xl px-4 py-10">
         <h1 className="text-3xl font-semibold tracking-tight">{text.signupTitle}</h1>
         <p className="mt-3 text-sm leading-6 text-muted">{text.signupChooseBody}</p>
-        <p className="mt-2 text-sm text-muted">{site.source === "demo" ? text.demoFormNote : site.settings.privacyCollectionEnabled ? null : text.liveClosedNote}</p>
+        {site.source !== "demo" && !site.settings.privacyCollectionEnabled ? (
+          <p className="mt-2 text-sm text-muted">{text.liveClosedNote}</p>
+        ) : null}
 
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           <Link
@@ -72,7 +74,9 @@ export default async function SignupPage({
       <p className="text-xs font-semibold tracking-[0.16em] text-muted">{role === "dealer" ? "DEALER" : "CUSTOMER"}</p>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">{role === "dealer" ? text.roleDealer : text.roleCustomer}</h1>
       <p className="mt-3 text-sm leading-6 text-muted">{role === "dealer" ? text.roleDealerBody : text.roleCustomerBody}</p>
-      <p className="mt-2 text-sm text-muted">{site.source === "demo" ? text.demoFormNote : site.settings.privacyCollectionEnabled ? null : text.liveClosedNote}</p>
+      {site.source !== "demo" && !site.settings.privacyCollectionEnabled ? (
+        <p className="mt-2 text-sm text-muted">{text.liveClosedNote}</p>
+      ) : null}
       <div className="relative mt-6 border border-line bg-white p-5">
         <SignupForm lang={lang} nextPath={hrefTo(lang, "/account", ctx)} role={role} />
       </div>

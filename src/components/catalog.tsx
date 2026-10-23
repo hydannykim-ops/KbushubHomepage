@@ -48,7 +48,6 @@ function PhotoFrame({ vehicle, lang }: { vehicle: PublicVehicle; lang: Lang }) {
       {vehicle.status !== "available" ? (
         <span className="absolute left-3 top-3 bg-white/95 px-2 py-1 text-xs font-semibold text-ink">{statusLabel(vehicle.status, lang)}</span>
       ) : null}
-      {cover?.placeholder ? <span className="absolute bottom-3 left-3 bg-white/90 px-2 py-1 text-[11px] font-semibold text-muted">{text.placeholderNote}</span> : null}
     </div>
   );
 }
