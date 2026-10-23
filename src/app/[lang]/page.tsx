@@ -42,7 +42,13 @@ export default async function HomePage({
         <img src="/demo/hero-yard.jpg" alt={text.mediaHero} className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/55 to-black/25" />
         <div className="relative flex min-h-[70vh] max-w-2xl flex-col justify-center px-6 py-14 lg:min-h-[32rem] lg:px-10">
-          <p className="text-sm font-semibold tracking-[0.28em] text-white/90">K-BUS HUB</p>
+          <p className="inline-flex items-center gap-2 text-sm font-semibold tracking-tight text-white/95">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand/hey-bus-logo.jpg" alt="" className="h-9 w-9 rounded-lg object-cover shadow-sm" />
+            <span>
+              <span className="text-[#ff9a68]">hey!</span> Bus
+            </span>
+          </p>
           <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tight md:text-5xl">{text.heroTitle}</h1>
           <p className="mt-5 max-w-xl text-base leading-7 text-white/85">{text.heroBody}</p>
           <div className="mt-8 flex flex-wrap gap-3">

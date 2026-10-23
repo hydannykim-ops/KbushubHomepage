@@ -232,7 +232,7 @@ function internalRow(vehicleId: string, input: VehicleInput["internal"]) {
 
 function mapSettings(row: Record<string, unknown>): SiteSettings {
   return {
-    companyName: String(row.company_name ?? "K-BUS HUB"),
+    companyName: String(row.company_name ?? "hey! Bus"),
     phone: text(row.phone),
     kakaoUrl: text(row.kakao_url),
     whatsappE164: text(row.whatsapp_e164),

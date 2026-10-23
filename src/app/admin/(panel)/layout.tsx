@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { AdminToastHost } from "@/components/admin/saved-toast";
+import { BrandLogo } from "@/components/brand-logo";
 import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata = { robots: { index: false, follow: false } };
@@ -24,7 +25,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="min-h-screen bg-background">
       <header className="border-b border-line bg-white">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
-          <p className="font-bold">K-BUS HUB 관리</p>
+          <div className="flex items-center gap-2.5">
+            <BrandLogo size="sm" />
+            <p className="font-bold">
+              <span className="text-[#ff6a2b]">hey!</span> Bus <span className="font-semibold text-muted">관리</span>
+            </p>
+          </div>
           <form action="/api/auth/logout" method="post">
             <button className="text-sm text-muted">로그아웃</button>
           </form>

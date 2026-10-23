@@ -1,4 +1,4 @@
--- K-BUS HUB initial schema.
+-- hey! Bus initial schema.
 -- Apply in the Supabase SQL editor or with the Supabase CLI.
 -- The service role bypasses RLS, so it must stay on the server.
 -- Authenticated users cannot insert their own admin role.
@@ -188,7 +188,7 @@ create table public.sell_request_files (
 
 create table public.site_settings (
   id integer primary key default 1 check (id = 1),
-  company_name text not null default 'K-BUS HUB',
+  company_name text not null default 'hey! Bus',
   phone text,
   kakao_url text,
   whatsapp_e164 text,
@@ -204,7 +204,7 @@ create table public.site_settings (
 );
 
 insert into public.site_settings (id, company_name)
-values (1, 'K-BUS HUB')
+values (1, 'hey! Bus')
 on conflict (id) do nothing;
 
 alter table public.user_roles enable row level security;

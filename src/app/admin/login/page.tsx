@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand-logo";
 import { LoginForm } from "@/components/login-form";
 import { demoCredentials, getDataSource } from "@/lib/config";
 
@@ -8,7 +9,12 @@ export default function AdminLoginPage() {
   const creds = demoCredentials();
   return (
     <main className="mx-auto max-w-md px-4 py-16">
-      <p className="text-lg font-bold">K-BUS HUB</p>
+      <div className="flex items-center gap-3">
+        <BrandLogo size="md" />
+        <p className="text-lg font-bold">
+          <span className="text-[#ff6a2b]">hey!</span> Bus
+        </p>
+      </div>
       <h1 className="mt-2 text-2xl font-bold">관리자 로그인</h1>
       {demo ? (
         <p className="mt-3 text-sm text-muted">

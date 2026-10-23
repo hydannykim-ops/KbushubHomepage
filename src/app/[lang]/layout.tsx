@@ -43,7 +43,7 @@ export default async function LangLayout({
         email: site.settings.email,
         address: site.settings.address,
       }
-    : { name: "K-BUS HUB", phone: null, email: null, address: null };
+    : { name: "hey! Bus", phone: null, email: null, address: null };
   return (
     <>
       {getDataSource() === "demo" ? <DemoBanner lang={lang} /> : null}

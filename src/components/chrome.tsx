@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useId, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { LogoSlot } from "@/components/media-slot";
+import { BrandLogo, BrandWordmark } from "@/components/brand-logo";
 import type { Lang, SessionRole, TradeMode } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
 import { langs, langMeta, langPathPattern } from "@/lib/i18n/langs";
@@ -177,12 +177,9 @@ export function Header({
   return (
     <header className="sticky top-0 z-40 overflow-visible border-b border-line bg-white">
       <div className="relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <Link href={href("")} className="flex items-center gap-3 text-foreground">
-          <LogoSlot label={text.mediaLogo} />
-          <span>
-            <span className="block text-[11px] font-semibold tracking-[0.18em] text-muted">K-BUS</span>
-            <span className="block text-lg font-semibold leading-none tracking-wide">HUB</span>
-          </span>
+        <Link href={href("")} className="flex items-center gap-2.5 text-foreground" aria-label="hey! Bus">
+          <BrandLogo size="sm" priority />
+          <BrandWordmark />
         </Link>
         <nav className="hidden items-center gap-5 text-sm font-medium md:flex" aria-label="main">
           {links.map(([label, hrefValue]) => (
@@ -247,7 +244,12 @@ export function Footer({
     <footer className="mt-20 bg-ink text-white">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 text-sm md:grid-cols-3">
         <div>
-          <p className="text-base font-semibold tracking-wide">K-BUS HUB</p>
+          <div className="flex items-center gap-2.5">
+            <BrandLogo size="sm" />
+            <p className="text-base font-semibold tracking-tight">
+              <span className="text-[#ff6a2b]">hey!</span> Bus
+            </p>
+          </div>
           <p className="mt-3 max-w-xs leading-6 text-white/70">{text.footerNote}</p>
         </div>
         <div className="grid content-start gap-2">

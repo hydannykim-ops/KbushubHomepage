@@ -1,7 +1,7 @@
 import type { Messages } from "./messages";
 
 export const es: Messages = {
-  "metaDescription": "K-BUS HUB ofrece autobuses usados de Corea y Hyundai County para venta nacional y exportación.",
+  "metaDescription": "hey! Bus ofrece autobuses usados de Corea y Hyundai County para venta nacional y exportación.",
   "skip": "Ir al contenido",
   "navVehicles": "Inventario",
   "navCounty": "County",
@@ -15,7 +15,7 @@ export const es: Messages = {
   "language": "Idioma",
   "demoBanner": "Modo demo. Los anuncios y formularios no son inventario real ni consultas reales.",
   "heroTitle": "Autobuses usados de Corea y Hyundai County",
-  "heroBody": "K-BUS HUB muestra unidades revisadas por la empresa a compradores en Corea y en el exterior. El inventario es uno solo: si se vende en el mercado nacional, también se actualiza la vista de exportación.",
+  "heroBody": "hey! Bus muestra unidades revisadas por la empresa a compradores en Corea y en el exterior. El inventario es uno solo: si se vende en el mercado nacional, también se actualiza la vista de exportación.",
   "search": "Buscar",
   "maker": "Marca",
   "model": "Modelo",

@@ -1,7 +1,7 @@
 import type { Messages } from "./messages";
 
 export const en: Messages = {
-  "metaDescription": "K-BUS HUB lists Korean used buses and Hyundai County vehicles for domestic sale and export.",
+  "metaDescription": "hey! Bus lists Korean used buses and Hyundai County vehicles for domestic sale and export.",
   "skip": "Skip to content",
   "navVehicles": "Inventory",
   "navCounty": "County",
@@ -15,7 +15,7 @@ export const en: Messages = {
   "language": "Language",
   "demoBanner": "Demo mode. Listings and submissions are not real inventory or real inquiries.",
   "heroTitle": "Korean used buses and Hyundai County",
-  "heroBody": "K-BUS HUB presents vehicles checked by the company to domestic customers and overseas buyers. There is one inventory. A domestic sale updates the export view as well.",
+  "heroBody": "hey! Bus presents vehicles checked by the company to domestic customers and overseas buyers. There is one inventory. A domestic sale updates the export view as well.",
   "search": "Search",
   "maker": "Maker",
   "model": "Model",

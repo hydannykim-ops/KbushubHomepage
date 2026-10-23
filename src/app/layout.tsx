@@ -18,7 +18,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
-  title: { default: "K-BUS HUB", template: "%s · K-BUS HUB" },
+  title: { default: "hey! Bus", template: "%s · hey! Bus" },
   description: "한국 중고버스와 현대 카운티의 국내 판매·수출 매물",
 };
 
