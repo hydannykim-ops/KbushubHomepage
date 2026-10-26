@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { MakerMark } from "@/components/maker-mark";
 import {
   classForModel,
   makerForModel,
@@ -190,7 +191,10 @@ export function MakerModelPicker({
               aria-pressed={maker === item}
               onClick={() => pickMaker(item)}
             >
-              <span>{makerLabel(item, lang)}</span>
+              <span className="flex min-w-0 items-center gap-2.5">
+                <MakerMark maker={item} active={maker === item} />
+                <span className="truncate">{makerLabel(item, lang)}</span>
+              </span>
               <span aria-hidden className="text-[10px] opacity-50">
                 ›
               </span>
