@@ -45,13 +45,33 @@ export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: 
           <div className="relative aspect-[16/10] bg-[#f3f5f8]">
             {current.placeholder && current.path ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={current.path} alt={contentFieldLang(lang) === "ko" ? current.altKo : current.altEn} className="h-full w-full object-cover" />
+              <img src={current.path} alt={contentFieldLang(lang) === "ko" ? current.altKo : current.altEn} className="pointer-events-none h-full w-full object-cover" />
             ) : current.placeholder ? (
               <MediaSlot label={photoLabel(current.category, lang)} hint={text.mediaCoverHint} />
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={`/api/media/photo/${current.id}`} alt={contentFieldLang(lang) === "ko" ? current.altKo : current.altEn} className="h-full w-full object-cover" />
+              <img
+                src={`/api/media/photo/${current.id}`}
+                alt={contentFieldLang(lang) === "ko" ? current.altKo : current.altEn}
+                className="pointer-events-none h-full w-full object-cover"
+              />
             )}
+            {visible.length > 1 ? (
+              <>
+                <button
+                  type="button"
+                  className="absolute inset-y-0 left-0 z-10 w-1/2 cursor-pointer bg-transparent"
+                  aria-label="previous"
+                  onClick={() => setIndex((value) => (value - 1 + visible.length) % visible.length)}
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 z-10 w-1/2 cursor-pointer bg-transparent"
+                  aria-label="next"
+                  onClick={() => setIndex((value) => (value + 1) % visible.length)}
+                />
+              </>
+            ) : null}
           </div>
           <figcaption className="flex items-center justify-between gap-3 px-3 py-2 text-sm text-muted">
             <span>{photoLabel(current.category, lang)}</span>

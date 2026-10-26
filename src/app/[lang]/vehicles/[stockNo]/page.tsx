@@ -95,10 +95,7 @@ export default async function VehicleDetailPage({
         {text.inquiry}
         <select name="kind" defaultValue={kind} className="rounded-md border border-line px-3 py-2 font-normal">
           {ctx.mode === "domestic" ? (
-            <>
-              <option value="purchase">{text.purchase}</option>
-              <option value="visit">{text.visit}</option>
-            </>
+            <option value="purchase">{text.purchase}</option>
           ) : (
             <>
               <option value="quote">{text.quote}</option>
@@ -158,9 +155,6 @@ export default async function VehicleDetailPage({
             <div className="mt-4 grid gap-2">
               <a href="#inquiry" className="rounded-md bg-primary px-4 py-3 text-center text-sm font-semibold text-white">
                 {ctx.mode === "export" ? text.quote : text.purchase}
-              </a>
-              <a href="#inquiry" className="rounded-md border border-line px-4 py-3 text-center text-sm font-semibold">
-                {ctx.mode === "export" ? text.videoRequest : text.visit}
               </a>
             </div>
           ) : (
@@ -238,12 +232,9 @@ export default async function VehicleDetailPage({
       </section>
       {!sold ? (
         <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white p-3 md:hidden">
-          <div className="mx-auto grid max-w-6xl grid-cols-2 gap-2">
-            <a href="#inquiry" className="rounded-md bg-primary px-3 py-3 text-center text-sm font-semibold text-white">
+          <div className="mx-auto max-w-6xl">
+            <a href="#inquiry" className="block rounded-md bg-primary px-3 py-3 text-center text-sm font-semibold text-white">
               {ctx.mode === "export" ? text.quote : text.purchase}
-            </a>
-            <a href="#inquiry" className="rounded-md border border-line px-3 py-3 text-center text-sm font-semibold">
-              {ctx.mode === "export" ? text.videoRequest : text.visit}
             </a>
           </div>
         </div>
