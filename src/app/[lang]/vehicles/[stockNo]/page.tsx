@@ -169,30 +169,23 @@ export default async function VehicleDetailPage({
             </Link>
           )}
           <div className="mt-4 grid gap-2 text-sm">
-            {ctx.mode === "domestic" ? (
-              contacts.phone ? (
-                <a className="rounded-md border border-line px-3 py-2" href={`tel:${contacts.phone}`}>
-                  {text.phone} {contacts.phone}
-                </a>
-              ) : (
-                <p className="text-muted">{text.contactMissing}</p>
-              )
+            {contacts.phone && contacts.phoneHref ? (
+              <a className="rounded-md border border-line px-3 py-2" href={contacts.phoneHref}>
+                {text.phone} {contacts.phone}
+              </a>
             ) : null}
-            {ctx.mode === "domestic" && contacts.kakao ? (
+            {contacts.kakao ? (
               <a className="rounded-md border border-line px-3 py-2" href={contacts.kakao} rel="noreferrer">
                 {text.kakao}
               </a>
             ) : null}
-            {ctx.mode === "export" ? (
-              contacts.whatsapp ? (
-                <a className="rounded-md border border-line px-3 py-2" href={contacts.whatsapp} rel="noreferrer">
-                  {text.whatsapp}
-                </a>
-              ) : (
-                <p className="text-muted">{text.contactMissing}</p>
-              )
+            {contacts.whatsapp ? (
+              <a className="rounded-md border border-line px-3 py-2" href={contacts.whatsapp} rel="noreferrer">
+                {text.whatsapp} {contacts.phone ?? ""}
+              </a>
             ) : null}
-            {ctx.mode === "export" && contacts.whatsapp ? <p className="text-xs text-muted">{text.whatsappNote}</p> : null}
+            {contacts.whatsapp ? <p className="text-xs text-muted">{text.whatsappNote}</p> : null}
+            {!contacts.phone && !contacts.kakao && !contacts.whatsapp ? <p className="text-muted">{text.contactMissing}</p> : null}
           </div>
         </aside>
       </div>

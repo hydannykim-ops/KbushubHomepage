@@ -385,19 +385,19 @@ export function buildSeed(): DemoState {
   ];
 
   const settings: SiteSettings = {
-    companyName: "케이BUS HUB",
-    phone: null,
+    companyName: "K-BUS HUB",
+    phone: "+82 10 3452 1321",
     kakaoUrl: null,
-    whatsappE164: null,
-    email: "kbushub@naver.com",
+    whatsappE164: "821034521321",
+    email: null,
     address: "경기도 오산시 역광장로 46-1, 206호(오산동)",
     businessHours: null,
     aboutKo:
-      "케이BUS HUB(대표 조현봉, 사업자등록번호 445-08-03206)는 회사가 확인한 한국 중고버스와 현대 카운티를 국내 판매와 수출로 소개합니다. 업태는 도매 및 소매업이며, 무역(자동차부품수출)과 전자상거래를 합니다. 확인되지 않은 항목은 추정하지 않고 미확인으로 둡니다.",
+      "K-BUS HUB(대표 조현봉, 사업자등록번호 445-08-03206)는 회사가 확인한 한국 중고버스와 현대 카운티를 국내 판매와 수출로 소개합니다. 업태는 도매 및 소매업이며, 무역(자동차부품수출)과 전자상거래를 합니다. 확인되지 않은 항목은 추정하지 않고 미확인으로 둡니다.",
     aboutEn:
       "K-BUS HUB (CEO Cho Hyun-bong, Business Reg. No. 445-08-03206) presents Korean used buses and Hyundai County vehicles checked by the company, for domestic sale and export. Wholesale/retail trade covers auto-parts export and e-commerce. Unknown specifications stay unconfirmed.",
-    privacyPolicyKo: "이 문안은 운영 전 초안입니다. 최종 개인정보 처리방침이 등록되고 수집이 활성화되기 전에는 실제 개인정보를 저장하지 않습니다. 문의: kbushub@naver.com / 경기도 오산시 역광장로 46-1, 206호(오산동).",
-    privacyPolicyEn: "This text is a pre-launch draft. Real personal information is not stored until a final privacy policy is published and collection is enabled. Contact: kbushub@naver.com / 206, 46-1 Yeokgwangjang-ro, Osan-si, Gyeonggi-do, Korea.",
+    privacyPolicyKo: "이 문안은 운영 전 초안입니다. 최종 개인정보 처리방침이 등록되고 수집이 활성화되기 전에는 실제 개인정보를 저장하지 않습니다. 문의: +82 10 3452 1321 / 경기도 오산시 역광장로 46-1, 206호(오산동).",
+    privacyPolicyEn: "This text is a pre-launch draft. Real personal information is not stored until a final privacy policy is published and collection is enabled. Contact: +82 10 3452 1321 / 206, 46-1 Yeokgwangjang-ro, Osan-si, Gyeonggi-do, Korea.",
     privacyCollectionEnabled: false,
     updatedAt: "2026-07-06T00:00:00.000Z",
   };

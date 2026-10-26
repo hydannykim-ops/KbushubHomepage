@@ -123,7 +123,8 @@ export default async function HomePage({
           <p className="mt-3 text-sm leading-6">{contentFieldLang(lang) === "ko" ? site.settings.aboutKo : site.settings.aboutEn}</p>
           <div className="mt-4 text-sm text-muted">
             {site.settings.address ? <p>{site.settings.address}</p> : null}
-            {site.settings.phone ? <p>{site.settings.phone}</p> : null}
+            {site.settings.phone ? <p>{text.phone} {site.settings.phone}</p> : null}
+            {site.settings.whatsappE164 ? <p>{text.whatsapp} {site.settings.phone ?? `+${site.settings.whatsappE164}`}</p> : null}
             {site.settings.email ? <p>{site.settings.email}</p> : null}
             {site.settings.businessHours ? (
               <p>

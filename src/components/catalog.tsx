@@ -186,11 +186,14 @@ export function contactActions(input: {
   lang: Lang;
   referralCode: string | null;
 }) {
-  const message = whatsappMessage({ lang: input.lang, stockNo: input.stockNo, referralCode: input.referralCode });
+  const message = whatsappMessage({ lang: input.lang, stockNo: input.stockNo, referralCode: input.referralCode, mode: input.mode });
+  const phoneDigits = input.phone?.replace(/[^\d+]/g, "") ?? "";
+  const phoneHref = phoneDigits.length >= 8 ? `tel:${phoneDigits.startsWith("+") ? phoneDigits : phoneDigits}` : null;
   return {
     phone: input.phone,
+    phoneHref,
     kakao: input.kakaoUrl,
-    whatsapp: input.mode === "export" && input.whatsappE164 ? whatsappHref(input.whatsappE164, message) : null,
+    whatsapp: input.whatsappE164 ? whatsappHref(input.whatsappE164, message) : null,
   };
 }
 
