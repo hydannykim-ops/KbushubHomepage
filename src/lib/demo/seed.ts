@@ -293,7 +293,7 @@ export function buildSeed(): DemoState {
       featured: true,
       domesticPriceKrw: null,
       exportPriceAmount: null,
-      exportPriceCurrency: "USD",
+      exportPriceCurrency: null,
       exportPriceTermsKo: "FOB 부산, 차량대금만 · 가격 문의",
       exportPriceTermsEn: "FOB Busan, vehicle only · price on inquiry",
       photos: [
