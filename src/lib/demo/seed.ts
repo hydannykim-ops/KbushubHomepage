@@ -126,9 +126,6 @@ export function buildSeed(): DemoState {
       photos: [
         placeholder("veh-c-01", "front_side", 0, true, "/demo/county-cover.jpg"),
         placeholder("veh-c-01", "front", 1, false, "/demo/county-front.jpg"),
-        placeholder("veh-c-01", "rear", 2, false, "/demo/county-rear.jpg"),
-        placeholder("veh-c-01", "interior", 3, false, "/demo/bus-interior.jpg"),
-        placeholder("veh-c-01", "dashboard", 4, false, "/demo/bus-dashboard.jpg"),
       ],
       createdAt: "2026-03-01T00:00:00.000Z",
       internal: {
@@ -157,7 +154,6 @@ export function buildSeed(): DemoState {
       photos: [
         placeholder("veh-c-02", "front", 0, true, "/demo/county-front.jpg"),
         placeholder("veh-c-02", "front_side", 1, false, "/demo/county-cover.jpg"),
-        placeholder("veh-c-02", "rear", 2, false, "/demo/county-rear.jpg"),
       ],
       createdAt: "2026-04-01T00:00:00.000Z",
     }),
@@ -184,8 +180,6 @@ export function buildSeed(): DemoState {
       exportPriceTermsEn: "Export price, terms on request",
       photos: [
         placeholder("veh-m-01", "front_side", 0, true, "/demo/medium-cover.jpg"),
-        placeholder("veh-m-01", "interior", 1, false, "/demo/bus-interior.jpg"),
-        placeholder("veh-m-01", "dashboard", 2, false, "/demo/bus-dashboard.jpg"),
       ],
       createdAt: "2026-02-01T00:00:00.000Z",
       internal: emptyInternal(),
@@ -215,8 +209,6 @@ export function buildSeed(): DemoState {
       stockCheckedOn: "2026-01-11",
       photos: [
         placeholder("veh-l-01", "front_side", 0, true, "/demo/large-cover.jpg"),
-        placeholder("veh-l-01", "interior", 1, false, "/demo/bus-interior.jpg"),
-        placeholder("veh-l-01", "dashboard", 2, false, "/demo/bus-dashboard.jpg"),
       ],
       createdAt: "2026-01-15T00:00:00.000Z",
       internal: {
@@ -255,8 +247,6 @@ export function buildSeed(): DemoState {
       videoUrl: "https://example.com/demo-not-a-video",
       photos: [
         placeholder("veh-l-02", "front_side", 0, true, "/demo/large-cover.jpg"),
-        placeholder("veh-l-02", "front", 1, false, "/demo/county-front.jpg"),
-        placeholder("veh-l-02", "interior", 2, false, "/demo/bus-interior.jpg"),
       ],
       createdAt: "2026-03-20T00:00:00.000Z",
       internal: {
