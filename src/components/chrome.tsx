@@ -2,11 +2,16 @@
 
 import Link from "next/link";
 import { useEffect, useId, useRef } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { BrandLogo, BrandWordmark } from "@/components/brand-logo";
 import type { Lang, SessionRole, TradeMode } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
 import { langs, langMeta, langPathPattern } from "@/lib/i18n/langs";
+
+function modeFromSearch(search: URLSearchParams, fallback: TradeMode): TradeMode {
+  const value = search.get("mode");
+  return value === "export" || value === "domestic" ? value : fallback;
+}
 
 function GlobeIcon({ className }: { className?: string }) {
   return (
@@ -136,8 +141,10 @@ export function Header({
 }) {
   const text = copy(lang);
   const pathname = usePathname() || `/${lang}`;
-  const mode = defaultMode;
-  const ref = refCode || "";
+  const searchParams = useSearchParams();
+  // Layout cannot see ?mode= on soft navigations; keep the toggle in sync with the URL.
+  const mode = modeFromSearch(searchParams, defaultMode);
+  const ref = searchParams.get("ref") || refCode || "";
   const signedIn = member?.role === "customer" || member?.role === "dealer";
 
   function href(path: string, extra?: Record<string, string>) {
@@ -227,7 +234,7 @@ export function Header({
 
 export function Footer({
   lang,
-  mode,
+  mode: defaultMode,
   refCode,
   company,
 }: {
@@ -237,8 +244,11 @@ export function Footer({
   company: { name: string; phone: string | null; email: string | null; address: string | null };
 }) {
   const text = copy(lang);
+  const searchParams = useSearchParams();
+  const mode = modeFromSearch(searchParams, defaultMode);
+  const liveRef = searchParams.get("ref") || refCode;
   const query = new URLSearchParams({ mode });
-  if (refCode) query.set("ref", refCode);
+  if (liveRef) query.set("ref", liveRef);
   const href = (path: string) => `/${lang}${path}?${query.toString()}`;
   return (
     <footer className="mt-20 bg-ink text-white">
