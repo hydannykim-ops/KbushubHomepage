@@ -75,7 +75,7 @@ const intents: Intent[] = [
 const replies: Record<Lang, Record<IntentId, ChatReply>> = {
   ko: {
     greeting: {
-      text: "안녕하세요. hey! Bus 안내 챗봇입니다. 매물·수출·판매·연락처를 짧게 도와드릴게요.",
+      text: "안녕하세요. K-BUS HUB 안내 챗봇입니다. 매물·수출·판매·연락처를 짧게 도와드릴게요.",
       suggestions: ["매물 보기", "견적 문의", "내 차 팔기", "회사 연락처"],
     },
     inventory: {
@@ -114,7 +114,7 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       suggestions: ["매물 보기", "견적 문의"],
     },
     contact: {
-      text: "hey! Bus · 사업자등록번호 445-08-03206 · 경기도 오산시 역광장로 46-1, 206호 · kbushub@naver.com. 전화·메신저는 관리자 설정 후 표시됩니다.",
+      text: "K-BUS HUB · 사업자등록번호 445-08-03206 · 경기도 오산시 역광장로 46-1, 206호 · kbushub@naver.com. 전화·메신저는 관리자 설정 후 표시됩니다.",
       links: [
         { href: "/inquiry", label: "문의 폼" },
         { href: "/privacy", label: "개인정보 안내" }],
@@ -147,7 +147,7 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
   },
   en: {
     greeting: {
-      text: "Hi — I’m the hey! Bus guide bot. I can point you to inventory, quotes, selling, and contact details.",
+      text: "Hi — I’m the K-BUS HUB guide bot. I can point you to inventory, quotes, selling, and contact details.",
       suggestions: ["Browse inventory", "Ask for a quote", "Sell a bus", "Company contact"],
     },
     inventory: {
@@ -186,7 +186,7 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       suggestions: ["Browse inventory", "Ask for a quote"],
     },
     contact: {
-      text: "hey! Bus · Business Reg. No. 445-08-03206 · 206, 46-1 Yeokgwangjang-ro, Osan-si · kbushub@naver.com. Phone/messenger appear after admin settings.",
+      text: "K-BUS HUB · Business Reg. No. 445-08-03206 · 206, 46-1 Yeokgwangjang-ro, Osan-si · kbushub@naver.com. Phone/messenger appear after admin settings.",
       links: [
         { href: "/inquiry", label: "Inquiry form" },
         { href: "/privacy", label: "Privacy" }],
@@ -219,7 +219,7 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
   },
   es: {
     greeting: {
-      text: "Hola. Soy el asistente de hey! Bus. Puedo ayudarle con el inventario, cotizaciones, venta y contacto.",
+      text: "Hola. Soy el asistente de K-BUS HUB. Puedo ayudarle con el inventario, cotizaciones, venta y contacto.",
       suggestions: ["Ver inventario", "Pedir cotización", "Vender", "Contacto"],
     },
     inventory: {
@@ -259,7 +259,7 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       suggestions: ["Ver inventario", "Pedir cotización"],
     },
     contact: {
-      text: "hey! Bus · Reg. 445-08-03206 · Osan, Gyeonggi · kbushub@naver.com.",
+      text: "K-BUS HUB · Reg. 445-08-03206 · Osan, Gyeonggi · kbushub@naver.com.",
       links: [
         { href: "/inquiry", label: "Formulario" },
         { href: "/privacy", label: "Privacidad" },
@@ -295,7 +295,7 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
   },
   fr: {
     greeting: {
-      text: "Bonjour. Je suis l’assistant hey! Bus : stock, export, vente et contact.",
+      text: "Bonjour. Je suis l’assistant K-BUS HUB : stock, export, vente et contact.",
       suggestions: ["Voir le stock", "Export", "Vendre", "Contact"],
     },
     inventory: {
@@ -334,7 +334,7 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       suggestions: ["Voir le stock", "Export"],
     },
     contact: {
-      text: "hey! Bus · n° 445-08-03206 · Osan · kbushub@naver.com.",
+      text: "K-BUS HUB · n° 445-08-03206 · Osan · kbushub@naver.com.",
       links: [
         { href: "/inquiry", label: "Formulaire" },
         { href: "/privacy", label: "Confidentialité" }],
@@ -367,7 +367,7 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
   },
   km: {
     greeting: {
-      text: "សួស្តី។ ខ្ញុំជាជំនួយការ hey! Bus សម្រាប់ស្តុក នាំចេញ លក់ និងទំនាក់ទំនង។",
+      text: "សួស្តី។ ខ្ញុំជាជំនួយការ K-BUS HUB សម្រាប់ស្តុក នាំចេញ លក់ និងទំនាក់ទំនង។",
       suggestions: ["មើលស្តុក", "នាំចេញ", "លក់", "ទំនាក់ទំនង"],
     },
     inventory: {
@@ -406,7 +406,7 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       suggestions: ["មើលស្តុក", "នាំចេញ"],
     },
     contact: {
-      text: "hey! Bus · 445-08-03206 · Osan · kbushub@naver.com។",
+      text: "K-BUS HUB · 445-08-03206 · Osan · kbushub@naver.com។",
       links: [
         { href: "/inquiry", label: "ទម្រង់សំណួរ" },
         { href: "/privacy", label: "ឯកជនភាព" }],
@@ -439,7 +439,7 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
   },
   mn: {
     greeting: {
-      text: "Сайн байна уу. Би hey! Bus-ийн туслах бот. Нөөц, экспорт, борлуулалт, холбоо барихад тусална.",
+      text: "Сайн байна уу. Би K-BUS HUB-ийн туслах бот. Нөөц, экспорт, борлуулалт, холбоо барихад тусална.",
       suggestions: ["Нөөц үзэх", "Экспорт", "Зарах", "Холбоо барих"],
     },
     inventory: {
@@ -478,7 +478,7 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       suggestions: ["Нөөц үзэх", "Экспорт"],
     },
     contact: {
-      text: "hey! Bus · 445-08-03206 · Osan · kbushub@naver.com.",
+      text: "K-BUS HUB · 445-08-03206 · Osan · kbushub@naver.com.",
       links: [
         { href: "/inquiry", label: "Асуулгын маягт" },
         { href: "/privacy", label: "Нууцлал" }],
@@ -541,7 +541,7 @@ export function chatWelcome(lang: Lang): ChatReply {
 
 export const chatUi = {
   ko: {
-    title: "hey! Bus 안내",
+    title: "K-BUS HUB 안내",
     subtitle: "매물·수출·판매 짧은 안내",
     open: "챗봇 열기",
     close: "닫기",
@@ -551,7 +551,7 @@ export const chatUi = {
     bot: "안내",
   },
   en: {
-    title: "hey! Bus guide",
+    title: "K-BUS HUB guide",
     subtitle: "Inventory, export, selling",
     open: "Open chat",
     close: "Close",
@@ -561,7 +561,7 @@ export const chatUi = {
     bot: "Guide",
   },
   es: {
-    title: "Guía hey! Bus",
+    title: "Guía K-BUS HUB",
     subtitle: "Inventario, exportación, venta",
     open: "Abrir chat",
     close: "Cerrar",
@@ -571,7 +571,7 @@ export const chatUi = {
     bot: "Guía",
   },
   fr: {
-    title: "Guide hey! Bus",
+    title: "Guide K-BUS HUB",
     subtitle: "Stock, export, vente",
     open: "Ouvrir le chat",
     close: "Fermer",
@@ -581,7 +581,7 @@ export const chatUi = {
     bot: "Guide",
   },
   km: {
-    title: "មគ្គុទ្ទេសក៍ hey! Bus",
+    title: "មគ្គុទ្ទេសក៍ K-BUS HUB",
     subtitle: "ស្តុក · នាំចេញ · លក់",
     open: "បើកជជែក",
     close: "បិទ",
@@ -591,7 +591,7 @@ export const chatUi = {
     bot: "មគ្គុទ្ទេសក៍",
   },
   mn: {
-    title: "hey! Bus туслах",
+    title: "K-BUS HUB туслах",
     subtitle: "Нөөц · экспорт · борлуулалт",
     open: "Чат нээх",
     close: "Хаах",

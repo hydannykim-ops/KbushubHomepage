@@ -5,7 +5,7 @@ export default function NotFound() {
     <div className="mx-auto max-w-xl px-4 py-16">
       <h1 className="text-2xl font-bold">페이지를 찾을 수 없습니다</h1>
       <Link href="/ko" className="mt-4 inline-block text-primary">
-        hey! Bus
+        K-BUS HUB
       </Link>
     </div>
   );

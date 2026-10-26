@@ -34,9 +34,9 @@ export function generateReferralCode(randomByte: () => number = () => Math.floor
 
 export function whatsappMessage(input: { lang: Lang; stockNo: string; referralCode: string | null }): string {
   if (input.lang === "ko") {
-    return `hey! Bus 수출 문의\n매물번호: ${input.stockNo}\n추천코드: ${input.referralCode ?? "없음"}`;
+    return `K-BUS HUB 수출 문의\n매물번호: ${input.stockNo}\n추천코드: ${input.referralCode ?? "없음"}`;
   }
-  return `hey! Bus export inquiry\nStock no: ${input.stockNo}\nReferral code: ${input.referralCode ?? "none"}`;
+  return `K-BUS HUB export inquiry\nStock no: ${input.stockNo}\nReferral code: ${input.referralCode ?? "none"}`;
 }
 
 export function whatsappHref(e164: string, message: string): string | null {

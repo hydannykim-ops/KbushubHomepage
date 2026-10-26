@@ -28,7 +28,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <div className="flex items-center gap-2.5">
             <BrandLogo size="sm" />
             <p className="font-bold">
-              <span className="text-[#ff6a2b]">hey!</span> Bus <span className="font-semibold text-muted">관리</span>
+              K-BUS HUB <span className="font-semibold text-muted">관리</span>
             </p>
           </div>
           <form action="/api/auth/logout" method="post">

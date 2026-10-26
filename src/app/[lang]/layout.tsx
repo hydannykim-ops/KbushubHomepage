@@ -42,7 +42,7 @@ export default async function LangLayout({
         email: site.settings.email,
         address: site.settings.address,
       }
-    : { name: "hey! Bus", phone: null, email: null, address: null };
+    : { name: "K-BUS HUB", phone: null, email: null, address: null };
   return (
     <>
       <Header lang={lang} defaultMode={ctx.mode} refCode={ctx.ref} member={session ? { role: session.role, name: session.name } : null} />

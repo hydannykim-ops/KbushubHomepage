@@ -11,9 +11,7 @@ export default function AdminLoginPage() {
     <main className="mx-auto max-w-md px-4 py-16">
       <div className="flex items-center gap-3">
         <BrandLogo size="md" />
-        <p className="text-lg font-bold">
-          <span className="text-[#ff6a2b]">hey!</span> Bus
-        </p>
+        <p className="text-lg font-bold">K-BUS HUB</p>
       </div>
       <h1 className="mt-2 text-2xl font-bold">관리자 로그인</h1>
       {demo ? (

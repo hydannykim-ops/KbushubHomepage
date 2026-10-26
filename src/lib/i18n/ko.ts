@@ -1,7 +1,7 @@
 import type { Messages } from "./messages";
 
 export const ko: Messages = {
-  "metaDescription": "한국 중고버스와 현대 카운티를 국내 판매와 수출로 소개하는 hey! Bus입니다.",
+  "metaDescription": "한국 중고버스와 현대 카운티를 국내 판매와 수출로 소개하는 K-BUS HUB입니다.",
   "skip": "본문으로 이동",
   "navVehicles": "매물 보기",
   "navCounty": "카운티",
@@ -15,7 +15,7 @@ export const ko: Messages = {
   "language": "언어",
   "demoBanner": "데모 화면입니다. 표시된 차량과 접수는 실제 재고·실제 상담이 아닙니다.",
   "heroTitle": "한국 중고버스와 현대 카운티",
-  "heroBody": "hey! Bus는 회사가 확인한 매물을 국내 고객과 해외 바이어에게 소개합니다. 재고는 하나이며, 국내에서 판매가 끝나면 수출 화면에도 같은 상태가 반영됩니다.",
+  "heroBody": "K-BUS HUB는 회사가 확인한 매물을 국내 고객과 해외 바이어에게 소개합니다. 재고는 하나이며, 국내에서 판매가 끝나면 수출 화면에도 같은 상태가 반영됩니다.",
   "search": "검색",
   "maker": "제조사",
   "model": "차모델",

@@ -15,13 +15,13 @@ const sizes = {
 export function BrandLogo({ size = "sm", className = "", priority = false }: BrandLogoProps) {
   const dim = sizes[size];
   return (
-    <span className={`brand-logo inline-flex shrink-0 overflow-hidden rounded-xl ${dim.className} ${className}`} data-brand-logo>
+    <span className={`brand-logo inline-flex shrink-0 overflow-hidden rounded-xl bg-white ${dim.className} ${className}`} data-brand-logo>
       <Image
-        src="/brand/hey-bus-logo.jpg"
-        alt="hey! Bus"
+        src="/brand/kbus-hub-logo.jpg"
+        alt="K-BUS HUB"
         width={dim.width}
         height={dim.height}
-        className="h-full w-full object-cover"
+        className="h-full w-full object-contain"
         priority={priority}
       />
     </span>
@@ -31,9 +31,8 @@ export function BrandLogo({ size = "sm", className = "", priority = false }: Bra
 export function BrandWordmark({ className = "" }: { className?: string }) {
   return (
     <span className={`leading-none ${className}`}>
-      <span className="block text-[0.95rem] font-bold tracking-tight text-ink sm:text-lg">
-        <span className="text-[#ff6a2b]">hey!</span> <span className="text-ink">Bus</span>
-      </span>
+      <span className="block text-[11px] font-semibold tracking-[0.18em] text-muted">K-BUS</span>
+      <span className="block text-lg font-semibold leading-none tracking-wide text-ink">HUB</span>
     </span>
   );
 }
