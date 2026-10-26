@@ -16,7 +16,8 @@ export default async function VehicleOg({ params }: { params: Promise<{ lang: st
   const site = await loadSite();
   const vehicle = site.ok ? await site.repo.getPublicByStockNo(stockNo) : null;
   const title = vehicle ? vehicleTitle(vehicle, lang) : stockNo
-  const price = vehicle ? priceView(vehicle, "domestic", lang).primary : "";
+  const listedBy = vehicle ? vehicle.listingCompany ?? (site.ok ? site.settings.companyName : null) : null;
+  const price = vehicle ? priceView(vehicle, "domestic", lang, listedBy).primary : "";
   return new ImageResponse(
     <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", background: "#f4f6f8", color: "#0b1f3a", padding: 64 }}>
       <div style={{ display: "flex", fontSize: 28 }}>K-BUS HUB</div>

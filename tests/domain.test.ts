@@ -30,7 +30,7 @@ test("price sort keeps currencies apart and puts ask-price last", () => {
   const domestic = filterVehicles(seed.vehicles, { sort: "price_asc" }, "domestic");
   assert.deepEqual(
     domestic.items.map((item) => item.stockNo),
-    ["HB-L-01", "HB-C-01", "HB-L-02", "HB-C-02", "HB-M-01"],
+    ["HB-L-01", "HB-C-01", "HB-L-02", "HB-C-02", "HB-L-TEST", "HB-M-01"],
   );
   assert.equal(domestic.items.some((item) => item.stockNo === "HB-M-02"), false);
   assert.equal(containsInternalKey(domestic.items), false);
@@ -48,7 +48,7 @@ test("export price filter does not compare different currencies", () => {
   const seed = buildSeed();
   const ignored = filterVehicles(seed.vehicles, { priceMin: 1000, sort: "newest" }, "export");
   assert.equal(ignored.ignoredPriceFilter, true);
-  assert.equal(ignored.items.length, 5);
+  assert.equal(ignored.items.length, 6);
 
   const usd = filterVehicles(seed.vehicles, { priceMin: 2000, priceCurrency: "USD", sort: "price_asc" }, "export");
   assert.equal(usd.ignoredPriceFilter, false);

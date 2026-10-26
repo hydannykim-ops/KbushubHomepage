@@ -57,14 +57,16 @@ export function VehicleCard({
   lang,
   mode,
   href,
+  listedBy,
 }: {
   vehicle: PublicVehicle;
   lang: Lang;
   mode: TradeMode;
   href: string;
+  listedBy?: string | null;
 }) {
   const text = copy(lang);
-  const price = priceView(vehicle, mode, lang);
+  const price = priceView(vehicle, mode, lang, vehicle.listingCompany ?? listedBy);
   const yearLabel = vehicle.modelYear ? (lang === "ko" ? `${vehicle.modelYear}년` : String(vehicle.modelYear)) : text.unknown;
   const seatsLabel =
     vehicle.seats != null ? `${vehicle.seats}${lang === "ko" ? text.seatsShort : ` ${text.seatsShort}`}` : text.unknown;

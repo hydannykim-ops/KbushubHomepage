@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { contactActions, DataProblem, Gallery, SpecTable, youtubeId } from "@/components/catalog";
-import { MediaSlot } from "@/components/media-slot";
+import { contactActions, DataProblem, Gallery, SpecTable } from "@/components/catalog";
 import { ExportInquiryFields } from "@/components/export-inquiry-fields";
 import { Consent, EnhanceForm, Field, Honeypot, SubmitBanner } from "@/components/forms";
 import { priceView, showText } from "@/lib/domain/money";
@@ -68,7 +67,8 @@ export default async function VehicleDetailPage({
       </div>
     );
   }
-  const price = priceView(vehicle, ctx.mode, lang);
+  const listedBy = vehicle.listingCompany ?? site.settings.companyName;
+  const price = priceView(vehicle, ctx.mode, lang, listedBy);
   const contacts = contactActions({
     mode: ctx.mode,
     phone: site.settings.phone,
@@ -83,7 +83,6 @@ export default async function VehicleDetailPage({
   const description = field === "ko" ? vehicle.descriptionKo : vehicle.descriptionEn;
   const maintenance = field === "ko" ? vehicle.maintenanceKo : vehicle.maintenanceEn;
   const defects = field === "ko" ? vehicle.defectsKo : vehicle.defectsEn;
-  const video = vehicle.videoUrl ? youtubeId(vehicle.videoUrl) : null;
   const kind = ctx.mode === "export" ? "quote" : "purchase";
 
   const inquiry = (
@@ -200,25 +199,6 @@ export default async function VehicleDetailPage({
       <section className="rounded-lg border border-line bg-white p-5">
         <h2 className="font-bold">{text.description}</h2>
         <p className="mt-2 whitespace-pre-wrap text-sm leading-6">{showText(description, lang)}</p>
-      </section>
-      <section className="border border-line bg-white p-5">
-        <h2 className="font-semibold">{text.video}</h2>
-        {vehicle.videoUrl && video ? (
-          <iframe
-            className="mt-3 aspect-video w-full"
-            src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(video)}?autoplay=0`}
-            title={vehicle.stockNo}
-            allow="fullscreen"
-          />
-        ) : vehicle.videoUrl ? (
-          <a className="mt-3 inline-block text-primary" href={vehicle.videoUrl} rel="noreferrer">
-            {text.videoLink}
-          </a>
-        ) : (
-          <div className="mt-3 aspect-video overflow-hidden border border-line">
-            <MediaSlot label={text.mediaVideo} hint={text.mediaVideoHint} />
-          </div>
-        )}
       </section>
       <section id="inquiry" className="rounded-lg border border-line bg-white p-5">
         <h2 className="mb-4 text-xl font-bold">{sold ? text.similar : text.inquiry}</h2>
