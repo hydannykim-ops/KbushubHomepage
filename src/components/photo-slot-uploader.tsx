@@ -93,14 +93,14 @@ export function PhotoSlotUploader({
         </p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {PHOTO_SLOTS.map((slot) => {
           const state = slots[slot.id];
           const meta = labels[slot.id];
           return (
             <label
               key={slot.id}
-              className={`grid gap-2 border p-3 ${state.file ? "border-primary bg-[#f3f7fc]" : "border-line bg-white"}`}
+              className={`grid min-w-0 gap-2 overflow-hidden border p-3 ${state.file ? "border-primary bg-[#f3f7fc]" : "border-line bg-white"}`}
             >
               <span className="flex items-center justify-between gap-2 text-sm font-semibold text-ink">
                 <span>
@@ -114,10 +114,14 @@ export function PhotoSlotUploader({
                 )}
               </span>
               <span className="text-xs leading-5 text-muted">{meta.hint}</span>
-              <div className="relative aspect-[4/3] overflow-hidden border border-dashed border-line bg-[#eef2f6]">
+              <div className="relative aspect-[4/3] w-full max-w-full overflow-hidden border border-dashed border-line bg-[#eef2f6]">
                 {state.preview ? (
                   // eslint-disable-next-line @next/next/no-img-element -- local blob preview
-                  <img src={state.preview} alt="" className="h-full w-full object-cover" />
+                  <img
+                    src={state.preview}
+                    alt=""
+                    className="absolute inset-0 h-full w-full max-w-full object-contain object-center"
+                  />
                 ) : (
                   <span className="absolute inset-0 flex items-center justify-center px-3 text-center text-xs text-muted">
                     {text.photoTapToAdd}
@@ -130,13 +134,20 @@ export function PhotoSlotUploader({
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 required={slot.required}
-                className="text-xs font-normal"
+                className="max-w-full text-xs font-normal"
                 onChange={(event) => onPick(slot.id, event.target.files)}
               />
               {state.file ? (
-                <span className="flex items-center justify-between gap-2 text-xs text-muted">
+                <span className="flex min-w-0 items-center justify-between gap-2 text-xs text-muted">
                   <span className="truncate">{state.file.name}</span>
-                  <button type="button" className="shrink-0 font-semibold text-ink underline" onClick={() => clearSlot(slot.id)}>
+                  <button
+                    type="button"
+                    className="shrink-0 font-semibold text-ink underline"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      clearSlot(slot.id);
+                    }}
+                  >
                     {text.photoClear}
                   </button>
                 </span>
