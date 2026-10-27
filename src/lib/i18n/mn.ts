@@ -130,7 +130,7 @@ export const mn: Messages = {
   "kakao": "KakaoTalk",
   "whatsapp": "WhatsApp",
   "contactMissing": "Шууд холбоо барих мэдээлэл хараахан нийтлэгдээгүй. Доорх маягтыг ашиглана уу.",
-  "whatsappNote": "WhatsApp нээх нь асуулгаар бүртгэгдэхгүй. Зөвлөгөө авах бол маягт илгээнэ үү.",
+  "whatsappNote": "WhatsApp дарах нь асуулгаар бүртгэгдэхгүй. Зөвлөгөө авахдаа залгана уу.",
   "name": "Нэр",
   "email": "Имэйл",
   "contact": "Утас эсвэл мессенжер",

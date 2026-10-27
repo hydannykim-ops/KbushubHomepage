@@ -130,7 +130,7 @@ export const en: Messages = {
   "kakao": "KakaoTalk",
   "whatsapp": "WhatsApp",
   "contactMissing": "No direct contact is published yet. Please use the form below.",
-  "whatsappNote": "Opening WhatsApp is not recorded as an inquiry. Submit the form if you want a consultation.",
+  "whatsappNote": "Tapping WhatsApp is not recorded as an inquiry. Please call for consultation.",
   "name": "Name",
   "email": "Email",
   "contact": "Phone or messenger",

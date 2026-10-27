@@ -130,7 +130,7 @@ export const ko: Messages = {
   "kakao": "카카오톡",
   "whatsapp": "WhatsApp",
   "contactMissing": "연락처가 아직 등록되지 않았습니다. 아래 문의 폼을 이용해 주세요.",
-  "whatsappNote": "WhatsApp 버튼을 누르는 것은 문의 접수로 기록되지 않습니다. 상담이 필요하면 문의 폼을 제출해 주세요.",
+  "whatsappNote": "WhatsApp 버튼만으로는 문의가 접수되지 않습니다. 상담은 전화로 연결해 주세요.",
   "name": "이름",
   "email": "이메일",
   "contact": "전화·메신저",

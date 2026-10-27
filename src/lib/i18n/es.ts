@@ -130,7 +130,7 @@ export const es: Messages = {
   "kakao": "KakaoTalk",
   "whatsapp": "WhatsApp",
   "contactMissing": "Aún no hay contacto directo publicado. Use el formulario de abajo.",
-  "whatsappNote": "Abrir WhatsApp no registra una consulta. Envíe el formulario si desea asesoría.",
+  "whatsappNote": "Pulsar WhatsApp no registra una consulta. Llame para consultar.",
   "name": "Nombre",
   "email": "Correo electrónico",
   "contact": "Teléfono o mensajero",

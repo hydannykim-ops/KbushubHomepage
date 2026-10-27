@@ -130,7 +130,7 @@ export const fr: Messages = {
   "kakao": "KakaoTalk",
   "whatsapp": "WhatsApp",
   "contactMissing": "Aucun contact direct n'est encore publié. Utilisez le formulaire ci-dessous.",
-  "whatsappNote": "Ouvrir WhatsApp n'est pas enregistré comme une demande. Envoyez le formulaire pour une consultation.",
+  "whatsappNote": "Appuyer sur WhatsApp n’enregistre pas une demande. Appelez pour consulter.",
   "name": "Nom",
   "email": "E-mail",
   "contact": "Téléphone ou messagerie",

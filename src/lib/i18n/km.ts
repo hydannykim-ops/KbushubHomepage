@@ -130,7 +130,7 @@ export const km: Messages = {
   "kakao": "KakaoTalk",
   "whatsapp": "WhatsApp",
   "contactMissing": "មិនទាន់មានទំនាក់ទំនងផ្ទាល់។ សូមប្រើទម្រង់ខាងក្រោម។",
-  "whatsappNote": "ការបើក WhatsApp មិនត្រូវបានកត់ត្រាជាសំណួរ។ ផ្ញើទម្រង់ប្រសិនបើអ្នកចង់ពិគ្រោះ។",
+  "whatsappNote": "WhatsApp មិនត្រូវបានកត់ត្រាជាសំណួរទេ។ សូមទូរស័ព្ទដើម្បីពិគ្រោះ។",
   "name": "ឈ្មោះ",
   "email": "អ៊ីមែល",
   "contact": "ទូរស័ព្ទ ឬសារ",
