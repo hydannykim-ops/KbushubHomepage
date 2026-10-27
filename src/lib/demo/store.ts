@@ -322,6 +322,20 @@ export function createDemoStore(dir: string) {
     async listInquiries(): Promise<Inquiry[]> {
       return clone((await read()).inquiries).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     },
+    async listInquiriesByEmail(email: string): Promise<Inquiry[]> {
+      const normalized = email.trim().toLowerCase();
+      if (!normalized) return [];
+      return clone((await read()).inquiries)
+        .filter((item) => (item.email ?? "").toLowerCase() === normalized)
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    },
+    async findOpenInquiry(email: string, stockNo: string): Promise<Inquiry | null> {
+      const normalized = email.trim().toLowerCase();
+      const found = (await read()).inquiries
+        .filter((item) => (item.email ?? "").toLowerCase() === normalized && item.stockNo === stockNo && item.status !== "closed")
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
+      return found ? clone(found) : null;
+    },
     async getInquiry(id: string): Promise<Inquiry | null> {
       const found = (await read()).inquiries.find((item) => item.id === id);
       return found ? clone(found) : null;
@@ -576,8 +590,7 @@ export function createDemoStore(dir: string) {
     async createDealerListing(
       owner: Member,
       input: DealerListingInput,
-      files: { front: Buffer; frontSide: Buffer; rear: Buffer; extras: Array<{ bytes: Buffer; contentType: ImageType }> },
-      types: { front: ImageType; frontSide: ImageType; rear: ImageType },
+      shots: Array<{ bytes: Buffer; contentType: ImageType; category: PhotoCategory; cover: boolean; label: string }>,
     ) {
       if (owner.role !== "dealer") throw new StoreError("dealer_only");
       await mkdir(uploadDir, { recursive: true });
@@ -612,11 +625,8 @@ export function createDemoStore(dir: string) {
             altEn: label,
           });
         };
-        await writePhoto(files.front, types.front, "front", true, "정면");
-        await writePhoto(files.frontSide, types.frontSide, "front_side", false, "정측면");
-        await writePhoto(files.rear, types.rear, "rear", false, "후면");
-        for (const extra of files.extras) {
-          await writePhoto(extra.bytes, extra.contentType, "exterior", false, "추가 사진");
+        for (const shot of shots) {
+          await writePhoto(shot.bytes, shot.contentType, shot.category, shot.cover, shot.label);
         }
         const vehicle: AdminVehicle = {
           id,

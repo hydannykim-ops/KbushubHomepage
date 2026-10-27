@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { contactActions, DataProblem, Gallery, SpecTable } from "@/components/catalog";
 import { ContactPhonePanel } from "@/components/contact-phone-panel";
 import { SubmitBanner } from "@/components/forms";
+import { getSession } from "@/lib/auth/session";
 import { priceView, showText } from "@/lib/domain/money";
 import { vehicleTitle } from "@/lib/domain/vehicle-catalog";
 import { copy } from "@/lib/i18n";
@@ -86,6 +87,8 @@ export default async function VehicleDetailPage({
   const ctaLabel = ctx.mode === "export" ? text.quote : text.purchase;
   const openConsult = sp.get("consult") === "1" || typeof rawParams.submitted === "string";
   const contactPhone = site.settings.phone ?? site.settings.whatsappE164;
+  const session = await getSession();
+  const signedIn = session?.role === "customer" || session?.role === "dealer";
 
   return (
     <div className="mx-auto grid max-w-6xl gap-8 px-4 py-8 pb-28 md:pb-10">
@@ -118,7 +121,15 @@ export default async function VehicleDetailPage({
           {vehicle.status === "reserved" ? <p className="mt-3 text-sm">{text.reservedNote}</p> : null}
           {!sold ? (
             <div className="mt-4">
-              <ContactPhonePanel lang={lang} phone={contactPhone} ctaLabel={ctaLabel} autoOpen={openConsult} />
+              <ContactPhonePanel
+                lang={lang}
+                phone={contactPhone}
+                ctaLabel={ctaLabel}
+                autoOpen={openConsult}
+                stockNo={vehicle.stockNo}
+                mode={ctx.mode}
+                signedIn={signedIn}
+              />
             </div>
           ) : (
             <Link href={hrefTo(lang, "/wanted", ctx, { model: vehicle.model })} className="mt-4 inline-flex rounded-md bg-primary px-4 py-3 text-sm font-semibold text-white">

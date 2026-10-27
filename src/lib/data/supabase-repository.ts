@@ -565,6 +565,34 @@ export function createSupabaseRepository() {
       if (result.error) fail(result.error, "inquiry_list");
       return (result.data ?? []).map((row) => mapInquiry(row as Record<string, unknown>));
     },
+    async listInquiriesByEmail(email: string) {
+      const service = createServiceClient();
+      const normalized = email.trim().toLowerCase();
+      if (!normalized) return [];
+      const result = await service
+        .from("inquiries")
+        .select("*")
+        .ilike("email", normalized)
+        .order("created_at", { ascending: false })
+        .limit(40);
+      if (result.error) fail(result.error, "inquiry_list_email");
+      return (result.data ?? []).map((row) => mapInquiry(row as Record<string, unknown>));
+    },
+    async findOpenInquiry(email: string, stockNo: string) {
+      const service = createServiceClient();
+      const normalized = email.trim().toLowerCase();
+      const result = await service
+        .from("inquiries")
+        .select("*")
+        .ilike("email", normalized)
+        .eq("stock_no", stockNo)
+        .neq("status", "closed")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (result.error) fail(result.error, "inquiry_open");
+      return result.data ? mapInquiry(result.data as Record<string, unknown>) : null;
+    },
     async getInquiry(id: string) {
       const service = createServiceClient();
       const result = await service.from("inquiries").select("*").eq("id", id).maybeSingle();
@@ -908,8 +936,7 @@ export function createSupabaseRepository() {
     async createDealerListing(
       owner: Member,
       input: DealerListingInput,
-      files: { front: Buffer; frontSide: Buffer; rear: Buffer; extras: Array<{ bytes: Buffer; contentType: ImageType }> },
-      types: { front: ImageType; frontSide: ImageType; rear: ImageType },
+      shots: Array<{ bytes: Buffer; contentType: ImageType; category: PhotoCategory; cover: boolean; label: string }>,
     ) {
       if (owner.role !== "dealer") throw new StoreError("dealer_only");
       const service = createServiceClient();
@@ -951,12 +978,6 @@ export function createSupabaseRepository() {
       if (inserted.error) fail(inserted.error, "dealer_vehicle");
       const internal = await service.from("vehicle_internal").insert({ vehicle_id: id });
       if (internal.error) fail(internal.error, "dealer_internal");
-      const shots: Array<{ bytes: Buffer; contentType: ImageType; category: PhotoCategory; cover: boolean; label: string }> = [
-        { bytes: files.front, contentType: types.front, category: "front", cover: true, label: "정면" },
-        { bytes: files.frontSide, contentType: types.frontSide, category: "front_side", cover: false, label: "정측면" },
-        { bytes: files.rear, contentType: types.rear, category: "rear", cover: false, label: "후면" },
-        ...files.extras.map((extra) => ({ bytes: extra.bytes, contentType: extra.contentType, category: "exterior" as const, cover: false, label: "추가 사진" })),
-      ];
       for (const [index, shot] of shots.entries()) {
         const photoId = randomUUID();
         const storagePath = `${id}/${photoId}.${extensionFor(shot.contentType)}`;
