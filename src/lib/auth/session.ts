@@ -17,32 +17,32 @@ export async function getSession(): Promise<Session | null> {
   const { data, error } = await supabase.auth.getUser();
   if (error || !data.user) return null;
   const service = createServiceClient();
-  const roleResult = await service.from("user_roles").select("role").eq("user_id", data.user.id).maybeSingle();
+  const userId = data.user.id;
+  const email = data.user.email ?? "";
+  const [roleResult, agentResult, memberResult] = await Promise.all([
+    service.from("user_roles").select("role").eq("user_id", userId).maybeSingle(),
+    service.from("agent_profiles").select("id, referral_code, status").eq("user_id", userId).maybeSingle(),
+    service.from("member_profiles").select("role, name").eq("user_id", userId).maybeSingle(),
+  ]);
   if (roleResult.data?.role === "admin") {
-    return { sub: data.user.id, role: "admin", email: data.user.email ?? "", exp: Date.now() + 60_000 };
+    return { sub: userId, role: "admin", email, exp: Date.now() + 60_000 };
   }
-  const agentResult = await service
-    .from("agent_profiles")
-    .select("id, referral_code, status")
-    .eq("user_id", data.user.id)
-    .maybeSingle();
   if (agentResult.data?.status === "approved") {
     return {
-      sub: data.user.id,
+      sub: userId,
       role: "agent",
-      email: data.user.email ?? "",
+      email,
       agentId: agentResult.data.id,
       referralCode: agentResult.data.referral_code,
       exp: Date.now() + 60_000,
     };
   }
-  const memberResult = await service.from("member_profiles").select("role, name").eq("user_id", data.user.id).maybeSingle();
   const memberRole = memberResult.data?.role;
   if (memberRole === "customer" || memberRole === "dealer") {
     return {
-      sub: data.user.id,
+      sub: userId,
       role: memberRole,
-      email: data.user.email ?? "",
+      email,
       name: typeof memberResult.data?.name === "string" ? memberResult.data.name : undefined,
       exp: Date.now() + 60_000,
     };
