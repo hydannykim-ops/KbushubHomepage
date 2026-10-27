@@ -160,7 +160,8 @@ export const en: Messages = {
     "origin": "The request was not processed.",
     "duplicate_email": "This email is already registered.",
     "dealer_only": "Only a dealer account can register a vehicle for sale.",
-    "login_failed": "Sign-in failed."
+    "login_failed": "Sign-in failed.",
+    "login_required": "Sign-in is required."
   },
   "privacyTitle": "Privacy notice",
   "guideTitle": "Buying and export",
@@ -220,6 +221,8 @@ export const en: Messages = {
   "company": "Business name",
   "businessPhone": "Business phone",
   "passwordHint": "At least 8 characters",
+  "passwordConfirm": "Confirm password",
+  "passwordMismatch": "Passwords do not match.",
   "accountTitle": "Account",
   "myListings": "My listings",
   "noListings": "No listings yet.",
@@ -231,6 +234,8 @@ export const en: Messages = {
   "consultButton": "Trade consultation",
   "dealerOnlyNote": "Only a dealer account can register a vehicle for sale.",
   "guestSellBody": "Sign up as a dealer or a customer first. Dealers list vehicles. Customers leave a trade consultation.",
+  "inquiryLoginRequired": "Sign in to send a purchase inquiry.",
+  "inquiryPrefillNote": "We use the contact details from your account.",
   "photoFront": "Front",
   "photoFrontSide": "Front three-quarter",
   "photoRear": "Rear",

@@ -18,6 +18,11 @@ export default async function MemberLoginPage({
   for (const [key, value] of Object.entries(raw)) if (typeof value === "string") sp.set(key, value);
   const ctx = await requestContext(lang, sp);
   const text = copy(lang);
+  const nextRaw = sp.get("next");
+  const nextPath = nextRaw && nextRaw.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : hrefTo(lang, "/account", ctx);
+  const signupHref = nextRaw
+    ? `${hrefTo(lang, "/account/signup", ctx)}&next=${encodeURIComponent(nextPath)}`
+    : hrefTo(lang, "/account/signup", ctx);
   return (
     <div className="mx-auto max-w-md px-4 py-10">
       <h1 className="text-3xl font-semibold tracking-tight">{text.navLogin}</h1>
@@ -25,12 +30,12 @@ export default async function MemberLoginPage({
       <div className="mt-6 border border-line bg-white p-5">
         <LoginForm
           area="member"
-          nextPath={hrefTo(lang, "/account", ctx)}
+          nextPath={nextPath}
           labels={{ email: text.email, password: text.password, submit: text.navLogin, failed: text.loginFailed }}
         />
       </div>
       <p className="mt-4 text-sm">
-        <Link href={hrefTo(lang, "/account/signup", ctx)} className="font-semibold text-primary">
+        <Link href={signupHref} className="font-semibold text-primary">
           {text.navSignup}
         </Link>
       </p>

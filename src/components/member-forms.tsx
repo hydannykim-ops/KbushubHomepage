@@ -90,6 +90,10 @@ export function SignupForm({
         <input name="password" type="password" required minLength={8} autoComplete="new-password" className={field} />
         <span className="font-normal text-muted">{text.passwordHint}</span>
       </label>
+      <label className="grid gap-1 text-sm font-medium">
+        {text.passwordConfirm} *
+        <input name="passwordConfirm" type="password" required minLength={8} autoComplete="new-password" className={field} />
+      </label>
 
       <label className="flex items-start gap-2 text-sm">
         <input name="consent" type="checkbox" value="true" required className="mt-1" />

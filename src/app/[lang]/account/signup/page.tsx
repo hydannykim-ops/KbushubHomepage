@@ -24,6 +24,8 @@ export default async function SignupPage({
   const text = copy(lang);
   const roleParam = sp.get("role");
   const role = roleParam === "customer" || roleParam === "dealer" ? roleParam : null;
+  const nextRaw = sp.get("next");
+  const nextPath = nextRaw && nextRaw.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : hrefTo(lang, "/account", ctx);
 
   if (!role) {
     return (
@@ -36,7 +38,11 @@ export default async function SignupPage({
 
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           <Link
-            href={hrefTo(lang, "/account/signup", ctx, { role: "dealer" })}
+            href={
+              nextRaw
+                ? `${hrefTo(lang, "/account/signup", ctx, { role: "dealer" })}&next=${encodeURIComponent(nextPath)}`
+                : hrefTo(lang, "/account/signup", ctx, { role: "dealer" })
+            }
             className="group flex min-h-56 flex-col justify-between border border-line bg-white p-6 transition-shadow hover:shadow-[0_10px_30px_rgba(16,32,51,0.08)]"
           >
             <div>
@@ -48,7 +54,11 @@ export default async function SignupPage({
           </Link>
 
           <Link
-            href={hrefTo(lang, "/account/signup", ctx, { role: "customer" })}
+            href={
+              nextRaw
+                ? `${hrefTo(lang, "/account/signup", ctx, { role: "customer" })}&next=${encodeURIComponent(nextPath)}`
+                : hrefTo(lang, "/account/signup", ctx, { role: "customer" })
+            }
             className="group flex min-h-56 flex-col justify-between border border-line bg-white p-6 transition-shadow hover:shadow-[0_10px_30px_rgba(16,32,51,0.08)]"
           >
             <div>
@@ -61,7 +71,10 @@ export default async function SignupPage({
         </div>
 
         <p className="mt-6 text-sm">
-          <Link href={hrefTo(lang, "/account/login", ctx)} className="font-semibold text-primary">
+          <Link
+            href={nextRaw ? `${hrefTo(lang, "/account/login", ctx)}&next=${encodeURIComponent(nextPath)}` : hrefTo(lang, "/account/login", ctx)}
+            className="font-semibold text-primary"
+          >
             {text.navLogin}
           </Link>
         </p>
@@ -78,7 +91,7 @@ export default async function SignupPage({
         <p className="mt-2 text-sm text-muted">{text.liveClosedNote}</p>
       ) : null}
       <div className="relative mt-6 border border-line bg-white p-5">
-        <SignupForm lang={lang} nextPath={hrefTo(lang, "/account", ctx)} role={role} />
+        <SignupForm lang={lang} nextPath={nextPath} role={role} />
       </div>
       <p className="mt-4 flex flex-wrap gap-4 text-sm">
         <Link href={hrefTo(lang, "/account/signup", ctx)} className="font-semibold text-muted hover:text-ink">

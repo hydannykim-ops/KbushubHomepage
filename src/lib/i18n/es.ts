@@ -160,7 +160,8 @@ export const es: Messages = {
     "origin": "La solicitud no se procesó.",
     "duplicate_email": "Este correo ya está registrado.",
     "dealer_only": "Solo una cuenta de concesionario puede registrar un vehículo en venta.",
-    "login_failed": "Error al iniciar sesión."
+    "login_failed": "Error al iniciar sesión.",
+    "login_required": "Se requiere iniciar sesión."
   },
   "privacyTitle": "Aviso de privacidad",
   "guideTitle": "Compra y exportación",
@@ -220,6 +221,8 @@ export const es: Messages = {
   "company": "Nombre comercial",
   "businessPhone": "Teléfono comercial",
   "passwordHint": "Al menos 8 caracteres",
+  "passwordConfirm": "Confirmar contraseña",
+  "passwordMismatch": "Las contraseñas no coinciden.",
   "accountTitle": "Cuenta",
   "myListings": "Mis anuncios",
   "noListings": "Aún no hay anuncios.",
@@ -231,6 +234,8 @@ export const es: Messages = {
   "consultButton": "Consulta de compraventa",
   "dealerOnlyNote": "Solo una cuenta de concesionario puede registrar un vehículo en venta.",
   "guestSellBody": "Regístrese primero como concesionario o cliente. Los concesionarios publican vehículos. Los clientes dejan una consulta de compraventa.",
+  "inquiryLoginRequired": "Inicie sesión para enviar una consulta de compra.",
+  "inquiryPrefillNote": "Usamos los datos de contacto de su cuenta.",
   "photoFront": "Frontal",
   "photoFrontSide": "Tres cuartos delantera",
   "photoRear": "Trasera",

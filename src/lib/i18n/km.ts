@@ -160,7 +160,8 @@ export const km: Messages = {
     "origin": "សំណើមិនត្រូវបានដំណើរការ។",
     "duplicate_email": "អ៊ីមែលនេះបានចុះឈ្មោះរួចហើយ។",
     "dealer_only": "មានតែគណនីអ្នកលក់ទេដែលអាចចុះបញ្ជីយានយន្តសម្រាប់លក់។",
-    "login_failed": "ចូលមិនបាន។"
+    "login_failed": "ចូលមិនបាន។",
+    "login_required": "ត្រូវការចូលគណនី។"
   },
   "privacyTitle": "សេចក្តីជូនដំណឹងឯកជនភាព",
   "guideTitle": "ការទិញ និងនាំចេញ",
@@ -220,6 +221,8 @@ export const km: Messages = {
   "company": "ឈ្មោះអាជីវកម្ម",
   "businessPhone": "ទូរស័ព្ទអាជីវកម្ម",
   "passwordHint": "យ៉ាងហោចណាស់ ៨ តួអក្សរ",
+  "passwordConfirm": "បញ្ជាក់ពាក្យសម្ងាត់",
+  "passwordMismatch": "ពាក្យសម្ងាត់មិនត្រូវគ្នា។",
   "accountTitle": "គណនី",
   "myListings": "បញ្ជីរបស់ខ្ញុំ",
   "noListings": "មិនទាន់មានបញ្ជី។",
@@ -231,6 +234,8 @@ export const km: Messages = {
   "consultButton": "ពិគ្រោះពាណិជ្ជកម្ម",
   "dealerOnlyNote": "មានតែគណនីអ្នកលក់ទេដែលអាចចុះបញ្ជីយានយន្តសម្រាប់លក់។",
   "guestSellBody": "ចុះឈ្មោះជាអ្នកលក់ ឬអតិថិជនមុន។ អ្នកលក់ចុះបញ្ជីយានយន្ត។ អតិថិជនទុកការពិគ្រោះ។",
+  "inquiryLoginRequired": "សូមចូលគណនីដើម្បីផ្ញើសំណួរទិញ។",
+  "inquiryPrefillNote": "យើងប្រើព័ត៌មានទំនាក់ទំនងពីគណនីរបស់អ្នក។",
   "photoFront": "ខាងមុខ",
   "photoFrontSide": "ខាងមុខបីភាគបួន",
   "photoRear": "ខាងក្រោយ",

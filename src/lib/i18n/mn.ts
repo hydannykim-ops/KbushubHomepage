@@ -160,7 +160,8 @@ export const mn: Messages = {
     "origin": "Хүсэлтийг боловсруулаагүй.",
     "duplicate_email": "Энэ имэйл аль хэдийн бүртгэлтэй.",
     "dealer_only": "Зөвхөн дилерийн бүртгэлээр машин зарж бүртгүүлэх боломжтой.",
-    "login_failed": "Нэвтрэлт амжилтгүй."
+    "login_failed": "Нэвтрэлт амжилтгүй.",
+    "login_required": "Нэвтрэх шаардлагатай."
   },
   "privacyTitle": "Нууцлалын мэдэгдэл",
   "guideTitle": "Худалдан авалт ба экспорт",
@@ -220,6 +221,8 @@ export const mn: Messages = {
   "company": "Бизнесийн нэр",
   "businessPhone": "Бизнес утас",
   "passwordHint": "Дор хаяж 8 тэмдэгт",
+  "passwordConfirm": "Нууц үг баталгаажуулах",
+  "passwordMismatch": "Нууц үг таарахгүй байна.",
   "accountTitle": "Бүртгэл",
   "myListings": "Миний зарлалууд",
   "noListings": "Одоогоор зарлал байхгүй.",
@@ -231,6 +234,8 @@ export const mn: Messages = {
   "consultButton": "Арилжааны зөвлөгөө",
   "dealerOnlyNote": "Зөвхөн дилерийн бүртгэлээр машин зарж бүртгүүлэх боломжтой.",
   "guestSellBody": "Эхлээд дилер эсвэл үйлчлүүлэгчээр бүртгүүлнэ. Дилерүүд машин бүртгэнэ. Үйлчлүүлэгчид арилжааны зөвлөгөө үлдээнэ.",
+  "inquiryLoginRequired": "Худалдан авалтын асуулга илгээхийн тулд нэвтэрнэ үү.",
+  "inquiryPrefillNote": "Бид таны бүртгэлийн холбоо барих мэдээллийг ашиглана.",
   "photoFront": "Урд",
   "photoFrontSide": "Урд гурван дөрөвний нэг",
   "photoRear": "Ард",

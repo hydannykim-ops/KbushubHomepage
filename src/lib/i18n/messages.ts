@@ -144,6 +144,7 @@ export type Messages = {
     duplicate_email: string;
     dealer_only: string;
     login_failed: string;
+    login_required: string;
   };
   privacyTitle: string;
   guideTitle: string;
@@ -203,6 +204,8 @@ export type Messages = {
   company: string;
   businessPhone: string;
   passwordHint: string;
+  passwordConfirm: string;
+  passwordMismatch: string;
   accountTitle: string;
   myListings: string;
   noListings: string;
@@ -214,6 +217,8 @@ export type Messages = {
   consultButton: string;
   dealerOnlyNote: string;
   guestSellBody: string;
+  inquiryLoginRequired: string;
+  inquiryPrefillNote: string;
   photoFront: string;
   photoFrontSide: string;
   photoRear: string;

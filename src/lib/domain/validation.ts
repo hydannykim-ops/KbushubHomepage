@@ -824,6 +824,7 @@ export function parseSignup(body: unknown, lang: Lang): { ok: true; data: Signup
       name: z.string().trim().min(1, text(lang, "이름을 입력해 주세요.", "Enter your name.")).max(80),
       email: z.string().trim().max(120),
       password: z.string().min(8, text(lang, "비밀번호는 8자 이상으로 해 주세요.", "Use at least 8 characters.")).max(80),
+      passwordConfirm: z.string().max(80).optional().or(z.literal("")),
       phone: z.string().trim().max(40).optional().or(z.literal("")),
       company: z.string().trim().max(80).optional().or(z.literal("")),
       consent: z.union([z.boolean(), z.string()]),
@@ -832,6 +833,13 @@ export function parseSignup(body: unknown, lang: Lang): { ok: true; data: Signup
     .superRefine((value, ctx) => {
       if (!z.email().safeParse(value.email).success) {
         ctx.addIssue({ code: "custom", path: ["email"], message: text(lang, "이메일 형식을 확인해 주세요.", "Check the email format.") });
+      }
+      if ((value.passwordConfirm ?? "") !== value.password) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["passwordConfirm"],
+          message: text(lang, "비밀번호가 일치하지 않습니다.", "Passwords do not match."),
+        });
       }
       if (value.role === "dealer" && !(value.company ?? "").trim()) {
         ctx.addIssue({ code: "custom", path: ["company"], message: text(lang, "판매 사업자는 상호를 입력해 주세요.", "Enter the business name.") });

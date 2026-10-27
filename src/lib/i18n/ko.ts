@@ -160,7 +160,8 @@ export const ko: Messages = {
     "origin": "요청을 처리하지 않았습니다.",
     "duplicate_email": "이미 가입된 이메일입니다.",
     "dealer_only": "내 차 팔기 등록은 판매 사업자 계정만 할 수 있습니다.",
-    "login_failed": "로그인할 수 없습니다."
+    "login_failed": "로그인할 수 없습니다.",
+    "login_required": "로그인이 필요합니다."
   },
   "privacyTitle": "개인정보 안내",
   "guideTitle": "구매·수출 안내",
@@ -220,6 +221,8 @@ export const ko: Messages = {
   "company": "상호",
   "businessPhone": "사업장 연락처",
   "passwordHint": "8자 이상",
+  "passwordConfirm": "비밀번호 확인",
+  "passwordMismatch": "비밀번호가 일치하지 않습니다.",
   "accountTitle": "내 계정",
   "myListings": "내가 등록한 매물",
   "noListings": "등록한 매물이 없습니다.",
@@ -231,6 +234,8 @@ export const ko: Messages = {
   "consultButton": "매매 상담",
   "dealerOnlyNote": "내 차 팔기 등록은 판매 사업자만 사용할 수 있습니다.",
   "guestSellBody": "먼저 판매 사업자 또는 일반 고객으로 가입합니다. 사업자는 매물을 등록하고, 일반 고객은 매매 상담을 남깁니다.",
+  "inquiryLoginRequired": "구매 상담은 로그인 후 이용할 수 있습니다.",
+  "inquiryPrefillNote": "가입 시 등록한 연락처를 사용합니다.",
   "photoFront": "정면",
   "photoFrontSide": "정측면",
   "photoRear": "후면",
