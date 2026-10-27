@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import type { Lang } from "@/lib/domain/types";
+import type { Lang, TradeMode } from "@/lib/domain/types";
 import { contactTelHref, formatContactPhone } from "@/lib/domain/phone-display";
 import { copy } from "@/lib/i18n";
 
@@ -11,15 +11,23 @@ export function ContactPhonePanel({
   phone,
   ctaLabel,
   autoOpen = false,
+  stockNo,
+  mode,
+  signedIn = false,
 }: {
   lang: Lang;
   phone: string | null;
   ctaLabel: string;
   autoOpen?: boolean;
+  stockNo?: string;
+  mode?: TradeMode;
+  signedIn?: boolean;
 }) {
   const text = copy(lang);
   const [open, setOpen] = useState(autoOpen);
   const [mounted, setMounted] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+  const recorded = useRef(false);
   const domestic = formatContactPhone(phone, "domestic");
   const international = formatContactPhone(phone, "international");
   const shown = lang === "ko" ? domestic : international;
@@ -53,8 +61,24 @@ export function ContactPhonePanel({
     };
   }, [open]);
 
+  useEffect(() => {
+    if (!open || !signedIn || !stockNo || recorded.current) return;
+    recorded.current = true;
+    void fetch("/api/inquiries/interest", {
+      method: "POST",
+      headers: { "content-type": "application/json", accept: "application/json" },
+      body: JSON.stringify({ lang, stockNo, tradeMode: mode ?? "domestic" }),
+    })
+      .then(async (response) => {
+        if (!response.ok) return;
+        setNote(text.inquiryRecorded);
+      })
+      .catch(() => {
+        recorded.current = false;
+      });
+  }, [open, signedIn, stockNo, lang, mode, text.inquiryRecorded]);
+
   function openPanel() {
-    // Local UI state only — do not rewrite history with replaceState (breaks App Router soft nav).
     setOpen(true);
   }
 
@@ -85,6 +109,7 @@ export function ContactPhonePanel({
                 </button>
               </div>
               <p className="mt-2 text-sm leading-6 text-muted">{text.contactPhoneHint}</p>
+              {note ? <p className="mt-3 border border-[#bbf7d0] bg-[#f0fdf4] px-3 py-2 text-xs leading-5 text-ink">{note}</p> : null}
               {shown && href ? (
                 <a href={href} className="mt-5 block rounded-md bg-primary px-4 py-3 text-center text-base font-semibold text-white">
                   {shown}

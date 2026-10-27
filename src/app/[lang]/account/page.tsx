@@ -4,7 +4,7 @@ import { ProfileForm } from "@/components/member-forms";
 import { DataProblem } from "@/components/catalog";
 import { getSession } from "@/lib/auth/session";
 import { copy } from "@/lib/i18n";
-import { statusLabel } from "@/lib/labels";
+import { inquiryStatusLabel, statusLabel } from "@/lib/labels";
 import { vehicleTitle } from "@/lib/domain/vehicle-catalog";
 import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
 import { loadSite } from "@/lib/site-load";
@@ -50,6 +50,16 @@ export default async function AccountPage({
     phone: member?.phone ?? null,
     company: member?.company ?? null,
   };
+  const inquiries = await site.repo.listInquiriesByEmail(profile.email);
+  const inquiryCards = await Promise.all(
+    inquiries
+      .filter((item) => item.stockNo)
+      .slice(0, 12)
+      .map(async (inquiry) => {
+        const vehicle = inquiry.stockNo ? await site.repo.getPublicByStockNo(inquiry.stockNo) : null;
+        return { inquiry, vehicle };
+      }),
+  );
 
   return (
     <div className="mx-auto grid max-w-3xl gap-8 px-4 py-10">
@@ -60,6 +70,38 @@ export default async function AccountPage({
           {profile.email} · {session.role === "dealer" ? text.roleDealer : text.roleCustomer}
         </p>
       </div>
+
+      <section className="border border-line bg-white p-5">
+        <h2 className="text-xl font-semibold">{text.myInquiriesTitle}</h2>
+        <p className="mt-2 text-sm text-muted">{text.myInquiriesBody}</p>
+        {inquiryCards.length ? (
+          <ul className="mt-4 divide-y divide-line border-y border-line">
+            {inquiryCards.map(({ inquiry, vehicle }) => (
+              <li key={inquiry.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
+                <div className="min-w-0">
+                  <p className="font-medium text-ink">
+                    {inquiry.stockNo}
+                    {vehicle ? ` · ${vehicleTitle(vehicle, lang)}` : ""}
+                  </p>
+                  <p className="mt-1 text-xs text-muted">
+                    {inquiry.createdAt.slice(0, 10)} · {inquiry.tradeMode === "export" ? text.modeExport : text.modeDomestic}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="font-semibold">{inquiryStatusLabel(inquiry.status, lang)}</span>
+                  {inquiry.stockNo ? (
+                    <Link href={hrefTo(lang, `/vehicles/${inquiry.stockNo}`, ctx)} className="text-primary underline">
+                      {text.view}
+                    </Link>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-4 text-sm text-muted">{text.myInquiriesEmpty}</p>
+        )}
+      </section>
 
       <section className="border border-line bg-white p-5">
         <h2 className="text-xl font-semibold">{text.profileTitle}</h2>

@@ -4,6 +4,7 @@ import { DataProblem } from "@/components/catalog";
 import { Consent, EnhanceForm, Field, Honeypot, SubmitBanner } from "@/components/forms";
 import { MakerModelPicker } from "@/components/maker-model-picker";
 import { DealerListingForm } from "@/components/member-forms";
+import { PhotoSlotUploader } from "@/components/photo-slot-uploader";
 import { getSession } from "@/lib/auth/session";
 import { copy } from "@/lib/i18n";
 import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
@@ -53,10 +54,7 @@ export default async function SellPage({
           <Field label={text.email} name="email" type="email" defaultValue={session?.email ?? ""} />
           <Field label={text.contact} name="phone" />
           <Field label={text.message} name="message" as="textarea" />
-          <label className="grid gap-1 text-sm font-medium">
-            {text.photos}
-            <input name="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple className="font-normal" />
-          </label>
+          <PhotoSlotUploader lang={lang} />
           <Consent lang={lang} />
           <Honeypot lang={lang} />
         </EnhanceForm>

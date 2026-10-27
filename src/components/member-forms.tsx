@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { MakerModelPicker } from "@/components/maker-model-picker";
+import { PhotoSlotUploader } from "@/components/photo-slot-uploader";
 import type { Lang } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
 
@@ -194,6 +195,7 @@ export function DealerListingForm({ lang }: { lang: Lang }) {
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [vehicleClass, setVehicleClass] = useState<"county" | "medium" | "large">("county");
+  const [photoReset, setPhotoReset] = useState(0);
 
   return (
     <form
@@ -221,6 +223,7 @@ export function DealerListingForm({ lang }: { lang: Lang }) {
           setMessage({ ok: true, text: text.listingSaved });
           form.reset();
           setVehicleClass("county");
+          setPhotoReset((value) => value + 1);
           return;
         }
         const code = data.code ?? "save_failed";
@@ -292,23 +295,7 @@ export function DealerListingForm({ lang }: { lang: Lang }) {
         {text.description}
         <textarea name="descriptionKo" rows={4} className={field} />
       </label>
-      <p className="text-sm text-muted">{text.photoRequired}</p>
-      <label className="grid gap-1 text-sm font-medium">
-        {text.photoFront}
-        <input name="front" type="file" accept="image/jpeg,image/png,image/webp" required className="font-normal" />
-      </label>
-      <label className="grid gap-1 text-sm font-medium">
-        {text.photoFrontSide}
-        <input name="frontSide" type="file" accept="image/jpeg,image/png,image/webp" required className="font-normal" />
-      </label>
-      <label className="grid gap-1 text-sm font-medium">
-        {text.photoRear}
-        <input name="rear" type="file" accept="image/jpeg,image/png,image/webp" required className="font-normal" />
-      </label>
-      <label className="grid gap-1 text-sm font-medium">
-        {text.photoExtra}
-        <input name="extras" type="file" accept="image/jpeg,image/png,image/webp" multiple className="font-normal" />
-      </label>
+      <PhotoSlotUploader lang={lang} resetKey={photoReset} />
       <button disabled={pending} className="bg-primary px-4 py-3 text-sm font-semibold text-white disabled:opacity-60">
         {text.submit}
       </button>
