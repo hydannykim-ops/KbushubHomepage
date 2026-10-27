@@ -394,13 +394,17 @@ test("dealer listings stay in review and customers cannot publish", async () => 
     descriptionKo: null,
     descriptionEn: null,
   };
-  const files = { front: png, frontSide: png, rear: png, extras: [] };
-  const types = { front: "image/png" as const, frontSide: "image/png" as const, rear: "image/png" as const };
+  const shots = [
+    { bytes: png, contentType: "image/png" as const, category: "front" as const, cover: true, label: "정면" },
+    { bytes: png, contentType: "image/png" as const, category: "front_side" as const, cover: false, label: "좌측" },
+    { bytes: png, contentType: "image/png" as const, category: "exterior" as const, cover: false, label: "우측" },
+    { bytes: png, contentType: "image/png" as const, category: "rear" as const, cover: false, label: "후면" },
+  ];
   await assert.rejects(
-    () => store.createDealerListing(customer, input, files, types),
+    () => store.createDealerListing(customer, input, shots),
     (error: unknown) => error instanceof Error && "code" in error && error.code === "dealer_only",
   );
-  const listing = await store.createDealerListing(dealer, input, files, types);
+  const listing = await store.createDealerListing(dealer, input, shots);
   assert.equal(listing.status, "review");
   assert.equal(listing.listingSource, "dealer");
   assert.equal(JSON.stringify(listing).includes("password"), false);
