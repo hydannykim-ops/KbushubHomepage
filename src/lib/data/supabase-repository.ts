@@ -827,14 +827,26 @@ export function createSupabaseRepository() {
     },
     async signupMember(input: SignupInput): Promise<Member> {
       const service = createServiceClient();
+      const email = input.email.trim().toLowerCase();
+      const existingProfile = await service.from("member_profiles").select("user_id").eq("email", email).maybeSingle();
+      if (existingProfile.error) fail(existingProfile.error, "member_signup_lookup");
+      if (existingProfile.data) throw new StoreError("duplicate_email");
+
       const created = await service.auth.admin.createUser({
-        email: input.email,
+        email,
         password: input.password,
         email_confirm: true,
       });
       if (created.error || !created.data.user) {
         const message = created.error?.message.toLowerCase() ?? "";
-        if (created.error?.status === 422 || message.includes("already") || message.includes("registered") || message.includes("exists")) {
+        if (
+          created.error?.status === 422 ||
+          created.error?.code === "email_exists" ||
+          message.includes("already") ||
+          message.includes("registered") ||
+          message.includes("exists") ||
+          message.includes("duplicate")
+        ) {
           throw new StoreError("duplicate_email");
         }
         fail(created.error, "member_signup");
@@ -844,7 +856,7 @@ export function createSupabaseRepository() {
         user_id: userId,
         role: input.role,
         name: input.name,
-        email: input.email,
+        email,
         phone: input.phone,
         company: input.company,
       });
@@ -857,11 +869,25 @@ export function createSupabaseRepository() {
         id: userId,
         role: input.role,
         name: input.name,
-        email: input.email,
+        email,
         phone: input.phone,
         company: input.company,
         createdAt: new Date().toISOString(),
       };
+    },
+    async updateMember(
+      id: string,
+      patch: { name: string; phone: string | null; company: string | null },
+    ): Promise<Member> {
+      const service = createServiceClient();
+      const updated = await service
+        .from("member_profiles")
+        .update({ name: patch.name, phone: patch.phone, company: patch.company })
+        .eq("user_id", id)
+        .select("user_id, role, name, email, phone, company, created_at")
+        .single();
+      if (updated.error) fail(updated.error, "member_update");
+      return mapMember(updated.data as Record<string, unknown>);
     },
     async verifyMember(email: string, password: string): Promise<Member | null> {
       const anon = createAnonClient();

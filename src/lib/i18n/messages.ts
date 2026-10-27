@@ -217,6 +217,14 @@ export type Messages = {
   consultButton: string;
   dealerOnlyNote: string;
   guestSellBody: string;
+  contactPhoneHint: string;
+  close: string;
+  emailLockedHint: string;
+  saveProfile: string;
+  profileSaved: string;
+  profileBody: string;
+  profileTitle: string;
+  signupUseLogin: string;
   inquiryLoginRequired: string;
   inquiryPrefillNote: string;
   photoFront: string;

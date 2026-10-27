@@ -552,6 +552,19 @@ export function createDemoStore(dir: string) {
         return { id: member.id, role: member.role, name: member.name, email: member.email, phone: member.phone, company: member.company, createdAt: member.createdAt };
       });
     },
+    async updateMember(
+      id: string,
+      patch: { name: string; phone: string | null; company: string | null },
+    ): Promise<Member> {
+      return update((state) => {
+        const member = state.members.find((item) => item.id === id);
+        if (!member) throw new StoreError("not_found");
+        member.name = patch.name;
+        member.phone = patch.phone;
+        member.company = patch.company;
+        return { id: member.id, role: member.role, name: member.name, email: member.email, phone: member.phone, company: member.company, createdAt: member.createdAt };
+      });
+    },
     async verifyMember(email: string, password: string): Promise<Member | null> {
       const member = (await read()).members.find((item) => item.email === email.trim().toLowerCase());
       if (!member || !verifyPassword(password, member.passwordHash)) return null;

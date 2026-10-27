@@ -41,12 +41,30 @@ export async function POST(request: Request) {
       });
       return response;
     }
+    // Only create a session for a brand-new account. Never sign in on duplicate / failed signup.
     const supabase = await createSupabaseServer();
-    await supabase.auth.signInWithPassword({ email: parsed.data.email, password: parsed.data.password });
+    const signed = await supabase.auth.signInWithPassword({ email: parsed.data.email, password: parsed.data.password });
+    if (signed.error || !signed.data.user || signed.data.user.id !== member.id) {
+      await supabase.auth.signOut();
+      return resultResponse(
+        request,
+        { status: 201, body: { ok: true, demo: false, id: member.id, loginRequired: true } },
+        `/${lang}/account/login`,
+      );
+    }
     return resultResponse(request, { status: 201, body: { ok: true, demo: false, id: member.id } }, `/${lang}/account`);
   } catch (error) {
     if (error instanceof StoreError && error.code === "duplicate_email") {
-      return resultResponse(request, { status: 409, body: { ok: false, code: "duplicate_email" } }, `/${lang}/account/signup`);
+      // Clear any accidental session so a failed signup never looks like a login.
+      if (getDataSource() === "supabase") {
+        const supabase = await createSupabaseServer();
+        await supabase.auth.signOut();
+      }
+      return resultResponse(
+        request,
+        { status: 409, body: { ok: false, code: "duplicate_email" } },
+        `/${lang}/account/login`,
+      );
     }
     return resultResponse(request, { status: 500, body: { ok: false, code: "save_failed" } }, `/${lang}/account/signup`);
   }

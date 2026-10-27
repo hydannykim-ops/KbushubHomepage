@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { contactActions, DataProblem, Gallery, SpecTable } from "@/components/catalog";
-import { PurchaseInquiryPanel } from "@/components/purchase-inquiry-panel";
+import { ContactPhonePanel } from "@/components/contact-phone-panel";
 import { SubmitBanner } from "@/components/forms";
-import { getSession } from "@/lib/auth/session";
 import { priceView, showText } from "@/lib/domain/money";
 import { vehicleTitle } from "@/lib/domain/vehicle-catalog";
 import { copy } from "@/lib/i18n";
@@ -38,10 +37,6 @@ export async function generateMetadata({
       images: cover ? [`${siteUrl()}/api/media/photo/${cover.id}`] : undefined,
     },
   };
-}
-
-function safeNextPath(path: string): string {
-  return path.startsWith("/") && !path.startsWith("//") ? path : "/";
 }
 
 export default async function VehicleDetailPage({
@@ -88,21 +83,9 @@ export default async function VehicleDetailPage({
   const description = field === "ko" ? vehicle.descriptionKo : vehicle.descriptionEn;
   const maintenance = field === "ko" ? vehicle.maintenanceKo : vehicle.maintenanceEn;
   const defects = field === "ko" ? vehicle.defectsKo : vehicle.defectsEn;
-  const session = await getSession();
-  const memberSession = session && (session.role === "customer" || session.role === "dealer") ? session : null;
-  const memberProfile = memberSession ? await site.repo.getMember(memberSession.sub) : null;
-  const member = memberSession
-    ? {
-        name: memberProfile?.name || memberSession.name || memberSession.email,
-        email: memberProfile?.email || memberSession.email,
-        phone: memberProfile?.phone ?? null,
-      }
-    : null;
-  const returnPath = safeNextPath(hrefTo(lang, `/vehicles/${vehicle.stockNo}`, ctx));
-  const loginHref = `${hrefTo(lang, "/account/login", ctx)}&next=${encodeURIComponent(returnPath)}`;
-  const signupHref = `${hrefTo(lang, "/account/signup", ctx)}&next=${encodeURIComponent(returnPath)}`;
   const ctaLabel = ctx.mode === "export" ? text.quote : text.purchase;
   const openConsult = sp.get("consult") === "1" || typeof rawParams.submitted === "string";
+  const contactPhone = site.settings.phone ?? site.settings.whatsappE164;
 
   return (
     <div className="mx-auto grid max-w-6xl gap-8 px-4 py-8 pb-28 md:pb-10">
@@ -135,16 +118,7 @@ export default async function VehicleDetailPage({
           {vehicle.status === "reserved" ? <p className="mt-3 text-sm">{text.reservedNote}</p> : null}
           {!sold ? (
             <div className="mt-4">
-              <PurchaseInquiryPanel
-                lang={lang}
-                mode={ctx.mode}
-                stockNo={vehicle.stockNo}
-                member={member}
-                loginHref={loginHref}
-                signupHref={signupHref}
-                ctaLabel={ctaLabel}
-                autoOpen={openConsult}
-              />
+              <ContactPhonePanel lang={lang} phone={contactPhone} ctaLabel={ctaLabel} autoOpen={openConsult} />
             </div>
           ) : (
             <Link href={hrefTo(lang, "/wanted", ctx, { model: vehicle.model })} className="mt-4 inline-flex rounded-md bg-primary px-4 py-3 text-sm font-semibold text-white">

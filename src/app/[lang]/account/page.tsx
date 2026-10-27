@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ProfileForm } from "@/components/member-forms";
+import { DataProblem } from "@/components/catalog";
 import { getSession } from "@/lib/auth/session";
 import { copy } from "@/lib/i18n";
 import { statusLabel } from "@/lib/labels";
 import { vehicleTitle } from "@/lib/domain/vehicle-catalog";
 import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
 import { loadSite } from "@/lib/site-load";
-import { DataProblem } from "@/components/catalog";
 
 export default async function AccountPage({
   params,
@@ -41,16 +42,33 @@ export default async function AccountPage({
       </div>
     );
   }
+  const member = await site.repo.getMember(session.sub);
   const listings = session.role === "dealer" ? await site.repo.listOwned(session.sub) : [];
+  const profile = {
+    name: member?.name || session.name || "",
+    email: member?.email || session.email,
+    phone: member?.phone ?? null,
+    company: member?.company ?? null,
+  };
+
   return (
     <div className="mx-auto grid max-w-3xl gap-8 px-4 py-10">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">{text.accountTitle}</h1>
         <p className="mt-2 text-sm text-muted">
-          {session.name ? `${session.name} · ` : ""}
-          {session.email} · {session.role === "dealer" ? text.roleDealer : text.roleCustomer}
+          {profile.name ? `${profile.name} · ` : ""}
+          {profile.email} · {session.role === "dealer" ? text.roleDealer : text.roleCustomer}
         </p>
       </div>
+
+      <section className="border border-line bg-white p-5">
+        <h2 className="text-xl font-semibold">{text.profileTitle}</h2>
+        <p className="mt-2 text-sm text-muted">{text.profileBody}</p>
+        <div className="mt-5">
+          <ProfileForm lang={lang} role={session.role} initial={profile} />
+        </div>
+      </section>
+
       {session.role === "dealer" ? (
         <section className="border border-line bg-white p-5">
           <h2 className="text-xl font-semibold">{text.myListings}</h2>
@@ -75,10 +93,10 @@ export default async function AccountPage({
         </section>
       ) : (
         <section className="border border-line bg-white p-5">
-          <h2 className="text-xl font-semibold">{text.consultTitle}</h2>
-          <p className="mt-2 text-sm leading-6 text-muted">{text.customerBlocked}</p>
+          <h2 className="text-xl font-semibold">{text.navSell}</h2>
+          <p className="mt-2 text-sm leading-6 text-muted">{text.consultBody}</p>
           <Link href={hrefTo(lang, "/sell", ctx, { consult: "1" })} className="mt-4 inline-flex bg-primary px-4 py-3 text-sm font-semibold text-white">
-            {text.consultButton}
+            {text.navSell}
           </Link>
         </section>
       )}
