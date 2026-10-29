@@ -412,6 +412,9 @@ test("dealer listings stay in review and customers cannot publish", async () => 
   assert.equal(publicJson({ ...listing, internal: { purchaseCost: 1, purchaseCurrency: "KRW", actualSaleAmount: null, saleCurrency: null, extraCosts: null, agentFee: null, feeCurrency: null, note: "비밀" }, ownerId: dealer.id, sellerName: dealer.name, sellerEmail: dealer.email, sellerCompany: dealer.company }), null);
   const owned = await store.listOwned(dealer.id);
   assert.equal(owned[0]?.stockNo, listing.stockNo);
+  assert.equal((await store.getOwnedByStockNo(listing.stockNo, dealer.id))?.stockNo, listing.stockNo);
+  assert.equal(await store.getOwnedByStockNo(listing.stockNo, customer.id), null);
+  assert.equal(await store.getPublicByStockNo(listing.stockNo), null);
   assert.equal(await store.verifyMember(dealer.email, "nope"), null);
   assert.equal((await store.verifyMember(dealer.email, "password1"))?.role, "dealer");
   await assert.rejects(

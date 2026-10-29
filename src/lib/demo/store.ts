@@ -560,6 +560,12 @@ export function createDemoStore(dir: string) {
     async listOwned(ownerId: string) {
       return (await read()).vehicles.filter((vehicle) => vehicle.ownerId === ownerId).map((vehicle) => toOwnedListing(clone(vehicle)));
     },
+    async getOwnedByStockNo(stockNo: string, ownerId: string) {
+      const found = (await read()).vehicles.find(
+        (vehicle) => vehicle.ownerId === ownerId && vehicle.stockNo.toLowerCase() === stockNo.toLowerCase(),
+      );
+      return found ? toOwnedListing(clone(found)) : null;
+    },
     async createDealerListing(
       owner: Member,
       input: DealerListingInput,

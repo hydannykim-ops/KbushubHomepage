@@ -58,11 +58,16 @@ export default async function AccountPage({
           {listings.length ? (
             <ul className="mt-4 divide-y divide-line border-y border-line">
               {listings.map((listing) => (
-                <li key={listing.id} className="flex items-center justify-between gap-3 py-3 text-sm">
-                  <span>
-                    {listing.stockNo} · {vehicleTitle(listing, lang)}
-                  </span>
-                  <span className="font-semibold">{statusLabel(listing.status, lang)}</span>
+                <li key={listing.id}>
+                  <Link
+                    href={hrefTo(lang, `/vehicles/${encodeURIComponent(listing.stockNo)}`, ctx)}
+                    className="flex items-center justify-between gap-3 py-3 text-sm hover:text-primary"
+                  >
+                    <span>
+                      {listing.stockNo} · {vehicleTitle(listing, lang)}
+                    </span>
+                    <span className="shrink-0 font-semibold text-ink">{statusLabel(listing.status, lang)}</span>
+                  </Link>
                 </li>
               ))}
             </ul>

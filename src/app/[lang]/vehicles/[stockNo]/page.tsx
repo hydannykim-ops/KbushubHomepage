@@ -5,6 +5,7 @@ import { contactActions, DataProblem, Gallery, SpecTable, youtubeId } from "@/co
 import { MediaSlot } from "@/components/media-slot";
 import { ExportInquiryFields } from "@/components/export-inquiry-fields";
 import { Consent, EnhanceForm, Field, Honeypot, SubmitBanner } from "@/components/forms";
+import { getSession } from "@/lib/auth/session";
 import { priceView, showText } from "@/lib/domain/money";
 import { vehicleTitle } from "@/lib/domain/vehicle-catalog";
 import { copy } from "@/lib/i18n";
@@ -57,7 +58,14 @@ export default async function VehicleDetailPage({
   const text = copy(lang);
   const site = await loadSite();
   if (!site.ok) return <DataProblem lang={lang} code={site.code} />;
-  const vehicle = await site.repo.getPublicByStockNo(stockNo);
+  const publicVehicle = await site.repo.getPublicByStockNo(stockNo);
+  const session = await getSession();
+  const ownedVehicle =
+    !publicVehicle && session && (session.role === "dealer" || session.role === "customer")
+      ? await site.repo.getOwnedByStockNo(stockNo, session.sub)
+      : null;
+  const vehicle = publicVehicle ?? ownedVehicle;
+  const ownerPreview = Boolean(ownedVehicle && !publicVehicle);
   if (!vehicle) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16">
@@ -79,6 +87,7 @@ export default async function VehicleDetailPage({
     referralCode: ctx.ref,
   });
   const sold = vehicle.status === "sold";
+  const showInquiry = !sold && !ownerPreview && vehicle.status !== "review" && vehicle.status !== "hidden";
   const field = contentFieldLang(lang);
   const description = field === "ko" ? vehicle.descriptionKo : vehicle.descriptionEn;
   const maintenance = field === "ko" ? vehicle.maintenanceKo : vehicle.maintenanceEn;
@@ -126,8 +135,13 @@ export default async function VehicleDetailPage({
   );
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-8 px-4 py-8 pb-28 md:pb-10">
+    <div className={`mx-auto grid max-w-6xl gap-8 px-4 py-8 ${showInquiry ? "pb-28 md:pb-10" : "pb-10"}`}>
       <SubmitBanner lang={lang} submitted={typeof rawParams.submitted === "string" ? rawParams.submitted : undefined} error={typeof rawParams.error === "string" ? rawParams.error : undefined} />
+      {ownerPreview ? (
+        <p className="rounded-md border border-line bg-[#e8eef8] px-4 py-3 text-sm text-ink" role="status">
+          {text.reviewNote}
+        </p>
+      ) : null}
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.8fr)]">
         <Gallery photos={vehicle.photos} lang={lang} />
         <aside className="border border-line bg-white p-5 lg:sticky lg:top-24">
@@ -154,7 +168,7 @@ export default async function VehicleDetailPage({
           {ctx.mode === "export" ? <p className="mt-2 text-xs leading-5 text-muted">{text.exportQuoteNote}</p> : null}
           {sold ? <p className="mt-3 text-sm">{text.soldNote}</p> : null}
           {vehicle.status === "reserved" ? <p className="mt-3 text-sm">{text.reservedNote}</p> : null}
-          {!sold ? (
+          {showInquiry ? (
             <div className="mt-4 grid gap-2">
               <a href="#inquiry" className="rounded-md bg-primary px-4 py-3 text-center text-sm font-semibold text-white">
                 {ctx.mode === "export" ? text.quote : text.purchase}
@@ -163,11 +177,15 @@ export default async function VehicleDetailPage({
                 {ctx.mode === "export" ? text.videoRequest : text.visit}
               </a>
             </div>
-          ) : (
+          ) : sold ? (
             <Link href={hrefTo(lang, "/wanted", ctx, { model: vehicle.model })} className="mt-4 inline-flex rounded-md bg-primary px-4 py-3 text-sm font-semibold text-white">
               {text.similar}
             </Link>
-          )}
+          ) : ownerPreview ? (
+            <Link href={hrefTo(lang, "/account", ctx)} className="mt-4 inline-flex rounded-md border border-line px-4 py-3 text-center text-sm font-semibold">
+              {text.myListings}
+            </Link>
+          ) : null}
           <div className="mt-4 grid gap-2 text-sm">
             {ctx.mode === "domestic" ? (
               contacts.phone ? (
@@ -233,17 +251,19 @@ export default async function VehicleDetailPage({
           </div>
         )}
       </section>
-      <section id="inquiry" className="rounded-lg border border-line bg-white p-5">
-        <h2 className="mb-4 text-xl font-bold">{sold ? text.similar : text.inquiry}</h2>
-        {sold ? (
-          <Link href={hrefTo(lang, "/wanted", ctx, { model: vehicle.model })} className="text-primary">
-            {text.similar}
-          </Link>
-        ) : (
-          inquiry
-        )}
-      </section>
-      {!sold ? (
+      {showInquiry || sold ? (
+        <section id="inquiry" className="rounded-lg border border-line bg-white p-5">
+          <h2 className="mb-4 text-xl font-bold">{sold ? text.similar : text.inquiry}</h2>
+          {sold ? (
+            <Link href={hrefTo(lang, "/wanted", ctx, { model: vehicle.model })} className="text-primary">
+              {text.similar}
+            </Link>
+          ) : (
+            inquiry
+          )}
+        </section>
+      ) : null}
+      {showInquiry ? (
         <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white p-3 md:hidden">
           <div className="mx-auto grid max-w-6xl grid-cols-2 gap-2">
             <a href="#inquiry" className="rounded-md bg-primary px-3 py-3 text-center text-sm font-semibold text-white">
@@ -254,13 +274,13 @@ export default async function VehicleDetailPage({
             </a>
           </div>
         </div>
-      ) : (
+      ) : sold ? (
         <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white p-3 md:hidden">
           <Link href={hrefTo(lang, "/wanted", ctx, { model: vehicle.model })} className="block rounded-md bg-primary px-3 py-3 text-center text-sm font-semibold text-white">
             {text.similar}
           </Link>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

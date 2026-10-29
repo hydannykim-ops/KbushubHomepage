@@ -2,7 +2,7 @@ import Link from "next/link";
 import { MediaSlot } from "./media-slot";
 import { GalleryClient } from "./gallery-client";
 import { formatKm, priceView, showText } from "@/lib/domain/money";
-import type { Lang, PublicVehicle, TradeMode, VehiclePhoto, VehicleQuery } from "@/lib/domain/types";
+import type { Lang, OwnedListing, PublicVehicle, TradeMode, VehiclePhoto, VehicleQuery } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
 import { contentFieldLang, localeTag } from "@/lib/i18n/langs";
 import { photoUrl } from "@/lib/domain/photo-url";
@@ -113,7 +113,7 @@ export function Gallery({ photos, lang }: { photos: VehiclePhoto[]; lang: Lang }
   return <GalleryClient photos={photos} lang={lang} />;
 }
 
-export function SpecTable({ vehicle, lang }: { vehicle: PublicVehicle; lang: Lang }) {
+export function SpecTable({ vehicle, lang }: { vehicle: PublicVehicle | OwnedListing; lang: Lang }) {
   const text = copy(lang);
   const dimension =
     vehicle.lengthMm || vehicle.widthMm || vehicle.heightMm

@@ -56,7 +56,11 @@ const domesticBasis: Record<Lang, string> = {
   mn: "Дотоод үнэ",
 };
 
-export function priceView(vehicle: PublicVehicle, mode: TradeMode, lang: Lang): PriceView {
+export function priceView(
+  vehicle: Pick<PublicVehicle, "domesticPriceKrw" | "exportPriceAmount" | "exportPriceCurrency" | "exportPriceTermsKo" | "exportPriceTermsEn">,
+  mode: TradeMode,
+  lang: Lang,
+): PriceView {
   if (mode === "domestic") {
     if (vehicle.domesticPriceKrw == null) {
       return { primary: askPrice[lang], basis: null, ask: true };

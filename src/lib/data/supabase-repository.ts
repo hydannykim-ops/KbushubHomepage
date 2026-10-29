@@ -879,6 +879,18 @@ export function createSupabaseRepository() {
       if (result.error) fail(result.error, "owned_list");
       return (result.data ?? []).map((row) => toOwnedListing(mapVehicle(row as Record<string, unknown>, false)));
     },
+    async getOwnedByStockNo(stockNo: string, ownerId: string) {
+      const service = createServiceClient();
+      const result = await service
+        .from("vehicles")
+        .select(adminColumns)
+        .eq("owner_id", ownerId)
+        .eq("stock_no", stockNo)
+        .maybeSingle();
+      if (result.error) fail(result.error, "owned_vehicle");
+      if (!result.data) return null;
+      return toOwnedListing(mapVehicle(result.data as Record<string, unknown>, false));
+    },
     async createDealerListing(
       owner: Member,
       input: DealerListingInput,
