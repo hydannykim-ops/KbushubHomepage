@@ -213,6 +213,7 @@ export type Messages = {
   passwordConfirm: string;
   passwordMismatch: string;
   accountTitle: string;
+  mypageMenu: string;
   myListings: string;
   noListings: string;
   listingSaved: string;
