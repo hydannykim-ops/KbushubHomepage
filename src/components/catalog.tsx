@@ -5,6 +5,7 @@ import { formatKm, priceView, showText } from "@/lib/domain/money";
 import type { Lang, PublicVehicle, TradeMode, VehiclePhoto, VehicleQuery } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
 import { contentFieldLang, localeTag } from "@/lib/i18n/langs";
+import { photoUrl } from "@/lib/domain/photo-url";
 import { makerLabel, modelLabel, vehicleTitle } from "@/lib/domain/vehicle-catalog";
 import { classLabel, fuelLabel, longBodyLabel, statusLabel, steeringLabel, transferLabel, transmissionLabel } from "@/lib/labels";
 import { whatsappHref, whatsappMessage } from "@/lib/domain/referral";
@@ -27,21 +28,16 @@ export function DataProblem({ lang, code }: { lang: Lang; code: "misconfigured" 
   );
 }
 
-function photoSrc(photo: VehiclePhoto): string | null {
-  if (!photo.placeholder) return `/api/media/photo/${photo.id}`;
-  return photo.path;
-}
-
 function PhotoFrame({ vehicle, lang }: { vehicle: PublicVehicle; lang: Lang }) {
   const text = copy(lang);
   const cover = vehicle.photos.find((photo) => photo.isCover) ?? vehicle.photos[0];
-  const src = cover ? photoSrc(cover) : null;
+  const src = cover ? photoUrl(cover, 640) : null;
   return (
     <div className="relative aspect-[4/3] overflow-hidden bg-[#eef1f5]">
       {src ? (
         // Demo samples are public files; uploaded photos go through the media route.
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt={contentFieldLang(lang) === "ko" ? cover!.altKo : cover!.altEn} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+        <img src={src} alt={contentFieldLang(lang) === "ko" ? cover!.altKo : cover!.altEn} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" loading="lazy" decoding="async" />
       ) : (
         <MediaSlot label={text.mediaCover} hint={text.mediaCoverHint} />
       )}

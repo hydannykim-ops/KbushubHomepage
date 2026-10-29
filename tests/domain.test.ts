@@ -11,6 +11,7 @@ import { normalizeReferralCode, referralForInquiry, rememberReferral, whatsappHr
 import { acceptOrReject, submissionGate } from "../src/lib/domain/submit";
 import { checkImage } from "../src/lib/domain/uploads";
 import { parseInquiry, parseQuote } from "../src/lib/domain/validation";
+import { clampPhotoWidth, photoUrl } from "../src/lib/domain/photo-url";
 import {
   makerLabel,
   makersForClass,
@@ -486,4 +487,26 @@ test("catalog labels localize maker model series for non-Korean UI", () => {
   assert.equal(vehicleTitle({ maker: "현대", model: "카운티", trim: "데모" }, "en"), "Hyundai County 데모");
   assert.equal(vehicleTitle({ maker: "현대", model: "카운티", trim: "데모" }, "en", { includeTrim: false }), "Hyundai County");
   assert.equal(vehicleTitle({ maker: "현대", model: "카운티" }, "ko"), "현대 카운티");
+});
+
+test("photo urls use width variants for uploads and keep demo paths static", () => {
+  assert.equal(clampPhotoWidth("200"), 320);
+  assert.equal(clampPhotoWidth("900"), 1200);
+  assert.equal(clampPhotoWidth("9999"), 1600);
+  const uploaded = {
+    id: "p1",
+    vehicleId: "v1",
+    category: "front" as const,
+    placeholder: false,
+    storage: "file" as const,
+    path: "uploads/p1.jpg",
+    contentType: "image/jpeg",
+    sortOrder: 0,
+    isCover: true,
+    altKo: "",
+    altEn: "",
+  };
+  const demo = { ...uploaded, id: "p2", placeholder: true, storage: "placeholder" as const, path: "/demo/county-cover.jpg", contentType: null };
+  assert.equal(photoUrl(uploaded, 320), "/api/media/photo/p1?w=320");
+  assert.equal(photoUrl(demo, 320), "/demo/county-cover.jpg");
 });
