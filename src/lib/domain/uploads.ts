@@ -1,6 +1,6 @@
 export const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 export const MAX_VEHICLE_PHOTOS = 12;
-export const MAX_SELL_PHOTOS = 6;
+export const MAX_SELL_PHOTOS = 10;
 
 export type ImageType = "image/jpeg" | "image/png" | "image/webp";
 

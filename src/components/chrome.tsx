@@ -182,7 +182,7 @@ export function Header({
       ] as const);
 
   return (
-    <header className="sticky top-0 z-40 overflow-visible border-b border-line bg-white">
+    <header className="sticky top-0 z-[60] overflow-visible border-b border-line bg-white">
       <div className="relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
         <Link href={href("")} className="flex items-center gap-2.5 text-foreground" aria-label="K-BUS HUB">
           <BrandLogo size="sm" priority />
@@ -197,7 +197,7 @@ export function Header({
         </nav>
         <div className="hidden items-center gap-3 md:flex">
           {accountLinks.map(([label, hrefValue]) => (
-            <Link key={label} href={hrefValue} className="text-sm font-semibold text-foreground hover:text-primary">
+            <Link key={`desk-${label}`} href={hrefValue} prefetch className="text-sm font-semibold text-foreground hover:text-primary">
               {label}
             </Link>
           ))}
@@ -216,7 +216,7 @@ export function Header({
                 </Link>
               ))}
               {accountLinks.map(([label, hrefValue]) => (
-                <Link key={label} href={hrefValue} className="font-semibold">
+                <Link key={`mobile-${label}`} href={hrefValue} prefetch className="font-semibold">
                   {label}
                 </Link>
               ))}

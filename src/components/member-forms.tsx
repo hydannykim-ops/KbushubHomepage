@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { MakerModelPicker } from "@/components/maker-model-picker";
+import { PhotoSlotUploader } from "@/components/photo-slot-uploader";
 import type { Lang } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
 
@@ -34,9 +35,17 @@ export function SignupForm({
           headers: { accept: "application/json" },
           body: form,
         });
-        const data = (await response.json()) as { ok?: boolean; code?: string; errors?: Record<string, string> };
+        const data = (await response.json()) as { ok?: boolean; code?: string; errors?: Record<string, string>; loginRequired?: boolean };
         setPending(false);
+        if (response.status === 409 || data.code === "duplicate_email") {
+          setMessage(text.errors.duplicate_email + " " + text.signupUseLogin);
+          return;
+        }
         if (response.ok && data.ok) {
+          if (data.loginRequired) {
+            window.location.href = `/${lang}/account/login`;
+            return;
+          }
           window.location.href = nextPath;
           return;
         }
@@ -110,11 +119,83 @@ export function SignupForm({
   );
 }
 
+export function ProfileForm({
+  lang,
+  role,
+  initial,
+}: {
+  lang: Lang;
+  role: "customer" | "dealer";
+  initial: { name: string; email: string; phone: string | null; company: string | null };
+}) {
+  const text = copy(lang);
+  const [pending, setPending] = useState(false);
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const dealer = role === "dealer";
+
+  return (
+    <form
+      className="grid gap-4"
+      onSubmit={async (event) => {
+        event.preventDefault();
+        setPending(true);
+        setMessage(null);
+        const form = new FormData(event.currentTarget);
+        const response = await fetch("/api/account/profile", {
+          method: "PATCH",
+          headers: { "content-type": "application/json", accept: "application/json" },
+          body: JSON.stringify({
+            name: form.get("name"),
+            phone: form.get("phone"),
+            company: form.get("company"),
+          }),
+        });
+        const data = (await response.json()) as { ok?: boolean; code?: string };
+        setPending(false);
+        if (response.ok && data.ok) {
+          setMessage({ ok: true, text: text.profileSaved });
+          return;
+        }
+        setMessage({ ok: false, text: text.errors[data.code as keyof typeof text.errors] ?? text.errors.save_failed });
+      }}
+    >
+      {message ? (
+        <p role={message.ok ? "status" : "alert"} className={`border px-3 py-2 text-sm ${message.ok ? "border-[#bbf7d0] bg-[#f0fdf4]" : "border-[#fecdd3] bg-[#fff1f2]"}`}>
+          {message.text}
+        </p>
+      ) : null}
+      {dealer ? (
+        <label className="grid gap-1 text-sm font-medium">
+          {text.company} *
+          <input name="company" required defaultValue={initial.company ?? ""} className={field} autoComplete="organization" />
+        </label>
+      ) : null}
+      <label className="grid gap-1 text-sm font-medium">
+        {dealer ? text.dealerName : text.customerName} *
+        <input name="name" required defaultValue={initial.name} className={field} autoComplete="name" />
+      </label>
+      <label className="grid gap-1 text-sm font-medium">
+        {text.email}
+        <input value={initial.email} disabled className={`${field} bg-[#f7f9fb] text-muted`} />
+        <span className="font-normal text-xs text-muted">{text.emailLockedHint}</span>
+      </label>
+      <label className="grid gap-1 text-sm font-medium">
+        {dealer ? text.businessPhone : text.contact}
+        <input name="phone" defaultValue={initial.phone ?? ""} className={field} autoComplete="tel" />
+      </label>
+      <button disabled={pending} className="bg-primary px-4 py-3 text-sm font-semibold text-white disabled:opacity-60">
+        {text.saveProfile}
+      </button>
+    </form>
+  );
+}
+
 export function DealerListingForm({ lang }: { lang: Lang }) {
   const text = copy(lang);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [vehicleClass, setVehicleClass] = useState<"county" | "medium" | "large">("county");
+  const [photoReset, setPhotoReset] = useState(0);
 
   return (
     <form
@@ -142,6 +223,7 @@ export function DealerListingForm({ lang }: { lang: Lang }) {
           setMessage({ ok: true, text: text.listingSaved });
           form.reset();
           setVehicleClass("county");
+          setPhotoReset((value) => value + 1);
           return;
         }
         const code = data.code ?? "save_failed";
@@ -213,23 +295,7 @@ export function DealerListingForm({ lang }: { lang: Lang }) {
         {text.description}
         <textarea name="descriptionKo" rows={4} className={field} />
       </label>
-      <p className="text-sm text-muted">{text.photoRequired}</p>
-      <label className="grid gap-1 text-sm font-medium">
-        {text.photoFront}
-        <input name="front" type="file" accept="image/jpeg,image/png,image/webp" required className="font-normal" />
-      </label>
-      <label className="grid gap-1 text-sm font-medium">
-        {text.photoFrontSide}
-        <input name="frontSide" type="file" accept="image/jpeg,image/png,image/webp" required className="font-normal" />
-      </label>
-      <label className="grid gap-1 text-sm font-medium">
-        {text.photoRear}
-        <input name="rear" type="file" accept="image/jpeg,image/png,image/webp" required className="font-normal" />
-      </label>
-      <label className="grid gap-1 text-sm font-medium">
-        {text.photoExtra}
-        <input name="extras" type="file" accept="image/jpeg,image/png,image/webp" multiple className="font-normal" />
-      </label>
+      <PhotoSlotUploader lang={lang} resetKey={photoReset} />
       <button disabled={pending} className="bg-primary px-4 py-3 text-sm font-semibold text-white disabled:opacity-60">
         {text.submit}
       </button>

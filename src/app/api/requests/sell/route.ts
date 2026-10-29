@@ -1,6 +1,6 @@
 import { getRepository } from "@/lib/data/repository";
 import { acceptOrReject } from "@/lib/domain/submit";
-import { checkImage, MAX_SELL_PHOTOS } from "@/lib/domain/uploads";
+import { readGuidedPhotos } from "@/lib/domain/guided-photos";
 import { parseSell } from "@/lib/domain/validation";
 import { crossOrigin, resultResponse } from "@/lib/http/form";
 import { allowRequest, clientKey } from "@/lib/http/rate-limit";
@@ -19,15 +19,33 @@ export async function POST(request: Request) {
   const lang = langFromBody(body.lang);
   const parsed = parseSell(body, lang);
   if (!parsed.ok) return resultResponse(request, { status: 400, body: { ok: false, code: "invalid", errors: parsed.errors } }, `/${lang}/sell`);
-  const files = form.getAll("photos").filter((item): item is File => item instanceof File && item.size > 0);
-  if (files.length > MAX_SELL_PHOTOS) return resultResponse(request, { status: 400, body: { ok: false, code: "invalid" } }, `/${lang}/sell`);
-  const stored: Array<{ bytes: Buffer; contentType: "image/jpeg" | "image/png" | "image/webp"; originalName: string }> = [];
-  for (const file of files) {
-    const bytes = Buffer.from(await file.arrayBuffer());
-    const checked = checkImage(bytes);
-    if (!checked.ok) return resultResponse(request, { status: 400, body: { ok: false, code: "invalid" } }, `/${lang}/sell`);
-    stored.push({ bytes, contentType: checked.contentType, originalName: file.name || "photo" });
+
+  const photos = await readGuidedPhotos(form, lang);
+  if (!photos.ok) {
+    return resultResponse(
+      request,
+      {
+        status: 400,
+        body: {
+          ok: false,
+          code: "invalid",
+          errors: {
+            photos:
+              lang === "ko"
+                ? "정면·좌측·우측·후면 사진을 JPEG/PNG/WebP로 올려 주세요. (각 8MB 이하)"
+                : "Upload front, left, right, and rear photos as JPEG/PNG/WebP (max 8MB each).",
+          },
+        },
+      },
+      `/${lang}/sell`,
+    );
   }
+
+  const stored = photos.shots.map((shot) => ({
+    bytes: shot.bytes,
+    contentType: shot.contentType,
+    originalName: `${shot.slot}.${shot.contentType === "image/png" ? "png" : shot.contentType === "image/webp" ? "webp" : "jpg"}`,
+  }));
   const gate = await openGate();
   const referral = await referralFromRequest();
   const result = await acceptOrReject(gate, () => getRepository().createSell(parsed.data, stored, referral.firstReferralCode));

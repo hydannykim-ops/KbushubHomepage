@@ -401,7 +401,7 @@ export function buildSeed(): DemoState {
       assignedAgentId: "agent-demo-1",
       status: "consulting",
       closeReason: null,
-      staffMemo: "내부 메모는 에이전트 화면에 나오면 안 됩니다.",
+      staffMemo: "주중 방문 상담이 가능합니다. 원하시는 시간을 알려 주세요.",
       consentAt: "2026-03-05T00:00:00.000Z",
       createdAt: "2026-03-05T00:00:00.000Z",
       updatedAt: "2026-03-05T00:00:00.000Z",

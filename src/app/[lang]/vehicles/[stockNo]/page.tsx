@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { contactActions, DataProblem, Gallery, SpecTable } from "@/components/catalog";
-import { PurchaseInquiryPanel } from "@/components/purchase-inquiry-panel";
+import { ContactPhonePanel } from "@/components/contact-phone-panel";
 import { SubmitBanner } from "@/components/forms";
 import { getSession } from "@/lib/auth/session";
 import { formatKm, priceView, showText } from "@/lib/domain/money";
@@ -38,10 +38,6 @@ export async function generateMetadata({
       images: cover ? [`${siteUrl()}/api/media/photo/${cover.id}`] : undefined,
     },
   };
-}
-
-function safeNextPath(path: string): string {
-  return path.startsWith("/") && !path.startsWith("//") ? path : "/";
 }
 
 export default async function VehicleDetailPage({
@@ -89,18 +85,8 @@ export default async function VehicleDetailPage({
   const maintenance = field === "ko" ? vehicle.maintenanceKo : vehicle.maintenanceEn;
   const defects = field === "ko" ? vehicle.defectsKo : vehicle.defectsEn;
   const session = await getSession();
-  const memberSession = session && (session.role === "customer" || session.role === "dealer") ? session : null;
-  const memberProfile = memberSession ? await site.repo.getMember(memberSession.sub) : null;
-  const member = memberSession
-    ? {
-        name: memberProfile?.name || memberSession.name || memberSession.email,
-        email: memberProfile?.email || memberSession.email,
-        phone: memberProfile?.phone ?? null,
-      }
-    : null;
-  const returnPath = safeNextPath(hrefTo(lang, `/vehicles/${vehicle.stockNo}`, ctx));
-  const loginHref = `${hrefTo(lang, "/account/login", ctx)}&next=${encodeURIComponent(returnPath)}`;
-  const signupHref = `${hrefTo(lang, "/account/signup", ctx)}&next=${encodeURIComponent(returnPath)}`;
+  const signedIn = Boolean(session && (session.role === "customer" || session.role === "dealer"));
+  const contactPhone = site.settings.phone ?? site.settings.whatsappE164;
   const ctaLabel = ctx.mode === "export" ? text.quote : text.purchase;
   const openConsult = sp.get("consult") === "1" || typeof rawParams.submitted === "string";
   const yearLabel = vehicle.modelYear ? (lang === "ko" ? `${vehicle.modelYear}년` : String(vehicle.modelYear)) : text.unknown;
@@ -178,15 +164,14 @@ export default async function VehicleDetailPage({
 
           <div className="vehicle-summary__block">
             {!sold ? (
-              <PurchaseInquiryPanel
+              <ContactPhonePanel
                 lang={lang}
-                mode={ctx.mode}
-                stockNo={vehicle.stockNo}
-                member={member}
-                loginHref={loginHref}
-                signupHref={signupHref}
+                phone={contactPhone}
                 ctaLabel={ctaLabel}
                 autoOpen={openConsult}
+                stockNo={vehicle.stockNo}
+                mode={ctx.mode}
+                signedIn={signedIn}
               />
             ) : (
               <Link href={hrefTo(lang, "/wanted", ctx, { model: vehicle.model })} className="inline-flex w-full justify-center bg-primary px-4 py-3 text-sm font-semibold text-white">
