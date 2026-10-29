@@ -21,8 +21,8 @@ export function InquiryKindFields({
   const initialKind =
     !allowExport && (defaultKind === "quote" || defaultTradeMode === "export") ? "purchase" : defaultKind;
   const [kind, setKind] = useState<InquiryKind>(initialKind);
-  const exportLike = allowExport && (kind === "quote" || defaultTradeMode === "export");
-  const tradeMode: TradeMode = exportLike ? "export" : "domestic";
+  const tradeMode: TradeMode = allowExport && kind === "quote" ? "export" : "domestic";
+  const exportLike = tradeMode === "export";
 
   return (
     <>
