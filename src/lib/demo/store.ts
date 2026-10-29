@@ -329,6 +329,13 @@ export function createDemoStore(dir: string) {
         .filter((item) => (item.email ?? "").toLowerCase() === normalized)
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     },
+    async listInquiriesByStockNos(stockNos: string[]): Promise<Inquiry[]> {
+      const wanted = new Set(stockNos.map((item) => item.trim()).filter(Boolean));
+      if (!wanted.size) return [];
+      return clone((await read()).inquiries)
+        .filter((item) => item.stockNo != null && wanted.has(item.stockNo))
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    },
     async findOpenInquiry(email: string, stockNo: string): Promise<Inquiry | null> {
       const normalized = email.trim().toLowerCase();
       const found = (await read()).inquiries

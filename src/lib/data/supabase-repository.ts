@@ -578,6 +578,19 @@ export function createSupabaseRepository() {
       if (result.error) fail(result.error, "inquiry_list_email");
       return (result.data ?? []).map((row) => mapInquiry(row as Record<string, unknown>));
     },
+    async listInquiriesByStockNos(stockNos: string[]) {
+      const wanted = [...new Set(stockNos.map((item) => item.trim()).filter(Boolean))];
+      if (!wanted.length) return [];
+      const service = createServiceClient();
+      const result = await service
+        .from("inquiries")
+        .select("*")
+        .in("stock_no", wanted)
+        .order("created_at", { ascending: false })
+        .limit(40);
+      if (result.error) fail(result.error, "inquiry_list_stock");
+      return (result.data ?? []).map((row) => mapInquiry(row as Record<string, unknown>));
+    },
     async findOpenInquiry(email: string, stockNo: string) {
       const service = createServiceClient();
       const normalized = email.trim().toLowerCase();

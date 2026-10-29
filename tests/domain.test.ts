@@ -309,10 +309,18 @@ test("demo inquiry save, referral isolation, and quote snapshot", async () => {
   const summary = summarizeQuote(quotes[0]);
   assert.equal(summary.confirmed, false);
 
+  const byEmail = await store.listInquiriesByEmail("buyer@example.com");
+  assert.ok(byEmail.some((item) => item.id === inquiry.id));
+  assert.ok(byEmail.some((item) => item.id === "inq-demo-1"));
+  assert.equal(byEmail.some((item) => item.id === "inq-demo-2"), false);
+  const demoReply = byEmail.find((item) => item.id === "inq-demo-1");
+  assert.match(demoReply?.staffMemo ?? "", /주중 방문/);
+
   const own = await store.agentReferrals("DEMOAGT1");
   assert.equal(own.some((item) => item.id === "inq-demo-2"), false);
   assert.equal(JSON.stringify(own).includes("secret@example.com"), false);
   assert.equal(JSON.stringify(own).includes("buyer@example.com"), false);
+  assert.equal(JSON.stringify(own).includes("주중 방문"), false);
   const pending = visibleReferrals((await store.listInquiries()), { status: "pending", referralCode: "DEMOPEND" });
   assert.deepEqual(pending, []);
 
@@ -415,6 +423,31 @@ test("dealer listings stay in review and customers cannot publish", async () => 
   assert.equal(publicJson({ ...listing, internal: { purchaseCost: 1, purchaseCurrency: "KRW", actualSaleAmount: null, saleCurrency: null, extraCosts: null, agentFee: null, feeCurrency: null, note: "비밀" }, ownerId: dealer.id, sellerName: dealer.name, sellerEmail: dealer.email, sellerCompany: dealer.company }), null);
   const owned = await store.listOwned(dealer.id);
   assert.equal(owned[0]?.stockNo, listing.stockNo);
+  await store.createInquiry(
+    {
+      kind: "purchase",
+      tradeMode: "domestic",
+      name: "문의자",
+      email: "buyer-on-listing@example.com",
+      phone: "01011112222",
+      messenger: null,
+      country: "한국",
+      stockNo: listing.stockNo,
+      message: "딜러 매물 문의",
+      destinationCountry: null,
+      destinationPort: null,
+      destinationPortUndecided: false,
+      shippingMethod: null,
+      consent: true,
+      companyWebsite: "",
+      lang: "ko",
+    },
+    { firstReferralCode: null, submitReferralCode: null },
+  );
+  const inbound = await store.listInquiriesByStockNos([listing.stockNo]);
+  assert.equal(inbound.length, 1);
+  assert.equal(inbound[0]?.message, "딜러 매물 문의");
+  assert.deepEqual(await store.listInquiriesByStockNos([]), []);
   assert.equal(await store.verifyMember(dealer.email, "nope"), null);
   assert.equal((await store.verifyMember(dealer.email, "password1"))?.role, "dealer");
   await assert.rejects(

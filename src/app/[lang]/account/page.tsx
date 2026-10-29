@@ -52,12 +52,23 @@ export default async function AccountPage({
   };
   const inquiries = await site.repo.listInquiriesByEmail(profile.email);
   const inquiryCards = await Promise.all(
-    inquiries
-      .filter((item) => item.stockNo)
+    inquiries.slice(0, 12).map(async (inquiry) => {
+      const vehicle = inquiry.stockNo ? await site.repo.getPublicByStockNo(inquiry.stockNo) : null;
+      return { inquiry, vehicle };
+    }),
+  );
+  const listingInquiries =
+    session.role === "dealer" && listings.length
+      ? await site.repo.listInquiriesByStockNos(listings.map((listing) => listing.stockNo))
+      : [];
+  const inboundCards = await Promise.all(
+    listingInquiries
+      .filter((inquiry) => (inquiry.email ?? "").toLowerCase() !== profile.email.toLowerCase())
       .slice(0, 12)
       .map(async (inquiry) => {
         const vehicle = inquiry.stockNo ? await site.repo.getPublicByStockNo(inquiry.stockNo) : null;
-        return { inquiry, vehicle };
+        const owned = listings.find((listing) => listing.stockNo === inquiry.stockNo) ?? null;
+        return { inquiry, vehicle: vehicle ?? owned };
       }),
   );
 
@@ -77,23 +88,39 @@ export default async function AccountPage({
         {inquiryCards.length ? (
           <ul className="mt-4 divide-y divide-line border-y border-line">
             {inquiryCards.map(({ inquiry, vehicle }) => (
-              <li key={inquiry.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
-                <div className="min-w-0">
-                  <p className="font-medium text-ink">
-                    {inquiry.stockNo}
-                    {vehicle ? ` · ${vehicleTitle(vehicle, lang)}` : ""}
-                  </p>
-                  <p className="mt-1 text-xs text-muted">
-                    {inquiry.createdAt.slice(0, 10)} · {inquiry.tradeMode === "export" ? text.modeExport : text.modeDomestic}
-                  </p>
+              <li key={inquiry.id} className="grid gap-2 py-4 text-sm">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-medium text-ink">
+                      {inquiry.stockNo ?? text.inquiryGeneral}
+                      {vehicle ? ` · ${vehicleTitle(vehicle, lang)}` : ""}
+                    </p>
+                    <p className="mt-1 text-xs text-muted">
+                      {inquiry.createdAt.slice(0, 10)} · {inquiry.tradeMode === "export" ? text.modeExport : text.modeDomestic}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="font-semibold">{inquiryStatusLabel(inquiry.status, lang)}</span>
+                    {inquiry.stockNo ? (
+                      <Link href={hrefTo(lang, `/vehicles/${inquiry.stockNo}`, ctx)} className="text-primary underline">
+                        {text.view}
+                      </Link>
+                    ) : null}
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="font-semibold">{inquiryStatusLabel(inquiry.status, lang)}</span>
-                  {inquiry.stockNo ? (
-                    <Link href={hrefTo(lang, `/vehicles/${inquiry.stockNo}`, ctx)} className="text-primary underline">
-                      {text.view}
-                    </Link>
-                  ) : null}
+                {inquiry.message ? (
+                  <div>
+                    <p className="text-xs font-semibold text-muted">{text.inquiryMessageLabel}</p>
+                    <p className="mt-1 whitespace-pre-wrap text-ink">{inquiry.message}</p>
+                  </div>
+                ) : null}
+                <div className="border border-line bg-[#f8f8f6] px-3 py-3">
+                  <p className="text-xs font-semibold text-muted">{text.inquiryReplyLabel}</p>
+                  {inquiry.staffMemo?.trim() ? (
+                    <p className="mt-1 whitespace-pre-wrap text-ink">{inquiry.staffMemo}</p>
+                  ) : (
+                    <p className="mt-1 text-muted">{text.inquiryReplyPending}</p>
+                  )}
                 </div>
               </li>
             ))}
@@ -102,6 +129,40 @@ export default async function AccountPage({
           <p className="mt-4 text-sm text-muted">{text.myInquiriesEmpty}</p>
         )}
       </section>
+
+      {session.role === "dealer" ? (
+        <section className="border border-line bg-white p-5">
+          <h2 className="text-xl font-semibold">{text.listingInquiriesTitle}</h2>
+          <p className="mt-2 text-sm text-muted">{text.listingInquiriesBody}</p>
+          {inboundCards.length ? (
+            <ul className="mt-4 divide-y divide-line border-y border-line">
+              {inboundCards.map(({ inquiry, vehicle }) => (
+                <li key={inquiry.id} className="grid gap-2 py-4 text-sm">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-medium text-ink">
+                        {inquiry.stockNo}
+                        {vehicle ? ` · ${vehicleTitle(vehicle, lang)}` : ""}
+                      </p>
+                      <p className="mt-1 text-xs text-muted">
+                        {inquiry.createdAt.slice(0, 10)} · {inquiry.tradeMode === "export" ? text.modeExport : text.modeDomestic}
+                      </p>
+                    </div>
+                    <span className="font-semibold">{inquiryStatusLabel(inquiry.status, lang)}</span>
+                  </div>
+                  <p className="text-ink">
+                    {inquiry.name}
+                    {inquiry.phone ? ` · ${inquiry.phone}` : ""}
+                  </p>
+                  {inquiry.message ? <p className="whitespace-pre-wrap text-muted">{inquiry.message}</p> : null}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-4 text-sm text-muted">{text.listingInquiriesEmpty}</p>
+          )}
+        </section>
+      ) : null}
 
       <section className="border border-line bg-white p-5">
         <h2 className="text-xl font-semibold">{text.profileTitle}</h2>
