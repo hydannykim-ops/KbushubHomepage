@@ -232,6 +232,13 @@ export type Messages = {
   myInquiriesEmpty: string;
   myInquiriesBody: string;
   myInquiriesTitle: string;
+  inquiryMessageLabel: string;
+  inquiryReplyLabel: string;
+  inquiryReplyPending: string;
+  inquiryGeneral: string;
+  listingInquiriesTitle: string;
+  listingInquiriesBody: string;
+  listingInquiriesEmpty: string;
   view: string;
   photoHintWheel: string;
   photoHintDashboard: string;
