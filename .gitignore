@@ -1,0 +1,17 @@
+build
+coverage
+.data
+.DS_Store
+.env
+.env.*.local
+.env.local
+.next
+next-env.d.ts
+node_modules
+npm-debug.log*
+out
+*.pem
+.pnpm-debug.log*
+supabase/.temp/
+*.tsbuildinfo
+.vercel
