@@ -30,10 +30,10 @@ export function BrandLogo({ size = "sm", className = "", priority = false }: Bra
 }
 
 /** Single-line wordmark — same layout as the footer lockup. */
-export function BrandWordmark({ className = "", size = "sm" }: { className?: string; size?: "sm" | "lg" }) {
+export function BrandWordmark({ className = "text-ink", size = "sm" }: { className?: string; size?: "sm" | "lg" }) {
   const scale =
     size === "lg"
-      ? "text-[1.35rem] font-semibold tracking-tight text-ink sm:text-[1.65rem]"
-      : "text-base font-semibold tracking-tight text-ink";
+      ? "text-[1.35rem] font-semibold tracking-tight sm:text-[1.65rem]"
+      : "text-base font-semibold tracking-tight";
   return <span className={`leading-none whitespace-nowrap ${scale} ${className}`}>K-BUS HUB</span>;
 }
