@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { MediaSlot } from "./media-slot";
 import { GalleryClient } from "./gallery-client";
-import { formatKm, priceView, showText } from "@/lib/domain/money";
+import { formatKm, priceView } from "@/lib/domain/money";
 import type { Lang, PublicVehicle, TradeMode, VehiclePhoto, VehicleQuery } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
 import { contentFieldLang, localeTag } from "@/lib/i18n/langs";
 import { makerLabel, modelLabel, vehicleTitle } from "@/lib/domain/vehicle-catalog";
-import { classLabel, fuelLabel, longBodyLabel, statusLabel, steeringLabel, transferLabel, transmissionLabel } from "@/lib/labels";
+import { classLabel, fuelLabel, statusLabel, transferLabel, transmissionLabel } from "@/lib/labels";
 import { whatsappHref, whatsappMessage } from "@/lib/domain/referral";
 
 export function DemoBanner({ lang }: { lang: Lang }) {
@@ -121,48 +121,62 @@ export function Gallery({ photos, lang }: { photos: VehiclePhoto[]; lang: Lang }
 
 export function SpecTable({ vehicle, lang }: { vehicle: PublicVehicle; lang: Lang }) {
   const text = copy(lang);
-  const dimension =
-    vehicle.lengthMm || vehicle.widthMm || vehicle.heightMm
-      ? `${vehicle.lengthMm ?? "-"} / ${vehicle.widthMm ?? "-"} / ${vehicle.heightMm ?? "-"} mm`
+  const maker = makerLabel(vehicle.maker, lang);
+  const model = `${modelLabel(vehicle.model, lang)}${vehicle.trim ? ` ${vehicle.trim}` : ""}`;
+  const year = vehicle.modelYear ? String(vehicle.modelYear) : text.unknown;
+  const mileage = formatKm(vehicle.mileageKm, lang);
+  const horsepower =
+    vehicle.horsepowerPs != null
+      ? lang === "ko"
+        ? `${vehicle.horsepowerPs}마력`
+        : `${vehicle.horsepowerPs.toLocaleString(localeTag(lang))} PS`
       : null;
-  const rows: Array<[string, string]> = [
-    [text.maker, makerLabel(vehicle.maker, lang)],
-    [text.model, `${modelLabel(vehicle.model, lang)}${vehicle.trim ? ` / ${vehicle.trim}` : ""}`],
+
+  const secondary: Array<[string, string]> = [
     [text.classLabel, classLabel(vehicle.vehicleClass, lang)],
-    [text.year, vehicle.modelYear ? String(vehicle.modelYear) : text.unknown],
-    [text.firstRegistered, showText(vehicle.firstRegisteredOn, lang)],
-    [text.mileage, formatKm(vehicle.mileageKm, lang)],
-    [text.seats, vehicle.seats ? String(vehicle.seats) : text.unknown],
-    [
-      text.horsepower,
-      vehicle.horsepowerPs != null
-        ? lang === "ko"
-          ? `${vehicle.horsepowerPs}마력`
-          : `${vehicle.horsepowerPs.toLocaleString(localeTag(lang))} PS`
-        : text.unknown,
-    ],
-    [text.transmission, transmissionLabel(vehicle.transmission, lang)],
-    [text.fuel, fuelLabel(vehicle.fuel, lang)],
-    [text.engine, showText(vehicle.engineModel, lang)],
-    [text.displacement, vehicle.displacementCc ? `${vehicle.displacementCc.toLocaleString(localeTag(lang))} cc` : text.unknown],
-    [text.steering, steeringLabel(vehicle.steering, lang)],
-    [text.longBody, longBodyLabel(vehicle.longBody, lang)],
-    [text.transferType, transferLabel(vehicle.transferType, lang)],
-    [text.dimensions, dimension ?? text.unknown],
-    [text.previousUse, showText(contentFieldLang(lang) === "ko" ? vehicle.previousUseKo : vehicle.previousUseEn, lang)],
-    [text.location, showText(vehicle.location, lang)],
-    [text.photographed, showText(vehicle.photographedOn, lang)],
-    [text.stockChecked, showText(vehicle.stockCheckedOn, lang)],
-  ];
+    vehicle.seats != null ? [text.seats, String(vehicle.seats)] : null,
+    horsepower ? [text.horsepower, horsepower] : null,
+    vehicle.transmission !== "unknown" ? [text.transmission, transmissionLabel(vehicle.transmission, lang)] : null,
+    vehicle.fuel !== "unknown" ? [text.fuel, fuelLabel(vehicle.fuel, lang)] : null,
+    vehicle.transferType !== "unknown" ? [text.transferType, transferLabel(vehicle.transferType, lang)] : null,
+    vehicle.location ? [text.location, vehicle.location] : null,
+  ].filter((row): row is [string, string] => Boolean(row));
+
   return (
-    <dl className="grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2">
-      {rows.map(([label, value]) => (
-        <div key={label} className="bg-white px-4 py-3">
-          <dt className="text-xs text-muted">{label}</dt>
-          <dd className="mt-1 text-sm font-medium">{value}</dd>
+    <div className="border border-line bg-white">
+      <div className="grid gap-6 border-b border-line px-5 py-6 sm:grid-cols-2">
+        <div>
+          <p className="text-xs font-medium tracking-wide text-muted">{text.maker}</p>
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">{maker}</p>
         </div>
-      ))}
-    </dl>
+        <div>
+          <p className="text-xs font-medium tracking-wide text-muted">{text.model}</p>
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">{model}</p>
+        </div>
+      </div>
+
+      <div className="grid gap-px bg-line sm:grid-cols-2">
+        <div className="bg-white px-5 py-5">
+          <p className="text-xs font-medium tracking-wide text-muted">{text.year}</p>
+          <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight text-ink">{year}</p>
+        </div>
+        <div className="bg-white px-5 py-5">
+          <p className="text-xs font-medium tracking-wide text-muted">{text.mileage}</p>
+          <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight text-ink">{mileage}</p>
+        </div>
+      </div>
+
+      {secondary.length ? (
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-3 border-t border-line px-5 py-4 sm:grid-cols-3">
+          {secondary.map(([label, value]) => (
+            <div key={label}>
+              <dt className="text-[11px] text-muted">{label}</dt>
+              <dd className="mt-0.5 text-sm text-ink">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
+    </div>
   );
 }
 

@@ -5,7 +5,7 @@ import { contactActions, DataProblem, Gallery, SpecTable } from "@/components/ca
 import { PurchaseInquiryPanel } from "@/components/purchase-inquiry-panel";
 import { SubmitBanner } from "@/components/forms";
 import { getSession } from "@/lib/auth/session";
-import { priceView, showText } from "@/lib/domain/money";
+import { formatKm, priceView, showText } from "@/lib/domain/money";
 import { vehicleTitle } from "@/lib/domain/vehicle-catalog";
 import { copy } from "@/lib/i18n";
 import { contentFieldLang } from "@/lib/i18n/langs";
@@ -127,8 +127,10 @@ export default async function VehicleDetailPage({
           </p>
           <p className="mt-4 text-3xl font-semibold tabular-nums tracking-tight">{price.primary}</p>
           {price.basis ? <p className="mt-1 text-sm text-muted">{price.basis}</p> : null}
-          <p className="mt-2 text-xs text-muted">
-            {text.photographed}: {vehicle.photographedOn ?? text.unknown} · {text.stockChecked}: {vehicle.stockCheckedOn ?? text.unknown}
+          <p className="mt-3 text-sm text-ink">
+            <span className="tabular-nums font-semibold">{vehicle.modelYear ?? text.unknown}</span>
+            <span className="mx-2 text-muted">·</span>
+            <span className="tabular-nums font-semibold">{formatKm(vehicle.mileageKm, lang)}</span>
           </p>
           {ctx.mode === "export" ? <p className="mt-2 text-xs leading-5 text-muted">{text.exportQuoteNote}</p> : null}
           {sold ? <p className="mt-3 text-sm">{text.soldNote}</p> : null}
