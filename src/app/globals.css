@@ -133,149 +133,138 @@ button {
   color: var(--muted);
 }
 
-/* Vehicle detail specs — editorial hierarchy, not a data table */
-.spec-showcase {
+/* Vehicle detail specs — compact Encar-like board */
+.spec-board {
   display: grid;
-  gap: 1.75rem;
-  padding: 0.25rem 0 0.5rem;
+  gap: 1.1rem;
 }
 
-.spec-showcase__identity {
-  animation: spec-rise 420ms ease-out both;
+.spec-board__head {
+  padding-bottom: 0.15rem;
 }
 
-.spec-showcase__maker {
+.spec-board__maker {
   margin: 0;
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
 }
 
-.spec-showcase__model {
-  margin: 0.55rem 0 0;
+.spec-board__model {
+  margin: 0.2rem 0 0;
   color: var(--ink);
-  font-size: clamp(2rem, 4.2vw, 3rem);
+  font-size: 1.35rem;
   font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.08;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
 }
 
-.spec-showcase__trim {
-  display: block;
-  margin-top: 0.35rem;
+.spec-board__trim {
   color: var(--muted);
-  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-size: 0.95rem;
   font-weight: 500;
-  letter-spacing: -0.01em;
 }
 
-.spec-showcase__highlights {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  gap: 1.25rem 0;
-  animation: spec-rise 520ms ease-out both;
-  animation-delay: 60ms;
-}
-
-.spec-showcase__stat {
-  flex: 1 1 9rem;
-  min-width: 8.5rem;
-}
-
-.spec-showcase__stat-value {
+.spec-board__keys {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 1rem;
   margin: 0;
+  padding: 0.9rem 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.spec-board__keys dt {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.spec-board__keys dd {
+  margin: 0.2rem 0 0;
   color: var(--ink);
-  font-size: clamp(2.15rem, 5vw, 3.1rem);
+  font-size: 1.15rem;
   font-weight: 700;
-  letter-spacing: -0.04em;
-  line-height: 1;
+  letter-spacing: -0.02em;
 }
 
-.spec-showcase__stat-unit {
-  margin-left: 0.2rem;
-  color: var(--muted);
-  font-size: 0.42em;
-  font-weight: 600;
-  letter-spacing: 0;
-}
-
-.spec-showcase__stat-label {
-  margin: 0.55rem 0 0;
-  color: var(--muted);
-  font-size: 0.78rem;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-}
-
-.spec-showcase__stat-rule {
-  display: none;
-  width: 1px;
-  margin: 0.35rem 1.5rem;
-  background: color-mix(in srgb, var(--line) 85%, var(--ink));
-  align-self: stretch;
-}
-
-@media (min-width: 640px) {
-  .spec-showcase__stat-rule {
-    display: block;
-  }
-}
-
-.spec-showcase__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.65rem 0.55rem;
+.spec-board__rows {
+  display: grid;
   margin: 0;
   padding: 0;
-  list-style: none;
-  animation: spec-rise 620ms ease-out both;
-  animation-delay: 110ms;
 }
 
-.spec-showcase__meta-item {
-  display: inline-flex;
+.spec-board__row {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  gap: 0.75rem;
   align-items: baseline;
-  gap: 0.4rem;
-  padding: 0.45rem 0.85rem 0.45rem 0;
-  margin-right: 0.35rem;
-  border-right: 1px solid var(--line);
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--line);
 }
 
-.spec-showcase__meta-item:last-child {
-  border-right: 0;
-  margin-right: 0;
+.spec-board__row:last-child {
+  border-bottom: 0;
 }
 
-.spec-showcase__meta-label {
+.spec-board__row dt {
+  margin: 0;
   color: var(--muted);
-  font-size: 0.72rem;
-  font-weight: 500;
+  font-size: 0.8rem;
 }
 
-.spec-showcase__meta-value {
+.spec-board__row dd {
+  margin: 0;
   color: var(--ink);
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 600;
-  letter-spacing: -0.01em;
 }
 
-@keyframes spec-rise {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Detail summary panel */
+.vehicle-summary {
+  border: 1px solid var(--line);
+  background: #fff;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .spec-showcase__identity,
-  .spec-showcase__highlights,
-  .spec-showcase__meta {
-    animation: none;
-  }
+.vehicle-summary__block {
+  padding: 1rem 1.1rem;
+}
+
+.vehicle-summary__block + .vehicle-summary__block {
+  border-top: 1px solid var(--line);
+}
+
+.vehicle-summary__label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.vehicle-summary__transfer {
+  display: inline-flex;
+  margin-top: 0.45rem;
+  padding: 0.28rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--line));
+  background: color-mix(in srgb, var(--primary) 8%, white);
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.vehicle-summary__price {
+  margin: 0.35rem 0 0;
+  color: var(--ink);
+  font-size: 1.65rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.vehicle-summary__seller-name {
+  margin: 0.35rem 0 0;
+  color: var(--ink);
+  font-size: 0.98rem;
+  font-weight: 700;
 }

@@ -253,5 +253,11 @@ export const es: Messages = {
   "mediaVideoHint": "Un enlace corto de un vehículo real se reproduce aquí. No se reproduce automáticamente.",
   "mediaYard": "Foto de oficina o patio",
   "listingTitle": "Registrar un vehículo",
-  "listingBody": "El juego de portada es frontal, tres cuartos delantera y trasera. Las demás fotos son opcionales."
+  "listingBody": "El juego de portada es frontal, tres cuartos delantera y trasera. Las demás fotos son opcionales.",
+  "sellerSection": "Vendedor",
+  "priceSection": "Precio",
+  "transferMode": "Tipo de transferencia",
+  "companyListing": "Anuncio de la empresa",
+  "dealerListing": "Anuncio del concesionario",
+  "keyFacts": "Datos clave",
 };

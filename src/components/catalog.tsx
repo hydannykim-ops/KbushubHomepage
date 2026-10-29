@@ -39,11 +39,13 @@ function PhotoFrame({ vehicle, lang }: { vehicle: PublicVehicle; lang: Lang }) {
   return (
     <div className="relative aspect-[4/3] overflow-hidden bg-[#eef1f5]">
       {src ? (
-        // Demo samples are public files; uploaded photos go through the media route.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt={contentFieldLang(lang) === "ko" ? cover!.altKo : cover!.altEn} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+        <img
+          src={src}
+          alt={contentFieldLang(lang) === "ko" ? cover!.altKo : cover!.altEn}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+        />
       ) : (
-        <MediaSlot label={text.mediaCover} hint={text.mediaCoverHint} />
+        <MediaSlot label={text.mediaCover} hint={text.photoNone} />
       )}
       {vehicle.status !== "available" ? (
         <span className="absolute left-3 top-3 bg-white/95 px-2 py-1 text-xs font-semibold text-ink">{statusLabel(vehicle.status, lang)}</span>
@@ -79,28 +81,26 @@ export function VehicleCard({
   const meta = [yearLabel, formatKm(vehicle.mileageKm, lang), seatsLabel, hpLabel].filter(Boolean).join(" · ");
   const transfer = transferLabel(vehicle.transferType, lang);
   return (
-    <article className="group overflow-hidden">
+    <article className="group overflow-hidden border-b border-line pb-5">
       <Link href={href} className="block">
         <PhotoFrame vehicle={vehicle} lang={lang} />
-        <div className="space-y-2 pt-3">
+        <div className="space-y-1.5 pt-3">
           <h2 className="text-[1.05rem] font-semibold leading-snug tracking-tight text-ink">
             {vehicleTitle(vehicle, lang, { includeTrim: false })}
-            {vehicle.trim ? (
-              <span className="mt-1 block text-sm font-medium text-muted">{vehicle.trim}</span>
-            ) : null}
+            {vehicle.trim ? <span className="mt-1 block text-sm font-medium text-muted">{vehicle.trim}</span> : null}
           </h2>
           <p className="text-sm text-muted">{meta}</p>
           <p className="text-sm text-muted">
             {vehicle.location ? vehicle.location : text.unknown}
-            {mode === "domestic" ? ` · ${transfer}` : null}
+            {mode === "domestic" && vehicle.transferType !== "unknown" ? ` · ${transfer}` : null}
           </p>
-          <div className="flex flex-wrap items-end gap-2 pt-0.5">
-            <p className="text-2xl font-bold tabular-nums tracking-tight text-ink">{price.primary}</p>
+          <div className="flex flex-wrap items-end gap-2 pt-1">
+            <p className="text-xl font-bold tabular-nums tracking-tight text-ink">{price.primary}</p>
             {vehicle.status !== "available" ? (
               <span className="mb-0.5 text-xs font-semibold text-muted">{statusLabel(vehicle.status, lang)}</span>
             ) : null}
           </div>
-          {price.basis ? <p className="text-sm text-muted">{price.basis}</p> : null}
+          {price.basis ? <p className="text-xs text-muted">{price.basis}</p> : null}
         </div>
       </Link>
     </article>
@@ -119,14 +119,14 @@ export function Gallery({ photos, lang }: { photos: VehiclePhoto[]; lang: Lang }
   return <GalleryClient photos={photos} lang={lang} />;
 }
 
+/** Encar-style compact facts: identity, year/mileage emphasis, quiet secondary rows. */
 export function SpecTable({ vehicle, lang }: { vehicle: PublicVehicle; lang: Lang }) {
   const text = copy(lang);
   const maker = makerLabel(vehicle.maker, lang);
   const model = modelLabel(vehicle.model, lang);
   const trim = vehicle.trim?.trim() || "";
-  const year = vehicle.modelYear != null ? String(vehicle.modelYear) : null;
-  const mileageValue =
-    vehicle.mileageKm != null ? vehicle.mileageKm.toLocaleString(localeTag(lang)) : null;
+  const year = vehicle.modelYear != null ? (lang === "ko" ? `${vehicle.modelYear}년` : String(vehicle.modelYear)) : text.unknown;
+  const mileage = formatKm(vehicle.mileageKm, lang);
   const horsepower =
     vehicle.horsepowerPs != null
       ? lang === "ko"
@@ -140,44 +140,39 @@ export function SpecTable({ vehicle, lang }: { vehicle: PublicVehicle; lang: Lan
     horsepower ? { label: text.horsepower, value: horsepower } : null,
     vehicle.transmission !== "unknown" ? { label: text.transmission, value: transmissionLabel(vehicle.transmission, lang) } : null,
     vehicle.fuel !== "unknown" ? { label: text.fuel, value: fuelLabel(vehicle.fuel, lang) } : null,
-    vehicle.transferType !== "unknown" ? { label: text.transferType, value: transferLabel(vehicle.transferType, lang) } : null,
     vehicle.location ? { label: text.location, value: vehicle.location } : null,
   ].filter((row): row is { label: string; value: string } => Boolean(row));
 
   return (
-    <div className="spec-showcase">
-      <div className="spec-showcase__identity">
-        <p className="spec-showcase__maker">{maker}</p>
-        <h2 className="spec-showcase__model">
+    <div className="spec-board">
+      <div className="spec-board__head">
+        <p className="spec-board__maker">{maker}</p>
+        <p className="spec-board__model">
           {model}
-          {trim ? <span className="spec-showcase__trim">{trim}</span> : null}
-        </h2>
+          {trim ? <span className="spec-board__trim"> {trim}</span> : null}
+        </p>
       </div>
 
-      <div className="spec-showcase__highlights" aria-label={text.specs}>
-        <div className="spec-showcase__stat">
-          <p className="spec-showcase__stat-value tabular-nums">{year ?? text.unknown}</p>
-          <p className="spec-showcase__stat-label">{text.year}</p>
+      <dl className="spec-board__keys" aria-label={text.keyFacts}>
+        <div>
+          <dt>{text.year}</dt>
+          <dd className="tabular-nums">{year}</dd>
         </div>
-        <div className="spec-showcase__stat-rule" aria-hidden="true" />
-        <div className="spec-showcase__stat">
-          <p className="spec-showcase__stat-value tabular-nums">
-            {mileageValue ?? text.unknown}
-            {mileageValue ? <span className="spec-showcase__stat-unit"> km</span> : null}
-          </p>
-          <p className="spec-showcase__stat-label">{text.mileage}</p>
+        <div>
+          <dt>{text.mileage}</dt>
+          <dd className="tabular-nums">{mileage}</dd>
         </div>
-      </div>
+      </dl>
 
       {secondary.length ? (
-        <ul className="spec-showcase__meta">
+        <dl className="spec-board__rows">
           {secondary.map((item) => (
-            <li key={item.label} className="spec-showcase__meta-item">
-              <span className="spec-showcase__meta-label">{item.label}</span>
-              <span className="spec-showcase__meta-value">{item.value}</span>
-            </li>
+            <div key={item.label} className="spec-board__row">
+              <dt>{item.label}</dt>
+              <dd>{item.value}</dd>
+            </div>
           ))}
-        </ul>
+        </dl>
       ) : null}
     </div>
   );

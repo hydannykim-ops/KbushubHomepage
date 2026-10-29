@@ -253,5 +253,11 @@ export const ko: Messages = {
   "mediaVideoHint": "영상이 등록되면 여기서 확인할 수 있습니다.",
   "mediaYard": "회사·야드 사진",
   "listingTitle": "매물 등록",
-  "listingBody": "대표 사진은 정면, 정측면, 후면입니다. 나머지는 있는 만큼 넣으면 됩니다."
+  "listingBody": "대표 사진은 정면, 정측면, 후면입니다. 나머지는 있는 만큼 넣으면 됩니다.",
+  "sellerSection": "판매자",
+  "priceSection": "가격",
+  "transferMode": "이전 방식",
+  "companyListing": "상사 매물",
+  "dealerListing": "판매 사업자 매물",
+  "keyFacts": "기본 정보",
 };

@@ -253,5 +253,11 @@ export const en: Messages = {
   "mediaVideoHint": "A vehicle video will appear here when available.",
   "mediaYard": "Office or yard photo",
   "listingTitle": "Register a vehicle",
-  "listingBody": "The cover set is front, front three-quarter, and rear. Other photos are optional."
+  "listingBody": "The cover set is front, front three-quarter, and rear. Other photos are optional.",
+  "sellerSection": "Seller",
+  "priceSection": "Price",
+  "transferMode": "Transfer type",
+  "companyListing": "Company listing",
+  "dealerListing": "Dealer listing",
+  "keyFacts": "Key facts",
 };

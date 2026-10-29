@@ -94,6 +94,12 @@ export type Messages = {
   stockNo: string;
   unknown: string;
   specs: string;
+  keyFacts: string;
+  dealerListing: string;
+  companyListing: string;
+  transferMode: string;
+  priceSection: string;
+  sellerSection: string;
   maintenance: string;
   defects: string;
   description: string;

@@ -253,5 +253,11 @@ export const fr: Messages = {
   "mediaVideoHint": "Un court lien de véhicule réel se lit ici. Pas de lecture automatique.",
   "mediaYard": "Photo bureau ou cour",
   "listingTitle": "Enregistrer un véhicule",
-  "listingBody": "Le jeu de couverture est avant, trois-quarts avant et arrière. Les autres photos sont facultatives."
+  "listingBody": "Le jeu de couverture est avant, trois-quarts avant et arrière. Les autres photos sont facultatives.",
+  "sellerSection": "Vendeur",
+  "priceSection": "Prix",
+  "transferMode": "Type de transfert",
+  "companyListing": "Annonce société",
+  "dealerListing": "Annonce concessionnaire",
+  "keyFacts": "Points clés",
 };
