@@ -132,3 +132,139 @@ button {
   line-height: 1.45;
   color: var(--muted);
 }
+
+/* Vehicle detail specs — compact Encar-like board */
+.spec-board {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.spec-board__head {
+  padding-bottom: 0.15rem;
+}
+
+.spec-board__maker {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.spec-board__model {
+  margin: 0.2rem 0 0;
+  color: var(--ink);
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.spec-board__trim {
+  color: var(--muted);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.spec-board__keys {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 1rem;
+  margin: 0;
+  padding: 0.9rem 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.spec-board__keys dt {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.spec-board__keys dd {
+  margin: 0.2rem 0 0;
+  color: var(--ink);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.spec-board__rows {
+  display: grid;
+  margin: 0;
+  padding: 0;
+}
+
+.spec-board__row {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: baseline;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.spec-board__row:last-child {
+  border-bottom: 0;
+}
+
+.spec-board__row dt {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.spec-board__row dd {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+/* Detail summary panel */
+.vehicle-summary {
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.vehicle-summary__block {
+  padding: 1rem 1.1rem;
+}
+
+.vehicle-summary__block + .vehicle-summary__block {
+  border-top: 1px solid var(--line);
+}
+
+.vehicle-summary__label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.vehicle-summary__transfer {
+  display: inline-flex;
+  margin-top: 0.45rem;
+  padding: 0.28rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--line));
+  background: color-mix(in srgb, var(--primary) 8%, white);
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.vehicle-summary__price {
+  margin: 0.35rem 0 0;
+  color: var(--ink);
+  font-size: 1.65rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.vehicle-summary__seller-name {
+  margin: 0.35rem 0 0;
+  color: var(--ink);
+  font-size: 0.98rem;
+  font-weight: 700;
+}
