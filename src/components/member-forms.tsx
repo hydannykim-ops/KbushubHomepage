@@ -91,6 +91,11 @@ export function SignupForm({
       )}
 
       <label className="grid gap-1 text-sm font-medium">
+        {text.country} *
+        <input name="country" required defaultValue={lang === "ko" ? "한국" : ""} className={field} autoComplete="country-name" />
+        <span className="font-normal text-muted">{text.countryHint}</span>
+      </label>
+      <label className="grid gap-1 text-sm font-medium">
         {text.email} *
         <input name="email" type="email" required autoComplete="username" className={field} />
       </label>
@@ -126,7 +131,7 @@ export function ProfileForm({
 }: {
   lang: Lang;
   role: "customer" | "dealer";
-  initial: { name: string; email: string; phone: string | null; company: string | null };
+  initial: { name: string; email: string; phone: string | null; company: string | null; country: string | null };
 }) {
   const text = copy(lang);
   const [pending, setPending] = useState(false);
@@ -178,6 +183,11 @@ export function ProfileForm({
         {text.email}
         <input value={initial.email} disabled className={`${field} bg-[#f7f9fb] text-muted`} />
         <span className="font-normal text-xs text-muted">{text.emailLockedHint}</span>
+      </label>
+      <label className="grid gap-1 text-sm font-medium">
+        {text.country}
+        <input value={initial.country ?? ""} disabled className={`${field} bg-[#f7f9fb] text-muted`} />
+        <span className="font-normal text-xs text-muted">{text.countryLockedHint}</span>
       </label>
       <label className="grid gap-1 text-sm font-medium">
         {dealer ? text.businessPhone : text.contact}

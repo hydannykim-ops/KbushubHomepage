@@ -125,6 +125,9 @@ export type Messages = {
   contact: string;
   messenger: string;
   country: string;
+  countryHint: string;
+  countryLockedHint: string;
+  exportMemberNote: string;
   message: string;
   destinationCountry: string;
   destinationPort: string;

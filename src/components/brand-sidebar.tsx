@@ -12,19 +12,19 @@ import {
   seriesForModel,
   seriesLabel,
 } from "@/lib/domain/vehicle-catalog";
-import type { Lang, TradeMode, VehicleClass, VehicleQuery } from "@/lib/domain/types";
+import type { Lang, VehicleClass, VehicleQuery } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
 import { serializeVehicleQuery } from "@/lib/domain/filters";
 
 function hrefFor(
   lang: Lang,
-  ctx: { mode: TradeMode; ref: string | null },
+  ctx: { ref: string | null },
   query: VehicleQuery,
   patch: Partial<VehicleQuery>,
 ) {
   const next: VehicleQuery = { ...query, ...patch };
-  const qs = serializeVehicleQuery(next, { mode: ctx.mode, ref: ctx.ref });
-  return `/${lang}/vehicles?${qs}`;
+  const qs = serializeVehicleQuery(next, { ref: ctx.ref });
+  return qs ? `/${lang}/vehicles?${qs}` : `/${lang}/vehicles`;
 }
 
 function lockedClass() {
@@ -45,7 +45,7 @@ export function BrandSidebar({
   counts,
 }: {
   lang: Lang;
-  ctx: { mode: TradeMode; ref: string | null };
+  ctx: { ref: string | null };
   query: VehicleQuery;
   counts: Record<string, number>;
 }) {

@@ -5,7 +5,8 @@ import { contactActions, DataProblem, Gallery, SpecTable } from "@/components/ca
 import { ContactPhonePanel } from "@/components/contact-phone-panel";
 import { SubmitBanner } from "@/components/forms";
 import { getSession } from "@/lib/auth/session";
-import { formatKm, priceView, showText } from "@/lib/domain/money";
+import { inquiryTradeModeForCountry } from "@/lib/domain/country";
+import { catalogPriceView, formatKm, showText } from "@/lib/domain/money";
 import { vehicleTitle } from "@/lib/domain/vehicle-catalog";
 import { copy } from "@/lib/i18n";
 import { contentFieldLang } from "@/lib/i18n/langs";
@@ -69,9 +70,13 @@ export default async function VehicleDetailPage({
     );
   }
   const listedBy = vehicle.listingCompany ?? site.settings.companyName;
-  const price = priceView(vehicle, ctx.mode, lang, listedBy);
+  const price = catalogPriceView(vehicle, lang, listedBy);
+  const session = await getSession();
+  const signedIn = Boolean(session && (session.role === "customer" || session.role === "dealer"));
+  const member = signedIn && session ? await site.repo.getMember(session.sub) : null;
+  const inquiryMode = inquiryTradeModeForCountry(member?.country);
   const contacts = contactActions({
-    mode: ctx.mode,
+    mode: inquiryMode,
     phone: site.settings.phone,
     kakaoUrl: site.settings.kakaoUrl,
     whatsappE164: site.settings.whatsappE164,
@@ -84,10 +89,8 @@ export default async function VehicleDetailPage({
   const description = field === "ko" ? vehicle.descriptionKo : vehicle.descriptionEn;
   const maintenance = field === "ko" ? vehicle.maintenanceKo : vehicle.maintenanceEn;
   const defects = field === "ko" ? vehicle.defectsKo : vehicle.defectsEn;
-  const session = await getSession();
-  const signedIn = Boolean(session && (session.role === "customer" || session.role === "dealer"));
   const contactPhone = site.settings.phone ?? site.settings.whatsappE164;
-  const ctaLabel = ctx.mode === "export" ? text.quote : text.purchase;
+  const ctaLabel = inquiryMode === "export" ? text.quote : text.purchase;
   const openConsult = sp.get("consult") === "1" || typeof rawParams.submitted === "string";
   const yearLabel = vehicle.modelYear ? (lang === "ko" ? `${vehicle.modelYear}년` : String(vehicle.modelYear)) : text.unknown;
   const factLine = [
@@ -102,7 +105,7 @@ export default async function VehicleDetailPage({
     .join(" · ");
   const sellerName = listedBy?.trim() || site.settings.companyName;
   const sellerKind = vehicle.listingCompany ? text.dealerListing : text.companyListing;
-  const showTransfer = ctx.mode === "domestic" && vehicle.transferType !== "unknown";
+  const showTransfer = vehicle.transferType !== "unknown";
 
   return (
     <div className="mx-auto grid max-w-6xl gap-7 px-4 py-7 pb-28 md:pb-10">
@@ -131,7 +134,8 @@ export default async function VehicleDetailPage({
             <p className="vehicle-summary__label">{text.priceSection}</p>
             <p className="vehicle-summary__price tabular-nums">{price.primary}</p>
             {price.basis ? <p className="mt-1 text-xs text-muted">{price.basis}</p> : null}
-            {ctx.mode === "export" ? <p className="mt-2 text-xs leading-5 text-muted">{text.exportQuoteNote}</p> : null}
+            {price.exportLine ? <p className="mt-2 text-xs leading-5 text-muted">{text.modeExport}: {price.exportLine}</p> : null}
+            {inquiryMode === "export" ? <p className="mt-2 text-xs leading-5 text-muted">{text.exportQuoteNote}</p> : null}
             {sold ? <p className="mt-2 text-sm text-ink">{text.soldNote}</p> : null}
             {vehicle.status === "reserved" ? <p className="mt-2 text-sm text-ink">{text.reservedNote}</p> : null}
           </div>
@@ -170,7 +174,6 @@ export default async function VehicleDetailPage({
                 ctaLabel={ctaLabel}
                 autoOpen={openConsult}
                 stockNo={vehicle.stockNo}
-                mode={ctx.mode}
                 signedIn={signedIn}
               />
             ) : (
