@@ -121,7 +121,14 @@ export default async function VehiclesPage({
           {result.items.length ? (
             <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
               {result.items.map((vehicle) => (
-                <VehicleCard key={vehicle.id} vehicle={vehicle} lang={lang} mode={ctx.mode} href={hrefTo(lang, `/vehicles/${vehicle.stockNo}`, ctx)} />
+                <VehicleCard
+                  key={vehicle.id}
+                  vehicle={vehicle}
+                  lang={lang}
+                  mode={ctx.mode}
+                  href={hrefTo(lang, `/vehicles/${vehicle.stockNo}`, ctx)}
+                  listedBy={site.settings.companyName}
+                />
               ))}
             </div>
           ) : (

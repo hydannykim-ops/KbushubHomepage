@@ -2,11 +2,16 @@
 
 import Link from "next/link";
 import { useEffect, useId, useRef } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { BrandLogo, BrandWordmark } from "@/components/brand-logo";
 import type { Lang, SessionRole, TradeMode } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
 import { langs, langMeta, langPathPattern } from "@/lib/i18n/langs";
+
+function modeFromSearch(search: URLSearchParams, fallback: TradeMode): TradeMode {
+  const value = search.get("mode");
+  return value === "export" || value === "domestic" ? value : fallback;
+}
 
 function GlobeIcon({ className }: { className?: string }) {
   return (
@@ -136,8 +141,10 @@ export function Header({
 }) {
   const text = copy(lang);
   const pathname = usePathname() || `/${lang}`;
-  const mode = defaultMode;
-  const ref = refCode || "";
+  const searchParams = useSearchParams();
+  // Layout cannot see ?mode= on soft navigations; keep the toggle in sync with the URL.
+  const mode = modeFromSearch(searchParams, defaultMode);
+  const ref = searchParams.get("ref") || refCode || "";
   const signedIn = member?.role === "customer" || member?.role === "dealer";
 
   function href(path: string, extra?: Record<string, string>) {
@@ -175,11 +182,11 @@ export function Header({
       ] as const);
 
   return (
-    <header className="sticky top-0 z-40 overflow-visible border-b border-line bg-white">
-      <div className="relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <Link href={href("")} className="flex items-center gap-2.5 text-foreground" aria-label="K-BUS HUB">
-          <BrandLogo size="sm" priority />
-          <BrandWordmark />
+    <header className="sticky top-0 z-[60] overflow-visible border-b border-line bg-white">
+      <div className="relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3.5 sm:py-4">
+        <Link href={href("")} className="flex min-w-0 items-center gap-3 text-foreground sm:gap-3.5" aria-label="K-BUS HUB">
+          <BrandLogo size="lg" priority />
+          <BrandWordmark size="lg" />
         </Link>
         <nav className="hidden items-center gap-5 text-sm font-medium md:flex" aria-label="main">
           {links.map(([label, hrefValue]) => (
@@ -190,7 +197,7 @@ export function Header({
         </nav>
         <div className="hidden items-center gap-3 md:flex">
           {accountLinks.map(([label, hrefValue]) => (
-            <Link key={label} href={hrefValue} className="text-sm font-semibold text-foreground hover:text-primary">
+            <Link key={`desk-${label}`} href={hrefValue} prefetch className="text-sm font-semibold text-foreground hover:text-primary">
               {label}
             </Link>
           ))}
@@ -209,7 +216,7 @@ export function Header({
                 </Link>
               ))}
               {accountLinks.map(([label, hrefValue]) => (
-                <Link key={label} href={hrefValue} className="font-semibold">
+                <Link key={`mobile-${label}`} href={hrefValue} prefetch className="font-semibold">
                   {label}
                 </Link>
               ))}
@@ -227,7 +234,7 @@ export function Header({
 
 export function Footer({
   lang,
-  mode,
+  mode: defaultMode,
   refCode,
   company,
 }: {
@@ -237,8 +244,11 @@ export function Footer({
   company: { name: string; phone: string | null; email: string | null; address: string | null };
 }) {
   const text = copy(lang);
+  const searchParams = useSearchParams();
+  const mode = modeFromSearch(searchParams, defaultMode);
+  const liveRef = searchParams.get("ref") || refCode;
   const query = new URLSearchParams({ mode });
-  if (refCode) query.set("ref", refCode);
+  if (liveRef) query.set("ref", liveRef);
   const href = (path: string) => `/${lang}${path}?${query.toString()}`;
   return (
     <footer className="mt-20 bg-ink text-white">
@@ -246,9 +256,7 @@ export function Footer({
         <div>
           <div className="flex items-center gap-2.5">
             <BrandLogo size="sm" />
-            <p className="text-base font-semibold tracking-tight">
-              K-BUS HUB
-            </p>
+            <BrandWordmark className="text-white" />
           </div>
           <p className="mt-3 max-w-xs leading-6 text-white/70">{text.footerNote}</p>
         </div>

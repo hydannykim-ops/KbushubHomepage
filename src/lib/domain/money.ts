@@ -56,10 +56,16 @@ const domesticBasis: Record<Lang, string> = {
   mn: "Дотоод үнэ",
 };
 
-export function priceView(vehicle: PublicVehicle, mode: TradeMode, lang: Lang): PriceView {
+function askPrimary(lang: Lang, listedBy?: string | null): string {
+  const label = askPrice[lang];
+  const company = listedBy?.trim();
+  return company ? `${label} · ${company}` : label;
+}
+
+export function priceView(vehicle: PublicVehicle, mode: TradeMode, lang: Lang, listedBy?: string | null): PriceView {
   if (mode === "domestic") {
     if (vehicle.domesticPriceKrw == null) {
-      return { primary: askPrice[lang], basis: null, ask: true };
+      return { primary: askPrimary(lang, listedBy), basis: null, ask: true };
     }
     return {
       primary: formatMoney(vehicle.domesticPriceKrw, "KRW", lang),
@@ -68,7 +74,7 @@ export function priceView(vehicle: PublicVehicle, mode: TradeMode, lang: Lang): 
     };
   }
   if (vehicle.exportPriceAmount == null || !vehicle.exportPriceCurrency) {
-    return { primary: askPrice[lang], basis: null, ask: true };
+    return { primary: askPrimary(lang, listedBy), basis: null, ask: true };
   }
   const field = contentFieldLang(lang);
   const terms = field === "ko" ? vehicle.exportPriceTermsKo : vehicle.exportPriceTermsEn;

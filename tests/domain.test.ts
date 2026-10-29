@@ -30,7 +30,7 @@ test("price sort keeps currencies apart and puts ask-price last", () => {
   const domestic = filterVehicles(seed.vehicles, { sort: "price_asc" }, "domestic");
   assert.deepEqual(
     domestic.items.map((item) => item.stockNo),
-    ["HB-L-01", "HB-C-01", "HB-L-02", "HB-C-02", "HB-M-01"],
+    ["HB-L-01", "HB-C-01", "HB-L-02", "HB-C-02", "HB-L-TEST", "HB-M-01"],
   );
   assert.equal(domestic.items.some((item) => item.stockNo === "HB-M-02"), false);
   assert.equal(containsInternalKey(domestic.items), false);
@@ -48,7 +48,7 @@ test("export price filter does not compare different currencies", () => {
   const seed = buildSeed();
   const ignored = filterVehicles(seed.vehicles, { priceMin: 1000, sort: "newest" }, "export");
   assert.equal(ignored.ignoredPriceFilter, true);
-  assert.equal(ignored.items.length, 5);
+  assert.equal(ignored.items.length, 6);
 
   const usd = filterVehicles(seed.vehicles, { priceMin: 2000, priceCurrency: "USD", sort: "price_asc" }, "export");
   assert.equal(usd.ignoredPriceFilter, false);
@@ -309,10 +309,18 @@ test("demo inquiry save, referral isolation, and quote snapshot", async () => {
   const summary = summarizeQuote(quotes[0]);
   assert.equal(summary.confirmed, false);
 
+  const byEmail = await store.listInquiriesByEmail("buyer@example.com");
+  assert.ok(byEmail.some((item) => item.id === inquiry.id));
+  assert.ok(byEmail.some((item) => item.id === "inq-demo-1"));
+  assert.equal(byEmail.some((item) => item.id === "inq-demo-2"), false);
+  const demoReply = byEmail.find((item) => item.id === "inq-demo-1");
+  assert.match(demoReply?.staffMemo ?? "", /주중 방문/);
+
   const own = await store.agentReferrals("DEMOAGT1");
   assert.equal(own.some((item) => item.id === "inq-demo-2"), false);
   assert.equal(JSON.stringify(own).includes("secret@example.com"), false);
   assert.equal(JSON.stringify(own).includes("buyer@example.com"), false);
+  assert.equal(JSON.stringify(own).includes("주중 방문"), false);
   const pending = visibleReferrals((await store.listInquiries()), { status: "pending", referralCode: "DEMOPEND" });
   assert.deepEqual(pending, []);
 
@@ -394,13 +402,17 @@ test("dealer listings stay in review and customers cannot publish", async () => 
     descriptionKo: null,
     descriptionEn: null,
   };
-  const files = { front: png, frontSide: png, rear: png, extras: [] };
-  const types = { front: "image/png" as const, frontSide: "image/png" as const, rear: "image/png" as const };
+  const shots = [
+    { bytes: png, contentType: "image/png" as const, category: "front" as const, cover: true, label: "정면" },
+    { bytes: png, contentType: "image/png" as const, category: "front_side" as const, cover: false, label: "좌측" },
+    { bytes: png, contentType: "image/png" as const, category: "exterior" as const, cover: false, label: "우측" },
+    { bytes: png, contentType: "image/png" as const, category: "rear" as const, cover: false, label: "후면" },
+  ];
   await assert.rejects(
-    () => store.createDealerListing(customer, input, files, types),
+    () => store.createDealerListing(customer, input, shots),
     (error: unknown) => error instanceof Error && "code" in error && error.code === "dealer_only",
   );
-  const listing = await store.createDealerListing(dealer, input, files, types);
+  const listing = await store.createDealerListing(dealer, input, shots);
   assert.equal(listing.status, "review");
   assert.equal(listing.listingSource, "dealer");
   assert.equal(JSON.stringify(listing).includes("password"), false);
@@ -411,6 +423,31 @@ test("dealer listings stay in review and customers cannot publish", async () => 
   assert.equal(publicJson({ ...listing, internal: { purchaseCost: 1, purchaseCurrency: "KRW", actualSaleAmount: null, saleCurrency: null, extraCosts: null, agentFee: null, feeCurrency: null, note: "비밀" }, ownerId: dealer.id, sellerName: dealer.name, sellerEmail: dealer.email, sellerCompany: dealer.company }), null);
   const owned = await store.listOwned(dealer.id);
   assert.equal(owned[0]?.stockNo, listing.stockNo);
+  await store.createInquiry(
+    {
+      kind: "purchase",
+      tradeMode: "domestic",
+      name: "문의자",
+      email: "buyer-on-listing@example.com",
+      phone: "01011112222",
+      messenger: null,
+      country: "한국",
+      stockNo: listing.stockNo,
+      message: "딜러 매물 문의",
+      destinationCountry: null,
+      destinationPort: null,
+      destinationPortUndecided: false,
+      shippingMethod: null,
+      consent: true,
+      companyWebsite: "",
+      lang: "ko",
+    },
+    { firstReferralCode: null, submitReferralCode: null },
+  );
+  const inbound = await store.listInquiriesByStockNos([listing.stockNo]);
+  assert.equal(inbound.length, 1);
+  assert.equal(inbound[0]?.message, "딜러 매물 문의");
+  assert.deepEqual(await store.listInquiriesByStockNos([]), []);
   assert.equal(await store.verifyMember(dealer.email, "nope"), null);
   assert.equal((await store.verifyMember(dealer.email, "password1"))?.role, "dealer");
   await assert.rejects(
