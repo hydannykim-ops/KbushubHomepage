@@ -89,9 +89,11 @@ export function VehicleCard({
             {mode === "domestic" ? ` · ${transfer}` : null}
           </p>
           <div className="flex flex-wrap items-end gap-2 pt-0.5">
-            <p className="text-2xl font-bold tabular-nums tracking-tight text-ink">{price.primary}</p>
+            <p className="text-2xl font-bold tabular-nums tracking-tight text-primary">{price.primary}</p>
             {vehicle.status !== "available" ? (
-              <span className="mb-0.5 text-xs font-semibold text-muted">{statusLabel(vehicle.status, lang)}</span>
+              <span className="mb-0.5 rounded bg-primary-soft px-1.5 py-0.5 text-xs font-semibold text-primary-deep">
+                {statusLabel(vehicle.status, lang)}
+              </span>
             ) : null}
           </div>
           {price.basis ? <p className="text-sm text-muted">{price.basis}</p> : null}

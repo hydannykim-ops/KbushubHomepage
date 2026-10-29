@@ -1,13 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f6f7f9;
+  --background: #f3f6fb;
   --foreground: #102033;
   --card: #ffffff;
   --primary: #155eef;
-  --line: #e4e7ee;
+  --primary-soft: #e8effc;
+  --primary-deep: #0b4fd0;
+  --line: #dfe6f1;
   --muted: #5d6b7e;
   --ink: #0e1c2f;
+  --accent-warm: #0f8f7b;
+  --accent-warm-soft: #e7f6f2;
 }
 
 @theme inline {
@@ -15,15 +19,39 @@
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-primary: var(--primary);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-deep: var(--primary-deep);
   --color-line: var(--line);
   --color-muted: var(--muted);
   --color-ink: var(--ink);
+  --color-accent-warm: var(--accent-warm);
+  --color-accent-warm-soft: var(--accent-warm-soft);
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(1200px 480px at 12% -8%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 60%),
+    radial-gradient(900px 420px at 100% 0%, color-mix(in srgb, var(--accent-warm) 7%, transparent), transparent 55%),
+    var(--background);
   color: var(--foreground);
   font-family: "Noto Sans KR", "Noto Sans", "Noto Sans Khmer", sans-serif;
+}
+
+.section-title {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 0.45rem;
+}
+
+.section-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 2.25rem;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary) 20%, white));
 }
 
 html[lang="km"] body {

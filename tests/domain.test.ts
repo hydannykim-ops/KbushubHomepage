@@ -425,11 +425,14 @@ test("dealer listings stay in review and customers cannot publish", async () => 
 
 test("migration locks down internal tables and admin role grants", async () => {
   const sql = await readFile(path.join(process.cwd(), "supabase/migrations/0001_init.sql"), "utf8");
+  const messagesSql = await readFile(path.join(process.cwd(), "supabase/migrations/0004_inquiry_messages.sql"), "utf8");
   assert.match(sql, /revoke all on table public\.vehicle_internal from anon, authenticated/i);
   assert.match(sql, /revoke all on table public\.inquiries from anon, authenticated/i);
   assert.match(sql, /enable row level security/i);
   assert.doesNotMatch(sql, /create policy[^;]+insert[^;]+user_roles/i);
   assert.match(sql, /agent_my_referrals/);
+  assert.match(messagesSql, /create table if not exists public\.inquiry_messages/i);
+  assert.match(messagesSql, /revoke all on table public\.inquiry_messages from anon, authenticated/i);
   assert.match(sql, /privacy_collection_enabled boolean not null default false/i);
   const members = await readFile(path.join(process.cwd(), "supabase/migrations/0002_members_and_review.sql"), "utf8");
   assert.match(members, /revoke all on table public\.member_profiles from anon, authenticated/i);
