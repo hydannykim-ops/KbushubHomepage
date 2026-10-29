@@ -89,6 +89,18 @@ export function priceView(vehicle: PublicVehicle, mode: TradeMode, lang: Lang, l
   };
 }
 
+/** Unified listing/detail pricing after removing the domestic/export browse toggle. */
+export function catalogPriceView(vehicle: PublicVehicle, lang: Lang, listedBy?: string | null): PriceView & { exportLine: string | null } {
+  const domestic = priceView(vehicle, "domestic", lang, listedBy);
+  const exported = priceView(vehicle, "export", lang, listedBy);
+  return {
+    primary: domestic.primary,
+    basis: domestic.basis,
+    ask: domestic.ask,
+    exportLine: exported.ask ? null : `${exported.primary}${exported.basis ? ` · ${exported.basis}` : ""}`,
+  };
+}
+
 export function internalProfit(internal: VehicleInternal):
   | { status: "amount"; amount: number; currency: string }
   | { status: "unknown"; reason: "missing" | "currency" } {

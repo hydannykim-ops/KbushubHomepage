@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { MediaSlot } from "./media-slot";
 import { GalleryClient } from "./gallery-client";
-import { formatKm, priceView } from "@/lib/domain/money";
+import { catalogPriceView, formatKm } from "@/lib/domain/money";
 import type { Lang, PublicVehicle, TradeMode, VehiclePhoto, VehicleQuery } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
 import { contentFieldLang, localeTag } from "@/lib/i18n/langs";
@@ -57,18 +57,18 @@ function PhotoFrame({ vehicle, lang }: { vehicle: PublicVehicle; lang: Lang }) {
 export function VehicleCard({
   vehicle,
   lang,
-  mode,
   href,
   listedBy,
 }: {
   vehicle: PublicVehicle;
   lang: Lang;
-  mode: TradeMode;
+  /** @deprecated Browse mode removed; kept optional for call-site compatibility. */
+  mode?: TradeMode;
   href: string;
   listedBy?: string | null;
 }) {
   const text = copy(lang);
-  const price = priceView(vehicle, mode, lang, vehicle.listingCompany ?? listedBy);
+  const price = catalogPriceView(vehicle, lang, vehicle.listingCompany ?? listedBy);
   const yearLabel = vehicle.modelYear ? (lang === "ko" ? `${vehicle.modelYear}년` : String(vehicle.modelYear)) : text.unknown;
   const seatsLabel =
     vehicle.seats != null ? `${vehicle.seats}${lang === "ko" ? text.seatsShort : ` ${text.seatsShort}`}` : text.unknown;
@@ -92,7 +92,7 @@ export function VehicleCard({
           <p className="text-sm text-muted">{meta}</p>
           <p className="text-sm text-muted">
             {vehicle.location ? vehicle.location : text.unknown}
-            {mode === "domestic" && vehicle.transferType !== "unknown" ? ` · ${transfer}` : null}
+            {vehicle.transferType !== "unknown" ? ` · ${transfer}` : null}
           </p>
           <div className="flex flex-wrap items-end gap-2 pt-1">
             <p className="text-xl font-bold tabular-nums tracking-tight text-ink">{price.primary}</p>
@@ -101,6 +101,7 @@ export function VehicleCard({
             ) : null}
           </div>
           {price.basis ? <p className="text-xs text-muted">{price.basis}</p> : null}
+          {price.exportLine ? <p className="text-xs text-muted">{text.modeExport}: {price.exportLine}</p> : null}
         </div>
       </Link>
     </article>
@@ -198,7 +199,7 @@ export function youtubeId(url: string): string | null {
 }
 
 export function contactActions(input: {
-  mode: TradeMode;
+  mode?: TradeMode;
   phone: string | null;
   kakaoUrl: string | null;
   whatsappE164: string | null;
@@ -206,7 +207,12 @@ export function contactActions(input: {
   lang: Lang;
   referralCode: string | null;
 }) {
-  const message = whatsappMessage({ lang: input.lang, stockNo: input.stockNo, referralCode: input.referralCode, mode: input.mode });
+  const message = whatsappMessage({
+    lang: input.lang,
+    stockNo: input.stockNo,
+    referralCode: input.referralCode,
+    mode: input.mode,
+  });
   const phoneDigits = input.phone?.replace(/[^\d+]/g, "") ?? "";
   const phoneHref = phoneDigits.length >= 8 ? `tel:${phoneDigits.startsWith("+") ? phoneDigits : phoneDigits}` : null;
   return {
@@ -217,7 +223,7 @@ export function contactActions(input: {
   };
 }
 
-export function sortHref(base: string, query: VehicleQuery, sort: string, ctx: { mode: TradeMode; ref: string | null }) {
+export function sortHref(base: string, query: VehicleQuery, sort: string, ctx: { mode?: TradeMode; ref: string | null }) {
   const params = new URLSearchParams();
   const set = (key: string, value: string | number | null | undefined) => {
     if (value == null || value === "") return;
@@ -239,7 +245,6 @@ export function sortHref(base: string, query: VehicleQuery, sort: string, ctx: {
   set("transferType", query.transferType);
   set("status", query.status);
   if (sort !== "newest") set("sort", sort);
-  params.set("mode", ctx.mode);
   if (ctx.ref) params.set("ref", ctx.ref);
   return `${base}?${params.toString()}`;
 }

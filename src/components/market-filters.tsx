@@ -7,11 +7,10 @@ import { localeTag } from "@/lib/i18n/langs";
 import { copy } from "@/lib/i18n";
 import { fuelLabel, statusLabel, transferLabel, transmissionLabel } from "@/lib/labels";
 
-type Ctx = { mode: TradeMode; ref: string | null };
+type Ctx = { mode?: TradeMode; ref: string | null };
 
 function queryToParams(query: VehicleQuery, ctx: Ctx): URLSearchParams {
   const params = new URLSearchParams();
-  params.set("mode", ctx.mode);
   if (ctx.ref) params.set("ref", ctx.ref);
   const set = (key: string, value: string | number | null | undefined) => {
     if (value == null || value === "") return;
@@ -243,21 +242,6 @@ export function MarketFilterBar({
                   />
                 </label>
               </div>
-              {ctx.mode === "export" ? (
-                <label className="mt-3 grid gap-1 text-xs font-semibold text-muted">
-                  {text.currency}
-                  <select
-                    className={input}
-                    value={draft.priceCurrency ?? ""}
-                    onChange={(event) => setDraft((current) => ({ ...current, priceCurrency: event.target.value || null }))}
-                  >
-                    <option value="">{text.all}</option>
-                    {["USD", "EUR", "KRW", "JPY", "CNY", "AED"].map((currency) => (
-                      <option key={currency}>{currency}</option>
-                    ))}
-                  </select>
-                </label>
-              ) : null}
               <div className="mt-4 flex gap-2">
                 <button type="button" className={applyBtn} onClick={() => navigate(draft)}>
                   {text.applyFilters}
