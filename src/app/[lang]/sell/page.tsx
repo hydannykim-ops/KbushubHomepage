@@ -4,6 +4,7 @@ import { DataProblem } from "@/components/catalog";
 import { Consent, EnhanceForm, Field, Honeypot, SubmitBanner } from "@/components/forms";
 import { MakerModelPicker } from "@/components/maker-model-picker";
 import { DealerListingForm } from "@/components/member-forms";
+import { PhotoSlotUploader } from "@/components/photo-slot-uploader";
 import { getSession } from "@/lib/auth/session";
 import { copy } from "@/lib/i18n";
 import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
@@ -30,7 +31,7 @@ export default async function SellPage({
 
   const consult = (
     <div id="consult" className="border border-line bg-white p-5">
-      <h2 className="text-xl font-semibold">{text.consultTitle}</h2>
+      <h2 className="text-xl font-semibold">{text.navSell}</h2>
       <p className="mt-2 text-sm leading-6 text-muted">{text.consultBody}</p>
       <div className="mt-5">
         <SubmitBanner lang={lang} submitted={sp.get("submitted") ?? undefined} error={sp.get("error") ?? undefined} />
@@ -53,10 +54,7 @@ export default async function SellPage({
           <Field label={text.email} name="email" type="email" defaultValue={session?.email ?? ""} />
           <Field label={text.contact} name="phone" />
           <Field label={text.message} name="message" as="textarea" />
-          <label className="grid gap-1 text-sm font-medium">
-            {text.photos}
-            <input name="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple className="font-normal" />
-          </label>
+          <PhotoSlotUploader lang={lang} />
           <Consent lang={lang} />
           <Honeypot lang={lang} />
         </EnhanceForm>
@@ -68,7 +66,9 @@ export default async function SellPage({
     <div className="mx-auto grid max-w-xl gap-8 px-4 py-10">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">{text.sellTitle}</h1>
-        <p className="mt-3 text-sm leading-6 text-muted">{role === "dealer" ? text.listingBody : role === "customer" ? text.customerBlocked : text.guestSellBody}</p>
+        <p className="mt-3 text-sm leading-6 text-muted">
+          {role === "dealer" ? text.listingBody : role === "customer" ? text.consultBody : text.guestSellBody}
+        </p>
       </div>
 
       {role === "dealer" ? (
@@ -102,7 +102,7 @@ export default async function SellPage({
               {text.navLogin}
             </Link>
             <Link href={hrefTo(lang, "/account/signup", ctx, { role: "customer" })} className="border border-line bg-white px-4 py-3 text-sm font-semibold">
-              {text.consultButton}
+              {text.navSell}
             </Link>
           </div>
         </section>

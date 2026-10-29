@@ -5,8 +5,9 @@ import path from "node:path";
 import test from "node:test";
 import { containsInternalKey, inquiryViewerRole, publicJson, visibleReferrals } from "../src/lib/domain/access";
 import { readSession, signSession } from "../src/lib/domain/auth-token";
+import { inquiryTradeModeForCountry, isKoreaCountry } from "../src/lib/domain/country";
 import { filterVehicles, parseVehicleQuery, serializeVehicleQuery } from "../src/lib/domain/filters";
-import { internalProfit, summarizeQuote } from "../src/lib/domain/money";
+import { catalogPriceView, internalProfit, summarizeQuote } from "../src/lib/domain/money";
 import { normalizeReferralCode, referralForInquiry, rememberReferral, whatsappHref, whatsappMessage } from "../src/lib/domain/referral";
 import { acceptOrReject, submissionGate } from "../src/lib/domain/submit";
 import { checkImage } from "../src/lib/domain/uploads";
@@ -31,7 +32,7 @@ test("price sort keeps currencies apart and puts ask-price last", () => {
   const domestic = filterVehicles(seed.vehicles, { sort: "price_asc" }, "domestic");
   assert.deepEqual(
     domestic.items.map((item) => item.stockNo),
-    ["HB-L-01", "HB-C-01", "HB-L-02", "HB-C-02", "HB-M-01"],
+    ["HB-L-01", "HB-C-01", "HB-L-02", "HB-C-02", "HB-L-TEST", "HB-M-01"],
   );
   assert.equal(domestic.items.some((item) => item.stockNo === "HB-M-02"), false);
   assert.equal(containsInternalKey(domestic.items), false);
@@ -49,7 +50,7 @@ test("export price filter does not compare different currencies", () => {
   const seed = buildSeed();
   const ignored = filterVehicles(seed.vehicles, { priceMin: 1000, sort: "newest" }, "export");
   assert.equal(ignored.ignoredPriceFilter, true);
-  assert.equal(ignored.items.length, 5);
+  assert.equal(ignored.items.length, 6);
 
   const usd = filterVehicles(seed.vehicles, { priceMin: 2000, priceCurrency: "USD", sort: "price_asc" }, "export");
   assert.equal(usd.ignoredPriceFilter, false);
@@ -59,17 +60,38 @@ test("export price filter does not compare different currencies", () => {
   );
 });
 
+test("country nationality routes inquiry trade mode", () => {
+  assert.equal(isKoreaCountry("한국"), true);
+  assert.equal(isKoreaCountry("KR"), true);
+  assert.equal(isKoreaCountry("South Korea"), true);
+  assert.equal(isKoreaCountry("Cambodia"), false);
+  assert.equal(inquiryTradeModeForCountry("한국"), "domestic");
+  assert.equal(inquiryTradeModeForCountry("UAE"), "export");
+  assert.equal(inquiryTradeModeForCountry(null), "domestic");
+});
+
+test("catalog price shows domestic primary with optional export line", () => {
+  const seed = buildSeed();
+  const vehicle = seed.vehicles.find((item) => item.stockNo === "HB-C-01");
+  assert.ok(vehicle);
+  const view = catalogPriceView(vehicle, "ko");
+  assert.equal(view.ask, false);
+  assert.match(view.primary, /원|₩|KRW/i);
+  assert.ok(view.exportLine);
+});
+
 test("filters and shareable query round-trip", () => {
-  const raw = "class=county&maker=현대&transmission=automatic&status=available&sort=year_desc&mode=export";
+  const raw = "class=county&maker=현대&transmission=automatic&status=available&sort=year_desc";
   const query = parseVehicleQuery(new URLSearchParams(raw));
   const seed = buildSeed();
-  const result = filterVehicles(seed.vehicles, query, "export");
+  const result = filterVehicles(seed.vehicles, query, "domestic");
   assert.deepEqual(result.items.map((item) => item.stockNo).sort(), ["HB-C-01", "HB-C-02"]);
-  const serialized = serializeVehicleQuery(query, { mode: "export", ref: "DEMOAGT1" });
+  const serialized = serializeVehicleQuery(query, { ref: "DEMOAGT1" });
   const again = parseVehicleQuery(new URLSearchParams(serialized));
   assert.equal(again.vehicleClass, "county");
   assert.equal(again.sort, "year_desc");
   assert.equal(new URLSearchParams(serialized).get("ref"), "DEMOAGT1");
+  assert.equal(new URLSearchParams(serialized).get("mode"), null);
 });
 
 test("transfer filter and export shipping preference", () => {
@@ -310,10 +332,18 @@ test("demo inquiry save, referral isolation, and quote snapshot", async () => {
   const summary = summarizeQuote(quotes[0]);
   assert.equal(summary.confirmed, false);
 
+  const byEmail = await store.listInquiriesByEmail("buyer@example.com");
+  assert.ok(byEmail.some((item) => item.id === inquiry.id));
+  assert.ok(byEmail.some((item) => item.id === "inq-demo-1"));
+  assert.equal(byEmail.some((item) => item.id === "inq-demo-2"), false);
+  const demoReply = byEmail.find((item) => item.id === "inq-demo-1");
+  assert.match(demoReply?.staffMemo ?? "", /주중 방문/);
+
   const own = await store.agentReferrals("DEMOAGT1");
   assert.equal(own.some((item) => item.id === "inq-demo-2"), false);
   assert.equal(JSON.stringify(own).includes("secret@example.com"), false);
   assert.equal(JSON.stringify(own).includes("buyer@example.com"), false);
+  assert.equal(JSON.stringify(own).includes("주중 방문"), false);
   const pending = visibleReferrals((await store.listInquiries()), { status: "pending", referralCode: "DEMOPEND" });
   assert.deepEqual(pending, []);
 
@@ -367,6 +397,7 @@ test("dealer listings stay in review and customers cannot publish", async () => 
     password: "password1",
     phone: null,
     company: "데모상사",
+    country: "한국",
     consent: true,
     companyWebsite: "",
   });
@@ -377,9 +408,12 @@ test("dealer listings stay in review and customers cannot publish", async () => 
     password: "password1",
     phone: null,
     company: null,
+    country: "Cambodia",
     consent: true,
     companyWebsite: "",
   });
+  assert.equal(dealer.country, "한국");
+  assert.equal(customer.country, "Cambodia");
   const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0]);
   const input = {
     vehicleClass: "county" as const,
@@ -395,13 +429,17 @@ test("dealer listings stay in review and customers cannot publish", async () => 
     descriptionKo: null,
     descriptionEn: null,
   };
-  const files = { front: png, frontSide: png, rear: png, extras: [] };
-  const types = { front: "image/png" as const, frontSide: "image/png" as const, rear: "image/png" as const };
+  const shots = [
+    { bytes: png, contentType: "image/png" as const, category: "front" as const, cover: true, label: "정면" },
+    { bytes: png, contentType: "image/png" as const, category: "front_side" as const, cover: false, label: "좌측" },
+    { bytes: png, contentType: "image/png" as const, category: "exterior" as const, cover: false, label: "우측" },
+    { bytes: png, contentType: "image/png" as const, category: "rear" as const, cover: false, label: "후면" },
+  ];
   await assert.rejects(
-    () => store.createDealerListing(customer, input, files, types),
+    () => store.createDealerListing(customer, input, shots),
     (error: unknown) => error instanceof Error && "code" in error && error.code === "dealer_only",
   );
-  const listing = await store.createDealerListing(dealer, input, files, types);
+  const listing = await store.createDealerListing(dealer, input, shots);
   assert.equal(listing.status, "review");
   assert.equal(listing.listingSource, "dealer");
   assert.equal(JSON.stringify(listing).includes("password"), false);
@@ -415,6 +453,31 @@ test("dealer listings stay in review and customers cannot publish", async () => 
   assert.equal((await store.getOwnedByStockNo(listing.stockNo, dealer.id))?.stockNo, listing.stockNo);
   assert.equal(await store.getOwnedByStockNo(listing.stockNo, customer.id), null);
   assert.equal(await store.getPublicByStockNo(listing.stockNo), null);
+  await store.createInquiry(
+    {
+      kind: "purchase",
+      tradeMode: "domestic",
+      name: "문의자",
+      email: "buyer-on-listing@example.com",
+      phone: "01011112222",
+      messenger: null,
+      country: "한국",
+      stockNo: listing.stockNo,
+      message: "딜러 매물 문의",
+      destinationCountry: null,
+      destinationPort: null,
+      destinationPortUndecided: false,
+      shippingMethod: null,
+      consent: true,
+      companyWebsite: "",
+      lang: "ko",
+    },
+    { firstReferralCode: null, submitReferralCode: null },
+  );
+  const inbound = await store.listInquiriesByStockNos([listing.stockNo]);
+  assert.equal(inbound.length, 1);
+  assert.equal(inbound[0]?.message, "딜러 매물 문의");
+  assert.deepEqual(await store.listInquiriesByStockNos([]), []);
   assert.equal(await store.verifyMember(dealer.email, "nope"), null);
   assert.equal((await store.verifyMember(dealer.email, "password1"))?.role, "dealer");
   await assert.rejects(
@@ -531,6 +594,7 @@ test("inquiry chat lets buyer and listing owner reply on the same thread", async
     password: "password1",
     phone: null,
     company: "딜러상사",
+    country: "한국",
     consent: true,
     companyWebsite: "",
   });
@@ -541,6 +605,7 @@ test("inquiry chat lets buyer and listing owner reply on the same thread", async
     password: "password1",
     phone: null,
     company: null,
+    country: "한국",
     consent: true,
     companyWebsite: "",
   });
@@ -561,8 +626,12 @@ test("inquiry chat lets buyer and listing owner reply on the same thread", async
       descriptionKo: null,
       descriptionEn: null,
     },
-    { front: png, frontSide: png, rear: png, extras: [] },
-    { front: "image/png", frontSide: "image/png", rear: "image/png" },
+    [
+      { bytes: png, contentType: "image/png", category: "front", cover: true, label: "정면" },
+      { bytes: png, contentType: "image/png", category: "front_side", cover: false, label: "좌측" },
+      { bytes: png, contentType: "image/png", category: "exterior", cover: false, label: "우측" },
+      { bytes: png, contentType: "image/png", category: "rear", cover: false, label: "후면" },
+    ],
   );
   // Publish so createInquiry can attach the stock number.
   const adminVehicle = await store.getAdminVehicle(listing.id);

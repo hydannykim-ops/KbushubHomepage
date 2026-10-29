@@ -90,9 +90,11 @@ export type PublicVehicle = {
   createdAt: string;
   updatedAt: string;
   demo: boolean;
+  /** Dealer mutual/trade name when the listing is dealer-sourced; null for company stock. */
+  listingCompany: string | null;
 };
 
-export type AdminVehicle = Omit<PublicVehicle, "status"> & {
+export type AdminVehicle = Omit<PublicVehicle, "status" | "listingCompany"> & {
   status: SaleStatus;
   internal: VehicleInternal;
   ownerId: string | null;
@@ -109,12 +111,14 @@ export type Member = {
   email: string;
   phone: string | null;
   company: string | null;
+  country: string | null;
   createdAt: string;
 };
 
-export type OwnedListing = Omit<PublicVehicle, "status"> & {
+export type OwnedListing = Omit<PublicVehicle, "status" | "listingCompany"> & {
   status: SaleStatus;
   listingSource: ListingSource;
+  listingCompany: string | null;
 };
 
 export type SiteSettings = {

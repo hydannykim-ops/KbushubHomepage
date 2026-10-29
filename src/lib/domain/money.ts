@@ -56,14 +56,21 @@ const domesticBasis: Record<Lang, string> = {
   mn: "Дотоод үнэ",
 };
 
-export function priceView(
-  vehicle: Pick<PublicVehicle, "domesticPriceKrw" | "exportPriceAmount" | "exportPriceCurrency" | "exportPriceTermsKo" | "exportPriceTermsEn">,
-  mode: TradeMode,
-  lang: Lang,
-): PriceView {
+function askPrimary(lang: Lang, listedBy?: string | null): string {
+  const label = askPrice[lang];
+  const company = listedBy?.trim();
+  return company ? `${label} · ${company}` : label;
+}
+
+type PricedVehicle = Pick<
+  PublicVehicle,
+  "domesticPriceKrw" | "exportPriceAmount" | "exportPriceCurrency" | "exportPriceTermsKo" | "exportPriceTermsEn"
+>;
+
+export function priceView(vehicle: PricedVehicle, mode: TradeMode, lang: Lang, listedBy?: string | null): PriceView {
   if (mode === "domestic") {
     if (vehicle.domesticPriceKrw == null) {
-      return { primary: askPrice[lang], basis: null, ask: true };
+      return { primary: askPrimary(lang, listedBy), basis: null, ask: true };
     }
     return {
       primary: formatMoney(vehicle.domesticPriceKrw, "KRW", lang),
@@ -72,7 +79,7 @@ export function priceView(
     };
   }
   if (vehicle.exportPriceAmount == null || !vehicle.exportPriceCurrency) {
-    return { primary: askPrice[lang], basis: null, ask: true };
+    return { primary: askPrimary(lang, listedBy), basis: null, ask: true };
   }
   const field = contentFieldLang(lang);
   const terms = field === "ko" ? vehicle.exportPriceTermsKo : vehicle.exportPriceTermsEn;
@@ -84,6 +91,18 @@ export function priceView(
         ? `${vehicle.exportPriceCurrency} 수출 가격`
         : `${vehicle.exportPriceCurrency} export price`,
     ask: false,
+  };
+}
+
+/** Unified listing/detail pricing after removing the domestic/export browse toggle. */
+export function catalogPriceView(vehicle: PricedVehicle, lang: Lang, listedBy?: string | null): PriceView & { exportLine: string | null } {
+  const domestic = priceView(vehicle, "domestic", lang, listedBy);
+  const exported = priceView(vehicle, "export", lang, listedBy);
+  return {
+    primary: domestic.primary,
+    basis: domestic.basis,
+    ask: domestic.ask,
+    exportLine: exported.ask ? null : `${exported.primary}${exported.basis ? ` · ${exported.basis}` : ""}`,
   };
 }
 

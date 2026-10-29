@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useId, useRef } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { BrandLogo, BrandWordmark } from "@/components/brand-logo";
-import type { Lang, SessionRole, TradeMode } from "@/lib/domain/types";
+import type { Lang, SessionRole } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
-import { langs, langMeta, langPathPattern } from "@/lib/i18n/langs";
+import { langs, langMeta } from "@/lib/i18n/langs";
 
 function GlobeIcon({ className }: { className?: string }) {
   return (
@@ -99,66 +99,41 @@ function LanguageMenu({
   );
 }
 
-function ModeToggle({
-  mode,
-  pathname,
-  text,
-  href,
-}: {
-  mode: TradeMode;
-  pathname: string;
-  text: ReturnType<typeof copy>;
-  href: (path: string, extra?: Record<string, string>) => string;
-}) {
-  const stripped = pathname.replace(new RegExp(`^/(${langPathPattern})`), "") || "";
-  return (
-    <div className="flex border border-line p-0.5 text-sm" role="group" aria-label={text.modeDomestic}>
-      <Link className={mode === "domestic" ? "bg-primary px-2 py-1 text-white" : "px-2 py-1"} href={href(stripped, { mode: "domestic" })}>
-        {text.modeDomestic}
-      </Link>
-      <Link className={mode === "export" ? "bg-primary px-2 py-1 text-white" : "px-2 py-1"} href={href(stripped, { mode: "export" })}>
-        {text.modeExport}
-      </Link>
-    </div>
-  );
-}
-
 export function Header({
   lang,
-  defaultMode,
   refCode,
   member,
 }: {
   lang: Lang;
-  defaultMode: TradeMode;
   refCode: string | null;
   member: { role: SessionRole; name?: string } | null;
 }) {
   const text = copy(lang);
   const pathname = usePathname() || `/${lang}`;
-  const mode = defaultMode;
-  const ref = refCode || "";
+  const searchParams = useSearchParams();
+  const ref = searchParams.get("ref") || refCode || "";
   const signedIn = member?.role === "customer" || member?.role === "dealer";
 
   function href(path: string, extra?: Record<string, string>) {
     const query = new URLSearchParams();
-    query.set("mode", extra?.mode ?? mode);
     if (ref) query.set("ref", ref);
     if (extra) {
       for (const [key, value] of Object.entries(extra)) {
-        if (key !== "mode" && value) query.set(key, value);
+        if (key === "mode") continue;
+        if (value) query.set(key, value);
       }
     }
-    return `/${lang}${path}?${query.toString()}`;
+    const qs = query.toString();
+    return qs ? `/${lang}${path}?${qs}` : `/${lang}${path}`;
   }
 
   function switchLang(next: Lang) {
     const parts = pathname.split("/");
     parts[1] = next;
     const query = new URLSearchParams();
-    query.set("mode", mode);
     if (ref) query.set("ref", ref);
-    return `${parts.join("/") || `/${next}`}?${query.toString()}`;
+    const qs = query.toString();
+    return `${parts.join("/") || `/${next}`}${qs ? `?${qs}` : ""}`;
   }
 
   const links = [
@@ -175,9 +150,9 @@ export function Header({
       ] as const);
 
   return (
-    <header className="sticky top-0 z-40 overflow-visible border-b border-line bg-white">
+    <header className="sticky top-0 z-[60] overflow-visible border-b border-line bg-white">
       <div className="relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3.5 sm:py-4">
-        <Link href={href("")} className="flex items-center gap-3 text-foreground" aria-label="K-BUS HUB">
+        <Link href={href("")} className="flex min-w-0 items-center gap-3 text-foreground sm:gap-3.5" aria-label="K-BUS HUB">
           <BrandLogo size="lg" priority />
           <BrandWordmark size="lg" />
         </Link>
@@ -190,13 +165,12 @@ export function Header({
         </nav>
         <div className="hidden items-center gap-3 md:flex">
           {accountLinks.map(([label, hrefValue]) => (
-            <Link key={label} href={hrefValue} className="text-sm font-semibold text-foreground hover:text-primary">
+            <Link key={`desk-${label}`} href={hrefValue} prefetch className="text-sm font-semibold text-foreground hover:text-primary">
               {label}
             </Link>
           ))}
           <div className="flex flex-wrap items-center gap-2">
             <LanguageMenu lang={lang} label={text.language} switchLang={switchLang} />
-            <ModeToggle mode={mode} pathname={pathname} text={text} href={href} />
           </div>
         </div>
         <details className="md:hidden">
@@ -209,14 +183,13 @@ export function Header({
                 </Link>
               ))}
               {accountLinks.map(([label, hrefValue]) => (
-                <Link key={label} href={hrefValue} className="font-semibold">
+                <Link key={`mobile-${label}`} href={hrefValue} prefetch className="font-semibold">
                   {label}
                 </Link>
               ))}
             </nav>
             <div className="mt-4 flex flex-wrap items-center gap-2">
               <LanguageMenu lang={lang} label={text.language} switchLang={switchLang} align="left" />
-              <ModeToggle mode={mode} pathname={pathname} text={text} href={href} />
             </div>
           </div>
         </details>
@@ -227,28 +200,29 @@ export function Header({
 
 export function Footer({
   lang,
-  mode,
   refCode,
   company,
 }: {
   lang: Lang;
-  mode: TradeMode;
   refCode: string | null;
   company: { name: string; phone: string | null; email: string | null; address: string | null };
 }) {
   const text = copy(lang);
-  const query = new URLSearchParams({ mode });
-  if (refCode) query.set("ref", refCode);
-  const href = (path: string) => `/${lang}${path}?${query.toString()}`;
+  const searchParams = useSearchParams();
+  const liveRef = searchParams.get("ref") || refCode;
+  const query = new URLSearchParams();
+  if (liveRef) query.set("ref", liveRef);
+  const href = (path: string) => {
+    const qs = query.toString();
+    return qs ? `/${lang}${path}?${qs}` : `/${lang}${path}`;
+  };
   return (
     <footer className="mt-20 bg-ink text-white">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 text-sm md:grid-cols-3">
         <div>
           <div className="flex items-center gap-2.5">
             <BrandLogo size="sm" />
-            <p className="text-base font-semibold tracking-tight">
-              K-BUS HUB
-            </p>
+            <BrandWordmark className="text-white" />
           </div>
           <p className="mt-3 max-w-xs leading-6 text-white/70">{text.footerNote}</p>
         </div>

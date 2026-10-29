@@ -45,11 +45,15 @@ export default async function LangLayout({
     : { name: "K-BUS HUB", phone: null, email: null, address: null };
   return (
     <>
-      <Header lang={lang} defaultMode={ctx.mode} refCode={ctx.ref} member={session ? { role: session.role, name: session.name } : null} />
-      <main id="content">{children}</main>
-      <Footer lang={lang} mode={ctx.mode} refCode={ctx.ref} company={settings} />
       <Suspense fallback={null}>
-        <SiteChat lang={lang} mode={ctx.mode} refCode={ctx.ref} />
+        <Header lang={lang} refCode={ctx.ref} member={session ? { role: session.role, name: session.name } : null} />
+      </Suspense>
+      <main id="content">{children}</main>
+      <Suspense fallback={null}>
+        <Footer lang={lang} refCode={ctx.ref} company={settings} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <SiteChat lang={lang} refCode={ctx.ref} />
       </Suspense>
     </>
   );

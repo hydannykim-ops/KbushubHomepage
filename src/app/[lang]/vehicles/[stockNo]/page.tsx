@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { contactActions, DataProblem, Gallery, SpecTable, youtubeId } from "@/components/catalog";
-import { MediaSlot } from "@/components/media-slot";
-import { ExportInquiryFields } from "@/components/export-inquiry-fields";
-import { Consent, EnhanceForm, Field, Honeypot, SubmitBanner } from "@/components/forms";
+import { contactActions, DataProblem, Gallery, SpecTable } from "@/components/catalog";
+import { ContactPhonePanel } from "@/components/contact-phone-panel";
+import { SubmitBanner } from "@/components/forms";
 import { getSession } from "@/lib/auth/session";
-import { priceView, showText } from "@/lib/domain/money";
+import { inquiryTradeModeForCountry } from "@/lib/domain/country";
+import { catalogPriceView, formatKm, showText } from "@/lib/domain/money";
 import { vehicleTitle } from "@/lib/domain/vehicle-catalog";
 import { copy } from "@/lib/i18n";
 import { contentFieldLang } from "@/lib/i18n/langs";
-import { statusLabel, transferLabel } from "@/lib/labels";
+import { fuelLabel, statusLabel, transferLabel, transmissionLabel } from "@/lib/labels";
 import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
 import { loadSite } from "@/lib/site-load";
 import { getDataSource, siteUrl } from "@/lib/config";
@@ -76,9 +76,13 @@ export default async function VehicleDetailPage({
       </div>
     );
   }
-  const price = priceView(vehicle, ctx.mode, lang);
+  const listedBy = vehicle.listingCompany ?? site.settings.companyName;
+  const price = catalogPriceView(vehicle, lang, listedBy);
+  const signedIn = Boolean(session && (session.role === "customer" || session.role === "dealer"));
+  const member = signedIn && session ? await site.repo.getMember(session.sub) : null;
+  const inquiryMode = inquiryTradeModeForCountry(member?.country);
   const contacts = contactActions({
-    mode: ctx.mode,
+    mode: inquiryMode,
     phone: site.settings.phone,
     kakaoUrl: site.settings.kakaoUrl,
     whatsappE164: site.settings.whatsappE164,
@@ -87,196 +91,150 @@ export default async function VehicleDetailPage({
     referralCode: ctx.ref,
   });
   const sold = vehicle.status === "sold";
-  const showInquiry = !sold && !ownerPreview && vehicle.status !== "review" && vehicle.status !== "hidden";
+  const showConsult = !sold && !ownerPreview && vehicle.status !== "review" && vehicle.status !== "hidden";
   const field = contentFieldLang(lang);
   const description = field === "ko" ? vehicle.descriptionKo : vehicle.descriptionEn;
   const maintenance = field === "ko" ? vehicle.maintenanceKo : vehicle.maintenanceEn;
   const defects = field === "ko" ? vehicle.defectsKo : vehicle.defectsEn;
-  const video = vehicle.videoUrl ? youtubeId(vehicle.videoUrl) : null;
-  const kind = ctx.mode === "export" ? "quote" : "purchase";
-
-  const inquiry = (
-    <EnhanceForm action="/api/inquiries" lang={lang}>
-      <input type="hidden" name="lang" value={lang} />
-      <input type="hidden" name="tradeMode" value={ctx.mode} />
-      <input type="hidden" name="stockNo" value={vehicle.stockNo} />
-      <label className="grid gap-1 text-sm font-medium">
-        {text.inquiry}
-        <select name="kind" defaultValue={kind} className="rounded-md border border-line px-3 py-2 font-normal">
-          {ctx.mode === "domestic" ? (
-            <>
-              <option value="purchase">{text.purchase}</option>
-              <option value="visit">{text.visit}</option>
-            </>
-          ) : (
-            <>
-              <option value="quote">{text.quote}</option>
-              <option value="video">{text.videoRequest}</option>
-            </>
-          )}
-          <option value="general">{text.inquiry}</option>
-        </select>
-      </label>
-      <Field label={text.name} name="name" required />
-      <Field label={text.email} name="email" type="email" />
-      <Field label={text.contact} name="phone" />
-      <Field label={text.messenger} name="messenger" />
-      <Field label={text.country} name="country" required defaultValue={ctx.mode === "domestic" ? "" : ""} />
-      {ctx.mode === "export" ? <ExportInquiryFields lang={lang} /> : null}
-      <Field label={text.message} name="message" as="textarea" required />
-      <p className="text-xs text-muted">{text.requiredHint}</p>
-      {ctx.ref ? <p className="text-xs text-muted">{text.referralKept}</p> : null}
-      {site.source !== "demo" && !site.settings.privacyCollectionEnabled ? (
-        <p className="text-xs text-muted">{text.liveClosedNote}</p>
-      ) : null}
-      <Consent lang={lang} />
-      <Honeypot lang={lang} />
-    </EnhanceForm>
-  );
+  const contactPhone = site.settings.phone ?? site.settings.whatsappE164;
+  const ctaLabel = inquiryMode === "export" ? text.quote : text.purchase;
+  const openConsult = sp.get("consult") === "1" || typeof rawParams.submitted === "string";
+  const yearLabel = vehicle.modelYear ? (lang === "ko" ? `${vehicle.modelYear}년` : String(vehicle.modelYear)) : text.unknown;
+  const factLine = [
+    yearLabel,
+    formatKm(vehicle.mileageKm, lang),
+    vehicle.fuel !== "unknown" ? fuelLabel(vehicle.fuel, lang) : null,
+    vehicle.transmission !== "unknown" ? transmissionLabel(vehicle.transmission, lang) : null,
+    vehicle.seats != null ? `${vehicle.seats}${lang === "ko" ? text.seatsShort : ` ${text.seatsShort}`}` : null,
+    vehicle.location || null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const sellerName = listedBy?.trim() || site.settings.companyName;
+  const sellerKind = vehicle.listingCompany ? text.dealerListing : text.companyListing;
+  const showTransfer = vehicle.transferType !== "unknown";
 
   return (
-    <div className={`mx-auto grid max-w-6xl gap-8 px-4 py-8 ${showInquiry ? "pb-28 md:pb-10" : "pb-10"}`}>
+    <div className={`mx-auto grid max-w-6xl gap-7 px-4 py-7 ${showConsult || sold ? "pb-28 md:pb-10" : "pb-10"}`}>
       <SubmitBanner lang={lang} submitted={typeof rawParams.submitted === "string" ? rawParams.submitted : undefined} error={typeof rawParams.error === "string" ? rawParams.error : undefined} />
       {ownerPreview ? (
         <p className="rounded-md border border-line bg-[#e8eef8] px-4 py-3 text-sm text-ink" role="status">
           {text.reviewNote}
         </p>
       ) : null}
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.8fr)]">
+
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.78fr)] lg:gap-6">
         <Gallery photos={vehicle.photos} lang={lang} />
-        <aside className="border border-line bg-white p-5 lg:sticky lg:top-24">
-          <p className="text-sm text-muted">
-            {text.stockNo} {vehicle.stockNo}
-          </p>
-          <p className="mt-2 inline-block rounded bg-[#e8eef8] px-2 py-1 text-sm font-semibold">{statusLabel(vehicle.status, lang)}</p>
-          <h1 className="mt-3 text-2xl font-bold">{vehicleTitle(vehicle, lang)}</h1>
-          <p className="mt-2 text-sm text-muted">
-            {[
-              vehicle.location || text.unknown,
-              ctx.mode === "domestic" ? transferLabel(vehicle.transferType, lang) : null,
-              vehicle.seats != null ? `${vehicle.seats}${lang === "ko" ? text.seatsShort : ` ${text.seatsShort}`}` : null,
-              vehicle.horsepowerPs != null ? (lang === "ko" ? `${vehicle.horsepowerPs}마력` : `${vehicle.horsepowerPs} PS`) : null,
-            ]
-              .filter(Boolean)
-              .join(" · ")}
-          </p>
-          <p className="mt-4 text-3xl font-semibold tabular-nums tracking-tight">{price.primary}</p>
-          {price.basis ? <p className="mt-1 text-sm text-muted">{price.basis}</p> : null}
-          <p className="mt-2 text-xs text-muted">
-            {text.photographed}: {vehicle.photographedOn ?? text.unknown} · {text.stockChecked}: {vehicle.stockCheckedOn ?? text.unknown}
-          </p>
-          {ctx.mode === "export" ? <p className="mt-2 text-xs leading-5 text-muted">{text.exportQuoteNote}</p> : null}
-          {sold ? <p className="mt-3 text-sm">{text.soldNote}</p> : null}
-          {vehicle.status === "reserved" ? <p className="mt-3 text-sm">{text.reservedNote}</p> : null}
-          {showInquiry ? (
-            <div className="mt-4 grid gap-2">
-              <a href="#inquiry" className="rounded-md bg-primary px-4 py-3 text-center text-sm font-semibold text-white">
-                {ctx.mode === "export" ? text.quote : text.purchase}
-              </a>
-              <a href="#inquiry" className="rounded-md border border-line px-4 py-3 text-center text-sm font-semibold">
-                {ctx.mode === "export" ? text.videoRequest : text.visit}
-              </a>
-            </div>
-          ) : sold ? (
-            <Link href={hrefTo(lang, "/wanted", ctx, { model: vehicle.model })} className="mt-4 inline-flex rounded-md bg-primary px-4 py-3 text-sm font-semibold text-white">
-              {text.similar}
-            </Link>
-          ) : ownerPreview ? (
-            <Link href={hrefTo(lang, "/account", ctx)} className="mt-4 inline-flex rounded-md border border-line px-4 py-3 text-center text-sm font-semibold">
-              {text.myListings}
-            </Link>
-          ) : null}
-          <div className="mt-4 grid gap-2 text-sm">
-            {ctx.mode === "domestic" ? (
-              contacts.phone ? (
-                <a className="rounded-md border border-line px-3 py-2" href={`tel:${contacts.phone}`}>
+
+        <aside className="vehicle-summary lg:sticky lg:top-24">
+          <div className="vehicle-summary__block">
+            <p className="text-xs text-muted">
+              {text.stockNo} {vehicle.stockNo}
+            </p>
+            <p className="mt-2 inline-flex bg-[#e8eef8] px-2 py-1 text-xs font-semibold text-ink">{statusLabel(vehicle.status, lang)}</p>
+            <h1 className="mt-2.5 text-[1.35rem] font-bold leading-snug tracking-tight text-ink">{vehicleTitle(vehicle, lang)}</h1>
+            <p className="mt-2 text-sm leading-6 text-muted">{factLine}</p>
+            {showTransfer ? (
+              <div className="mt-3">
+                <p className="vehicle-summary__label">{text.transferMode}</p>
+                <span className="vehicle-summary__transfer">{transferLabel(vehicle.transferType, lang)}</span>
+              </div>
+            ) : null}
+          </div>
+
+          <div className="vehicle-summary__block">
+            <p className="vehicle-summary__label">{text.priceSection}</p>
+            <p className="vehicle-summary__price tabular-nums">{price.primary}</p>
+            {price.basis ? <p className="mt-1 text-xs text-muted">{price.basis}</p> : null}
+            {price.exportLine ? <p className="mt-2 text-xs leading-5 text-muted">{text.modeExport}: {price.exportLine}</p> : null}
+            {inquiryMode === "export" ? <p className="mt-2 text-xs leading-5 text-muted">{text.exportQuoteNote}</p> : null}
+            {sold ? <p className="mt-2 text-sm text-ink">{text.soldNote}</p> : null}
+            {vehicle.status === "reserved" ? <p className="mt-2 text-sm text-ink">{text.reservedNote}</p> : null}
+          </div>
+
+          <div className="vehicle-summary__block">
+            <p className="vehicle-summary__label">{text.sellerSection}</p>
+            <p className="vehicle-summary__seller-name">{sellerName}</p>
+            <p className="mt-1 text-xs text-muted">{sellerKind}</p>
+            {vehicle.location ? <p className="mt-1 text-sm text-muted">{vehicle.location}</p> : null}
+            <div className="mt-3 grid gap-2 text-sm">
+              {contacts.phone && contacts.phoneHref ? (
+                <a className="border border-line px-3 py-2 hover:border-ink" href={contacts.phoneHref}>
                   {text.phone} {contacts.phone}
                 </a>
-              ) : (
-                <p className="text-muted">{text.contactMissing}</p>
-              )
-            ) : null}
-            {ctx.mode === "domestic" && contacts.kakao ? (
-              <a className="rounded-md border border-line px-3 py-2" href={contacts.kakao} rel="noreferrer">
-                {text.kakao}
-              </a>
-            ) : null}
-            {ctx.mode === "export" ? (
-              contacts.whatsapp ? (
-                <a className="rounded-md border border-line px-3 py-2" href={contacts.whatsapp} rel="noreferrer">
-                  {text.whatsapp}
+              ) : null}
+              {contacts.kakao ? (
+                <a className="border border-line px-3 py-2 hover:border-ink" href={contacts.kakao} rel="noreferrer">
+                  {text.kakao}
                 </a>
-              ) : (
-                <p className="text-muted">{text.contactMissing}</p>
-              )
+              ) : null}
+              {contacts.whatsapp ? (
+                <a className="border border-line px-3 py-2 hover:border-ink" href={contacts.whatsapp} rel="noreferrer">
+                  {text.whatsapp} {contacts.phone ?? ""}
+                </a>
+              ) : null}
+              {contacts.whatsapp ? <p className="text-xs text-muted">{text.whatsappNote}</p> : null}
+              {!contacts.phone && !contacts.kakao && !contacts.whatsapp ? <p className="text-muted">{text.contactMissing}</p> : null}
+            </div>
+          </div>
+
+          <div className="vehicle-summary__block">
+            {showConsult ? (
+              <ContactPhonePanel
+                lang={lang}
+                phone={contactPhone}
+                ctaLabel={ctaLabel}
+                autoOpen={openConsult}
+                stockNo={vehicle.stockNo}
+                signedIn={signedIn}
+              />
+            ) : sold ? (
+              <Link href={hrefTo(lang, "/wanted", ctx, { model: vehicle.model })} className="inline-flex w-full justify-center bg-primary px-4 py-3 text-sm font-semibold text-white">
+                {text.similar}
+              </Link>
+            ) : ownerPreview ? (
+              <Link href={hrefTo(lang, "/account", ctx, { tab: "listings" })} className="inline-flex w-full justify-center border border-line px-4 py-3 text-center text-sm font-semibold">
+                {text.myListings}
+              </Link>
             ) : null}
-            {ctx.mode === "export" && contacts.whatsapp ? <p className="text-xs text-muted">{text.whatsappNote}</p> : null}
           </div>
         </aside>
       </div>
-      <section>
-        <h2 className="mb-3 text-xl font-bold">{text.specs}</h2>
-        <SpecTable vehicle={vehicle} lang={lang} />
+
+      <section className="border border-line bg-white px-4 py-5 sm:px-5">
+        <h2 className="text-base font-semibold text-ink">{text.specs}</h2>
+        <div className="mt-4">
+          <SpecTable vehicle={vehicle} lang={lang} />
+        </div>
       </section>
-      <section className="grid gap-4 md:grid-cols-2">
-        <article className="rounded-lg border border-line bg-white p-5">
-          <h2 className="font-bold">{text.maintenance}</h2>
-          <p className="mt-2 whitespace-pre-wrap text-sm leading-6">{showText(maintenance, lang)}</p>
+
+      <section className="grid gap-6 border border-line bg-white px-4 py-5 sm:px-5 md:grid-cols-2">
+        <article>
+          <h2 className="text-base font-semibold text-ink">{text.maintenance}</h2>
+          <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-muted">{showText(maintenance, lang)}</p>
         </article>
-        <article className="rounded-lg border border-line bg-white p-5">
-          <h2 className="font-bold">{text.defects}</h2>
-          <p className="mt-2 whitespace-pre-wrap text-sm leading-6">{showText(defects, lang)}</p>
+        <article>
+          <h2 className="text-base font-semibold text-ink">{text.defects}</h2>
+          <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-muted">{showText(defects, lang)}</p>
         </article>
       </section>
-      <section className="rounded-lg border border-line bg-white p-5">
-        <h2 className="font-bold">{text.description}</h2>
-        <p className="mt-2 whitespace-pre-wrap text-sm leading-6">{showText(description, lang)}</p>
+
+      <section className="border border-line bg-white px-4 py-5 sm:px-5">
+        <h2 className="text-base font-semibold text-ink">{text.description}</h2>
+        <p className="mt-2 max-w-3xl whitespace-pre-wrap text-sm leading-6 text-muted">{showText(description, lang)}</p>
       </section>
-      <section className="border border-line bg-white p-5">
-        <h2 className="font-semibold">{text.video}</h2>
-        {vehicle.videoUrl && video ? (
-          <iframe
-            className="mt-3 aspect-video w-full"
-            src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(video)}?autoplay=0`}
-            title={vehicle.stockNo}
-            allow="fullscreen"
-          />
-        ) : vehicle.videoUrl ? (
-          <a className="mt-3 inline-block text-primary" href={vehicle.videoUrl} rel="noreferrer">
-            {text.videoLink}
-          </a>
-        ) : (
-          <div className="mt-3 aspect-video overflow-hidden border border-line">
-            <MediaSlot label={text.mediaVideo} hint={text.mediaVideoHint} />
-          </div>
-        )}
-      </section>
-      {showInquiry || sold ? (
-        <section id="inquiry" className="rounded-lg border border-line bg-white p-5">
-          <h2 className="mb-4 text-xl font-bold">{sold ? text.similar : text.inquiry}</h2>
-          {sold ? (
-            <Link href={hrefTo(lang, "/wanted", ctx, { model: vehicle.model })} className="text-primary">
-              {text.similar}
-            </Link>
-          ) : (
-            inquiry
-          )}
-        </section>
-      ) : null}
-      {showInquiry ? (
+
+      {showConsult ? (
         <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white p-3 md:hidden">
-          <div className="mx-auto grid max-w-6xl grid-cols-2 gap-2">
-            <a href="#inquiry" className="rounded-md bg-primary px-3 py-3 text-center text-sm font-semibold text-white">
-              {ctx.mode === "export" ? text.quote : text.purchase}
-            </a>
-            <a href="#inquiry" className="rounded-md border border-line px-3 py-3 text-center text-sm font-semibold">
-              {ctx.mode === "export" ? text.videoRequest : text.visit}
+          <div className="mx-auto max-w-6xl">
+            <a href="#inquiry" className="block bg-primary px-3 py-3 text-center text-sm font-semibold text-white">
+              {ctaLabel}
             </a>
           </div>
         </div>
       ) : sold ? (
         <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white p-3 md:hidden">
-          <Link href={hrefTo(lang, "/wanted", ctx, { model: vehicle.model })} className="block rounded-md bg-primary px-3 py-3 text-center text-sm font-semibold text-white">
+          <Link href={hrefTo(lang, "/wanted", ctx, { model: vehicle.model })} className="block bg-primary px-3 py-3 text-center text-sm font-semibold text-white">
             {text.similar}
           </Link>
         </div>

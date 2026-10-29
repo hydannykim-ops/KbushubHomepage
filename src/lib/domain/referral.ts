@@ -32,11 +32,18 @@ export function generateReferralCode(randomByte: () => number = () => Math.floor
   return code;
 }
 
-export function whatsappMessage(input: { lang: Lang; stockNo: string; referralCode: string | null }): string {
+export function whatsappMessage(input: {
+  lang: Lang;
+  stockNo: string;
+  referralCode: string | null;
+  mode?: "domestic" | "export";
+}): string {
   if (input.lang === "ko") {
-    return `K-BUS HUB 수출 문의\n매물번호: ${input.stockNo}\n추천코드: ${input.referralCode ?? "없음"}`;
+    const kind = input.mode === "export" ? "수출 문의" : "문의";
+    return `K-BUS HUB ${kind}\n매물번호: ${input.stockNo}\n추천코드: ${input.referralCode ?? "없음"}`;
   }
-  return `K-BUS HUB export inquiry\nStock no: ${input.stockNo}\nReferral code: ${input.referralCode ?? "none"}`;
+  const kind = input.mode === "export" ? "export inquiry" : "inquiry";
+  return `K-BUS HUB ${kind}\nStock no: ${input.stockNo}\nReferral code: ${input.referralCode ?? "none"}`;
 }
 
 export function whatsappHref(e164: string, message: string): string | null {

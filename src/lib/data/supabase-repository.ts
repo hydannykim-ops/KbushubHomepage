@@ -88,6 +88,7 @@ function mapMember(row: Record<string, unknown>): Member {
     email: String(row.email ?? ""),
     phone: text(row.phone),
     company: text(row.company),
+    country: text(row.country),
     createdAt: String(row.created_at ?? new Date().toISOString()),
   };
 }
@@ -613,6 +614,47 @@ export function createSupabaseRepository() {
       if (result.error) fail(result.error, "inquiry_list");
       return (result.data ?? []).map((row) => mapInquiry(row as Record<string, unknown>));
     },
+    async listInquiriesByEmail(email: string) {
+      const service = createServiceClient();
+      const normalized = email.trim().toLowerCase();
+      if (!normalized) return [];
+      const result = await service
+        .from("inquiries")
+        .select("*")
+        .ilike("email", normalized)
+        .order("created_at", { ascending: false })
+        .limit(40);
+      if (result.error) fail(result.error, "inquiry_list_email");
+      return (result.data ?? []).map((row) => mapInquiry(row as Record<string, unknown>));
+    },
+    async listInquiriesByStockNos(stockNos: string[]) {
+      const wanted = [...new Set(stockNos.map((item) => item.trim()).filter(Boolean))];
+      if (!wanted.length) return [];
+      const service = createServiceClient();
+      const result = await service
+        .from("inquiries")
+        .select("*")
+        .in("stock_no", wanted)
+        .order("created_at", { ascending: false })
+        .limit(40);
+      if (result.error) fail(result.error, "inquiry_list_stock");
+      return (result.data ?? []).map((row) => mapInquiry(row as Record<string, unknown>));
+    },
+    async findOpenInquiry(email: string, stockNo: string) {
+      const service = createServiceClient();
+      const normalized = email.trim().toLowerCase();
+      const result = await service
+        .from("inquiries")
+        .select("*")
+        .ilike("email", normalized)
+        .eq("stock_no", stockNo)
+        .neq("status", "closed")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (result.error) fail(result.error, "inquiry_open");
+      return result.data ? mapInquiry(result.data as Record<string, unknown>) : null;
+    },
     async getInquiry(id: string) {
       const service = createServiceClient();
       const result = await service.from("inquiries").select("*").eq("id", id).maybeSingle();
@@ -980,20 +1022,36 @@ export function createSupabaseRepository() {
     },
     async getMember(id: string): Promise<Member | null> {
       const service = createServiceClient();
-      const result = await service.from("member_profiles").select("user_id, role, name, email, phone, company, created_at").eq("user_id", id).maybeSingle();
+      const result = await service
+        .from("member_profiles")
+        .select("user_id, role, name, email, phone, company, country, created_at")
+        .eq("user_id", id)
+        .maybeSingle();
       if (result.error) fail(result.error, "member_get");
       return result.data ? mapMember(result.data as Record<string, unknown>) : null;
     },
     async signupMember(input: SignupInput): Promise<Member> {
       const service = createServiceClient();
+      const email = input.email.trim().toLowerCase();
+      const existingProfile = await service.from("member_profiles").select("user_id").eq("email", email).maybeSingle();
+      if (existingProfile.error) fail(existingProfile.error, "member_signup_lookup");
+      if (existingProfile.data) throw new StoreError("duplicate_email");
+
       const created = await service.auth.admin.createUser({
-        email: input.email,
+        email,
         password: input.password,
         email_confirm: true,
       });
       if (created.error || !created.data.user) {
         const message = created.error?.message.toLowerCase() ?? "";
-        if (created.error?.status === 422 || message.includes("already") || message.includes("registered") || message.includes("exists")) {
+        if (
+          created.error?.status === 422 ||
+          created.error?.code === "email_exists" ||
+          message.includes("already") ||
+          message.includes("registered") ||
+          message.includes("exists") ||
+          message.includes("duplicate")
+        ) {
           throw new StoreError("duplicate_email");
         }
         fail(created.error, "member_signup");
@@ -1003,9 +1061,10 @@ export function createSupabaseRepository() {
         user_id: userId,
         role: input.role,
         name: input.name,
-        email: input.email,
+        email,
         phone: input.phone,
         company: input.company,
+        country: input.country,
       });
       if (inserted.error) {
         await service.auth.admin.deleteUser(userId);
@@ -1016,18 +1075,37 @@ export function createSupabaseRepository() {
         id: userId,
         role: input.role,
         name: input.name,
-        email: input.email,
+        email,
         phone: input.phone,
         company: input.company,
+        country: input.country,
         createdAt: new Date().toISOString(),
       };
+    },
+    async updateMember(
+      id: string,
+      patch: { name: string; phone: string | null; company: string | null },
+    ): Promise<Member> {
+      const service = createServiceClient();
+      const updated = await service
+        .from("member_profiles")
+        .update({ name: patch.name, phone: patch.phone, company: patch.company })
+        .eq("user_id", id)
+        .select("user_id, role, name, email, phone, company, country, created_at")
+        .single();
+      if (updated.error) fail(updated.error, "member_update");
+      return mapMember(updated.data as Record<string, unknown>);
     },
     async verifyMember(email: string, password: string): Promise<Member | null> {
       const anon = createAnonClient();
       const signed = await anon.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
       if (signed.error || !signed.data.user) return null;
       const service = createServiceClient();
-      const profile = await service.from("member_profiles").select("user_id, role, name, email, phone, company, created_at").eq("user_id", signed.data.user.id).maybeSingle();
+      const profile = await service
+        .from("member_profiles")
+        .select("user_id, role, name, email, phone, company, country, created_at")
+        .eq("user_id", signed.data.user.id)
+        .maybeSingle();
       await anon.auth.signOut();
       if (!profile.data) return null;
       return mapMember(profile.data as Record<string, unknown>);
@@ -1053,8 +1131,7 @@ export function createSupabaseRepository() {
     async createDealerListing(
       owner: Member,
       input: DealerListingInput,
-      files: { front: Buffer; frontSide: Buffer; rear: Buffer; extras: Array<{ bytes: Buffer; contentType: ImageType }> },
-      types: { front: ImageType; frontSide: ImageType; rear: ImageType },
+      shots: Array<{ bytes: Buffer; contentType: ImageType; category: PhotoCategory; cover: boolean; label: string }>,
     ) {
       if (owner.role !== "dealer") throw new StoreError("dealer_only");
       const service = createServiceClient();
@@ -1096,12 +1173,6 @@ export function createSupabaseRepository() {
       if (inserted.error) fail(inserted.error, "dealer_vehicle");
       const internal = await service.from("vehicle_internal").insert({ vehicle_id: id });
       if (internal.error) fail(internal.error, "dealer_internal");
-      const shots: Array<{ bytes: Buffer; contentType: ImageType; category: PhotoCategory; cover: boolean; label: string }> = [
-        { bytes: files.front, contentType: types.front, category: "front", cover: true, label: "정면" },
-        { bytes: files.frontSide, contentType: types.frontSide, category: "front_side", cover: false, label: "정측면" },
-        { bytes: files.rear, contentType: types.rear, category: "rear", cover: false, label: "후면" },
-        ...files.extras.map((extra) => ({ bytes: extra.bytes, contentType: extra.contentType, category: "exterior" as const, cover: false, label: "추가 사진" })),
-      ];
       for (const [index, shot] of shots.entries()) {
         const photoId = randomUUID();
         const storagePath = `${id}/${photoId}.${extensionFor(shot.contentType)}`;

@@ -70,6 +70,7 @@ export function toPublicVehicle(vehicle: AdminVehicle): PublicVehicle | null {
     createdAt: vehicle.createdAt,
     updatedAt: vehicle.updatedAt,
     demo: vehicle.demo,
+    listingCompany: vehicle.listingSource === "dealer" ? vehicle.sellerCompany : null,
   };
   return publicVehicle;
 }
@@ -120,6 +121,7 @@ export function toOwnedListing(vehicle: AdminVehicle): OwnedListing {
     createdAt: vehicle.createdAt,
     updatedAt: vehicle.updatedAt,
     demo: vehicle.demo,
+    listingCompany: vehicle.listingSource === "dealer" ? vehicle.sellerCompany : null,
     listingSource: vehicle.listingSource,
   };
 }

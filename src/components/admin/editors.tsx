@@ -282,8 +282,8 @@ export function InquiryEditor({ inquiry, agents }: { inquiry: Inquiry; agents: A
         <input name="assignmentReason" className={field} placeholder="담당을 바꿀 때만 입력" />
       </label>
       <label className="grid gap-1 text-sm">
-        담당자 메모
-        <textarea name="staffMemo" defaultValue={inquiry.staffMemo ?? ""} rows={4} className={field} />
+        고객 답변 (내 계정에 표시)
+        <textarea name="staffMemo" defaultValue={inquiry.staffMemo ?? ""} rows={4} className={field} placeholder="고객이 계정에서 볼 답변을 적습니다." />
       </label>
       <label className="grid gap-1 text-sm">
         종료 사유

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { chatUi, chatWelcome, type ChatLink } from "@/lib/chat/engine";
-import type { Lang, TradeMode } from "@/lib/domain/types";
+import type { Lang } from "@/lib/domain/types";
 
 type Bubble = {
   id: string;
@@ -14,15 +14,16 @@ type Bubble = {
   suggestions?: string[];
 };
 
-function withQuery(path: string, mode: TradeMode, ref: string | null) {
+function withQuery(path: string, ref: string | null) {
   const [base, existing = ""] = path.split("?");
   const params = new URLSearchParams(existing);
-  params.set("mode", mode);
+  params.delete("mode");
   if (ref) params.set("ref", ref);
-  return `${base}?${params.toString()}`;
+  const qs = params.toString();
+  return qs ? `${base}?${qs}` : base;
 }
 
-export function SiteChat({ lang, mode, refCode }: { lang: Lang; mode: TradeMode; refCode: string | null }) {
+export function SiteChat({ lang, refCode }: { lang: Lang; refCode: string | null }) {
   const ui = chatUi[lang] ?? chatUi.en;
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -31,9 +32,6 @@ export function SiteChat({ lang, mode, refCode }: { lang: Lang; mode: TradeMode;
   const [draft, setDraft] = useState("");
   const [messages, setMessages] = useState<Bubble[]>([]);
   const listRef = useRef<HTMLDivElement>(null);
-  const liveMode = (searchParams.get("mode") === "export" || searchParams.get("mode") === "domestic"
-    ? searchParams.get("mode")
-    : mode) as TradeMode;
   const liveRef = searchParams.get("ref") || refCode;
 
   useEffect(() => {
@@ -88,7 +86,7 @@ export function SiteChat({ lang, mode, refCode }: { lang: Lang; mode: TradeMode;
         {
           id: `b-${Date.now()}`,
           role: "bot",
-          text: data.ok && data.text ? data.text : (chatWelcome(lang).text),
+          text: data.ok && data.text ? data.text : chatWelcome(lang).text,
           links: data.links,
           suggestions: data.suggestions,
         },
@@ -110,7 +108,7 @@ export function SiteChat({ lang, mode, refCode }: { lang: Lang; mode: TradeMode;
 
   function hrefFor(link: ChatLink) {
     const path = link.href.startsWith("/") ? link.href : `/${link.href}`;
-    return `/${lang}${withQuery(path, liveMode, liveRef)}`;
+    return `/${lang}${withQuery(path, liveRef)}`;
   }
 
   return (

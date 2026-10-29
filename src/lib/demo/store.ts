@@ -367,6 +367,27 @@ export function createDemoStore(dir: string) {
     async listInquiries(): Promise<Inquiry[]> {
       return clone((await read()).inquiries).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     },
+    async listInquiriesByEmail(email: string): Promise<Inquiry[]> {
+      const normalized = email.trim().toLowerCase();
+      if (!normalized) return [];
+      return clone((await read()).inquiries)
+        .filter((item) => (item.email ?? "").toLowerCase() === normalized)
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    },
+    async listInquiriesByStockNos(stockNos: string[]): Promise<Inquiry[]> {
+      const wanted = new Set(stockNos.map((item) => item.trim()).filter(Boolean));
+      if (!wanted.size) return [];
+      return clone((await read()).inquiries)
+        .filter((item) => item.stockNo != null && wanted.has(item.stockNo))
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    },
+    async findOpenInquiry(email: string, stockNo: string): Promise<Inquiry | null> {
+      const normalized = email.trim().toLowerCase();
+      const found = (await read()).inquiries
+        .filter((item) => (item.email ?? "").toLowerCase() === normalized && item.stockNo === stockNo && item.status !== "closed")
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
+      return found ? clone(found) : null;
+    },
     async getInquiry(id: string): Promise<Inquiry | null> {
       const found = (await read()).inquiries.find((item) => item.id === id);
       return found ? clone(found) : null;
@@ -683,7 +704,16 @@ export function createDemoStore(dir: string) {
     async getMember(id: string): Promise<Member | null> {
       const member = (await read()).members.find((item) => item.id === id);
       if (!member) return null;
-      return { id: member.id, role: member.role, name: member.name, email: member.email, phone: member.phone, company: member.company, createdAt: member.createdAt };
+      return {
+        id: member.id,
+        role: member.role,
+        name: member.name,
+        email: member.email,
+        phone: member.phone,
+        company: member.company,
+        country: member.country ?? null,
+        createdAt: member.createdAt,
+      };
     },
     async signupMember(input: SignupInput): Promise<Member> {
       return update((state) => {
@@ -695,17 +725,58 @@ export function createDemoStore(dir: string) {
           email: input.email,
           phone: input.phone,
           company: input.company,
+          country: input.country,
           passwordHash: hashPassword(input.password),
           createdAt: nowIso(),
         };
         state.members.push(member);
-        return { id: member.id, role: member.role, name: member.name, email: member.email, phone: member.phone, company: member.company, createdAt: member.createdAt };
+        return {
+          id: member.id,
+          role: member.role,
+          name: member.name,
+          email: member.email,
+          phone: member.phone,
+          company: member.company,
+          country: member.country,
+          createdAt: member.createdAt,
+        };
+      });
+    },
+    async updateMember(
+      id: string,
+      patch: { name: string; phone: string | null; company: string | null },
+    ): Promise<Member> {
+      return update((state) => {
+        const member = state.members.find((item) => item.id === id);
+        if (!member) throw new StoreError("not_found");
+        member.name = patch.name;
+        member.phone = patch.phone;
+        member.company = patch.company;
+        return {
+          id: member.id,
+          role: member.role,
+          name: member.name,
+          email: member.email,
+          phone: member.phone,
+          company: member.company,
+          country: member.country ?? null,
+          createdAt: member.createdAt,
+        };
       });
     },
     async verifyMember(email: string, password: string): Promise<Member | null> {
       const member = (await read()).members.find((item) => item.email === email.trim().toLowerCase());
       if (!member || !verifyPassword(password, member.passwordHash)) return null;
-      return { id: member.id, role: member.role, name: member.name, email: member.email, phone: member.phone, company: member.company, createdAt: member.createdAt };
+      return {
+        id: member.id,
+        role: member.role,
+        name: member.name,
+        email: member.email,
+        phone: member.phone,
+        company: member.company,
+        country: member.country ?? null,
+        createdAt: member.createdAt,
+      };
     },
     async listOwned(ownerId: string) {
       return (await read()).vehicles.filter((vehicle) => vehicle.ownerId === ownerId).map((vehicle) => toOwnedListing(clone(vehicle)));
@@ -719,8 +790,7 @@ export function createDemoStore(dir: string) {
     async createDealerListing(
       owner: Member,
       input: DealerListingInput,
-      files: { front: Buffer; frontSide: Buffer; rear: Buffer; extras: Array<{ bytes: Buffer; contentType: ImageType }> },
-      types: { front: ImageType; frontSide: ImageType; rear: ImageType },
+      shots: Array<{ bytes: Buffer; contentType: ImageType; category: PhotoCategory; cover: boolean; label: string }>,
     ) {
       if (owner.role !== "dealer") throw new StoreError("dealer_only");
       await mkdir(uploadDir, { recursive: true });
@@ -755,11 +825,8 @@ export function createDemoStore(dir: string) {
             altEn: label,
           });
         };
-        await writePhoto(files.front, types.front, "front", true, "정면");
-        await writePhoto(files.frontSide, types.frontSide, "front_side", false, "정측면");
-        await writePhoto(files.rear, types.rear, "rear", false, "후면");
-        for (const extra of files.extras) {
-          await writePhoto(extra.bytes, extra.contentType, "exterior", false, "추가 사진");
+        for (const shot of shots) {
+          await writePhoto(shot.bytes, shot.contentType, shot.category, shot.cover, shot.label);
         }
         const vehicle: AdminVehicle = {
           id,

@@ -20,7 +20,7 @@ const ko = {
   steering: { lhd: "좌핸들", rhd: "우핸들", unknown: "미확인" },
   transfer: { transfer: "양도양수", scrap_replace: "대폐차", unknown: "미확인" },
   shipping: { roro: "RoRo", container: "컨테이너", undecided: "미정" },
-  photo: { front: "정면", front_side: "정측면", rear: "후면", exterior: "외관", interior: "실내·좌석", dashboard: "계기판", engine: "엔진룸·하부", tires: "타이어", defect: "결함" },
+  photo: { front: "정면", front_side: "좌측", rear: "후면", exterior: "우측·외관", interior: "실내·좌석", dashboard: "계기판", engine: "엔진룸·하부", tires: "타이어", defect: "결함" },
   inquiry: { new: "신규", consulting: "상담 중", quoted: "견적 발송", negotiating: "협의 중", contracted: "계약", closed: "종료" },
   longBody: { yes: "롱바디", no: "숏바디", unknown: "미확인" },
 } as const;
