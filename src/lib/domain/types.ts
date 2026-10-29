@@ -133,6 +133,18 @@ export type SiteSettings = {
   updatedAt: string;
 };
 
+/** Who wrote a line in an inquiry thread (async chat, not realtime). */
+export type InquiryMessageAuthor = "buyer" | "seller" | "staff";
+
+export type InquiryMessage = {
+  id: string;
+  inquiryId: string;
+  authorRole: InquiryMessageAuthor;
+  authorId: string | null;
+  body: string;
+  createdAt: string;
+};
+
 export type Inquiry = {
   id: string;
   kind: InquiryKind;
@@ -145,6 +157,8 @@ export type Inquiry = {
   vehicleId: string | null;
   stockNo: string | null;
   message: string;
+  /** Logged-in member who submitted the inquiry, when known. */
+  memberId: string | null;
   destinationCountry: string | null;
   destinationPort: string | null;
   destinationPortUndecided: boolean;
@@ -159,6 +173,20 @@ export type Inquiry = {
   createdAt: string;
   updatedAt: string;
   demo: boolean;
+};
+
+/** Inquiry row shown in account inboxes (no staff memo). */
+export type InquiryThreadSummary = {
+  id: string;
+  kind: InquiryKind;
+  tradeMode: TradeMode;
+  stockNo: string | null;
+  status: InquiryStatus;
+  createdAt: string;
+  updatedAt: string;
+  lastMessageAt: string;
+  lastMessagePreview: string;
+  viewerRole: InquiryMessageAuthor;
 };
 
 export type AgentReferral = {

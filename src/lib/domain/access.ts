@@ -1,4 +1,14 @@
-import type { AdminVehicle, Agent, AgentReferral, Inquiry, OwnedListing, PublicVehicle } from "./types";
+import type {
+  AdminVehicle,
+  Agent,
+  AgentReferral,
+  Inquiry,
+  InquiryMessage,
+  InquiryMessageAuthor,
+  InquiryThreadSummary,
+  OwnedListing,
+  PublicVehicle,
+} from "./types";
 
 const internalNames = [
   "internal",
@@ -148,4 +158,39 @@ export function visibleReferrals(inquiries: Inquiry[], agent: Pick<Agent, "statu
 
 export function referralLeakKeys(view: AgentReferral): string[] {
   return Object.keys(view);
+}
+
+export function inquiryViewerRole(
+  inquiry: Inquiry,
+  viewer: { memberId: string | null; email: string | null; admin?: boolean },
+  ownerId: string | null,
+): InquiryMessageAuthor | null {
+  if (viewer.admin) return "staff";
+  if (viewer.memberId && ownerId && viewer.memberId === ownerId) return "seller";
+  if (viewer.memberId && inquiry.memberId && viewer.memberId === inquiry.memberId) return "buyer";
+  const viewerEmail = viewer.email?.trim().toLowerCase() ?? "";
+  const inquiryEmail = inquiry.email?.trim().toLowerCase() ?? "";
+  if (viewerEmail && inquiryEmail && viewerEmail === inquiryEmail) return "buyer";
+  return null;
+}
+
+export function toInquiryThreadSummary(
+  inquiry: Inquiry,
+  messages: InquiryMessage[],
+  viewerRole: InquiryMessageAuthor,
+): InquiryThreadSummary {
+  const sorted = [...messages].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  const last = sorted.at(-1);
+  return {
+    id: inquiry.id,
+    kind: inquiry.kind,
+    tradeMode: inquiry.tradeMode,
+    stockNo: inquiry.stockNo,
+    status: inquiry.status,
+    createdAt: inquiry.createdAt,
+    updatedAt: inquiry.updatedAt,
+    lastMessageAt: last?.createdAt ?? inquiry.updatedAt,
+    lastMessagePreview: (last?.body ?? inquiry.message).slice(0, 120),
+    viewerRole,
+  };
 }

@@ -1,7 +1,7 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { toOwnedListing, toPublicVehicle, visibleReferrals } from "../domain/access";
+import { inquiryViewerRole, toInquiryThreadSummary, toOwnedListing, toPublicVehicle, visibleReferrals } from "../domain/access";
 import { filterVehicles, type FilterResult } from "../domain/filters";
 import { quoteLineKeys } from "../domain/money";
 import { generateReferralCode } from "../domain/referral";
@@ -11,6 +11,8 @@ import type {
   AgentReferral,
   AssignmentHistory,
   Inquiry,
+  InquiryMessage,
+  InquiryMessageAuthor,
   InquiryStatus,
   Member,
   PhotoCategory,
@@ -110,12 +112,26 @@ export function createDemoStore(dir: string) {
       const raw = await readFile(file, "utf8");
       const state = JSON.parse(raw) as DemoState;
       state.members ??= [];
+      state.inquiryMessages ??= [];
       for (const vehicle of state.vehicles ?? []) {
         vehicle.ownerId ??= null;
         vehicle.listingSource ??= "company";
         vehicle.sellerName ??= null;
         vehicle.sellerEmail ??= null;
         vehicle.sellerCompany ??= null;
+      }
+      for (const inquiry of state.inquiries ?? []) {
+        inquiry.memberId ??= null;
+        if (!state.inquiryMessages.some((item) => item.inquiryId === inquiry.id) && inquiry.message.trim()) {
+          state.inquiryMessages.push({
+            id: randomUUID(),
+            inquiryId: inquiry.id,
+            authorRole: "buyer",
+            authorId: inquiry.memberId,
+            body: inquiry.message,
+            createdAt: inquiry.createdAt,
+          });
+        }
       }
       return state;
     } catch (error) {
@@ -266,7 +282,11 @@ export function createDemoStore(dir: string) {
       }
       return null;
     },
-    async createInquiry(input: InquiryInput, referral: { firstReferralCode: string | null; submitReferralCode: string | null }): Promise<Inquiry> {
+    async createInquiry(
+      input: InquiryInput,
+      referral: { firstReferralCode: string | null; submitReferralCode: string | null },
+      memberId: string | null = null,
+    ): Promise<Inquiry> {
       return update((state) => {
         const vehicle = input.stockNo
           ? state.vehicles.find(
@@ -277,6 +297,7 @@ export function createDemoStore(dir: string) {
             )
           : undefined;
         const agent = state.agents.find((item) => item.status === "approved" && item.referralCode === referral.firstReferralCode);
+        const createdAt = nowIso();
         const inquiry: Inquiry = {
           id: randomUUID(),
           kind: input.kind,
@@ -289,6 +310,7 @@ export function createDemoStore(dir: string) {
           vehicleId: vehicle?.id ?? null,
           stockNo: vehicle?.stockNo ?? input.stockNo,
           message: input.message,
+          memberId,
           destinationCountry: input.destinationCountry,
           destinationPort: input.destinationPort,
           destinationPortUndecided: input.destinationPortUndecided,
@@ -299,12 +321,20 @@ export function createDemoStore(dir: string) {
           status: "new",
           closeReason: null,
           staffMemo: null,
-          consentAt: nowIso(),
-          createdAt: nowIso(),
-          updatedAt: nowIso(),
+          consentAt: createdAt,
+          createdAt,
+          updatedAt: createdAt,
           demo: true,
         };
         state.inquiries.push(inquiry);
+        state.inquiryMessages.push({
+          id: randomUUID(),
+          inquiryId: inquiry.id,
+          authorRole: "buyer",
+          authorId: memberId,
+          body: input.message,
+          createdAt,
+        });
         if (agent) {
           state.history.push({
             id: randomUUID(),
@@ -325,6 +355,75 @@ export function createDemoStore(dir: string) {
     async getInquiry(id: string): Promise<Inquiry | null> {
       const found = (await read()).inquiries.find((item) => item.id === id);
       return found ? clone(found) : null;
+    },
+    async listInquiryMessages(inquiryId: string): Promise<InquiryMessage[]> {
+      return clone((await read()).inquiryMessages.filter((item) => item.inquiryId === inquiryId)).sort((a, b) =>
+        a.createdAt.localeCompare(b.createdAt),
+      );
+    },
+    async listMemberInquiries(member: Pick<Member, "id" | "email">) {
+      const state = await read();
+      const email = member.email.trim().toLowerCase();
+      const items = state.inquiries
+        .filter((inquiry) => inquiry.memberId === member.id || (email && inquiry.email?.trim().toLowerCase() === email))
+        .map((inquiry) => {
+          const messages = state.inquiryMessages.filter((item) => item.inquiryId === inquiry.id);
+          return toInquiryThreadSummary(inquiry, messages, "buyer");
+        })
+        .sort((a, b) => b.lastMessageAt.localeCompare(a.lastMessageAt));
+      return clone(items);
+    },
+    async listOwnerInquiries(ownerId: string) {
+      const state = await read();
+      const owned = new Set(state.vehicles.filter((vehicle) => vehicle.ownerId === ownerId).map((vehicle) => vehicle.id));
+      const items = state.inquiries
+        .filter((inquiry) => inquiry.vehicleId && owned.has(inquiry.vehicleId))
+        .map((inquiry) => {
+          const messages = state.inquiryMessages.filter((item) => item.inquiryId === inquiry.id);
+          return toInquiryThreadSummary(inquiry, messages, "seller");
+        })
+        .sort((a, b) => b.lastMessageAt.localeCompare(a.lastMessageAt));
+      return clone(items);
+    },
+    async openInquiryThread(
+      inquiryId: string,
+      viewer: { memberId: string | null; email: string | null; admin?: boolean },
+    ): Promise<{ inquiry: Inquiry; messages: InquiryMessage[]; viewerRole: InquiryMessageAuthor } | null> {
+      const state = await read();
+      const inquiry = state.inquiries.find((item) => item.id === inquiryId);
+      if (!inquiry) return null;
+      const ownerId = inquiry.vehicleId ? (state.vehicles.find((item) => item.id === inquiry.vehicleId)?.ownerId ?? null) : null;
+      const viewerRole = inquiryViewerRole(inquiry, viewer, ownerId);
+      if (!viewerRole) return null;
+      const messages = state.inquiryMessages
+        .filter((item) => item.inquiryId === inquiryId)
+        .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+      return clone({ inquiry, messages, viewerRole });
+    },
+    async addInquiryMessage(
+      inquiryId: string,
+      input: { authorRole: InquiryMessageAuthor; authorId: string | null; body: string },
+    ): Promise<InquiryMessage> {
+      const body = input.body.trim();
+      if (body.length < 1 || body.length > 4000) throw new StoreError("invalid_message");
+      return update((state) => {
+        const inquiry = state.inquiries.find((item) => item.id === inquiryId);
+        if (!inquiry) throw new StoreError("not_found");
+        if (inquiry.status === "closed") throw new StoreError("inquiry_closed");
+        const createdAt = nowIso();
+        const message: InquiryMessage = {
+          id: randomUUID(),
+          inquiryId,
+          authorRole: input.authorRole,
+          authorId: input.authorId,
+          body,
+          createdAt,
+        };
+        state.inquiryMessages.push(message);
+        inquiry.updatedAt = createdAt;
+        if (inquiry.status === "new" && input.authorRole !== "buyer") inquiry.status = "consulting";
+        return clone(message);
+      });
     },
     async historyFor(inquiryId: string): Promise<AssignmentHistory[]> {
       return clone((await read()).history.filter((item) => item.inquiryId === inquiryId));

@@ -3,7 +3,7 @@ import { mkdtemp, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { containsInternalKey, publicJson, visibleReferrals } from "../src/lib/domain/access";
+import { containsInternalKey, inquiryViewerRole, publicJson, visibleReferrals } from "../src/lib/domain/access";
 import { readSession, signSession } from "../src/lib/domain/auth-token";
 import { filterVehicles, parseVehicleQuery, serializeVehicleQuery } from "../src/lib/domain/filters";
 import { internalProfit, summarizeQuote } from "../src/lib/domain/money";
@@ -512,4 +512,139 @@ test("photo urls use width variants for uploads and keep demo paths static", () 
   const demo = { ...uploaded, id: "p2", placeholder: true, storage: "placeholder" as const, path: "/demo/county-cover.jpg", contentType: null };
   assert.equal(photoUrl(uploaded, 320), "/api/media/photo/p1?w=320");
   assert.equal(photoUrl(demo, 320), "/demo/county-cover.jpg");
+});
+
+test("inquiry chat lets buyer and listing owner reply on the same thread", async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), "kbus-chat-"));
+  const store = createDemoStore(dir);
+  const dealer = await store.signupMember({
+    role: "dealer",
+    name: "딜러",
+    email: "dealer-chat@example.com",
+    password: "password1",
+    phone: null,
+    company: "딜러상사",
+    consent: true,
+    companyWebsite: "",
+  });
+  const buyer = await store.signupMember({
+    role: "customer",
+    name: "구매자",
+    email: "buyer-chat@example.com",
+    password: "password1",
+    phone: null,
+    company: null,
+    consent: true,
+    companyWebsite: "",
+  });
+  const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0]);
+  const listing = await store.createDealerListing(
+    dealer,
+    {
+      vehicleClass: "county",
+      maker: "현대",
+      model: "카운티",
+      modelYear: 2019,
+      mileageKm: 5000,
+      seats: 15,
+      transmission: "automatic",
+      fuel: "diesel",
+      location: "오산",
+      domesticPriceKrw: 2000000,
+      descriptionKo: null,
+      descriptionEn: null,
+    },
+    { front: png, frontSide: png, rear: png, extras: [] },
+    { front: "image/png", frontSide: "image/png", rear: "image/png" },
+  );
+  // Publish so createInquiry can attach the stock number.
+  const adminVehicle = await store.getAdminVehicle(listing.id);
+  assert.ok(adminVehicle);
+  await store.updateVehicle(listing.id, {
+    stockNo: adminVehicle.stockNo,
+    status: "available",
+    vehicleClass: adminVehicle.vehicleClass,
+    maker: adminVehicle.maker,
+    model: adminVehicle.model,
+    trim: adminVehicle.trim,
+    modelYear: adminVehicle.modelYear,
+    firstRegisteredOn: adminVehicle.firstRegisteredOn,
+    mileageKm: adminVehicle.mileageKm,
+    seats: adminVehicle.seats,
+    horsepowerPs: adminVehicle.horsepowerPs,
+    transmission: adminVehicle.transmission,
+    fuel: adminVehicle.fuel,
+    engineModel: adminVehicle.engineModel,
+    displacementCc: adminVehicle.displacementCc,
+    steering: adminVehicle.steering,
+    longBody: adminVehicle.longBody,
+    transferType: adminVehicle.transferType,
+    lengthMm: adminVehicle.lengthMm,
+    widthMm: adminVehicle.widthMm,
+    heightMm: adminVehicle.heightMm,
+    previousUseKo: adminVehicle.previousUseKo,
+    previousUseEn: adminVehicle.previousUseEn,
+    location: adminVehicle.location,
+    maintenanceKo: adminVehicle.maintenanceKo,
+    maintenanceEn: adminVehicle.maintenanceEn,
+    defectsKo: adminVehicle.defectsKo,
+    defectsEn: adminVehicle.defectsEn,
+    descriptionKo: adminVehicle.descriptionKo,
+    descriptionEn: adminVehicle.descriptionEn,
+    photographedOn: adminVehicle.photographedOn,
+    stockCheckedOn: adminVehicle.stockCheckedOn,
+    featured: adminVehicle.featured,
+    domesticPriceKrw: adminVehicle.domesticPriceKrw,
+    exportPriceAmount: adminVehicle.exportPriceAmount,
+    exportPriceCurrency: adminVehicle.exportPriceCurrency,
+    exportPriceTermsKo: adminVehicle.exportPriceTermsKo,
+    exportPriceTermsEn: adminVehicle.exportPriceTermsEn,
+    videoUrl: adminVehicle.videoUrl,
+    internal: adminVehicle.internal,
+  });
+
+  const inquiry = await store.createInquiry(
+    {
+      kind: "purchase",
+      tradeMode: "domestic",
+      name: buyer.name,
+      email: buyer.email,
+      phone: null,
+      messenger: null,
+      country: "KR",
+      stockNo: adminVehicle.stockNo,
+      message: "이 버스 보고 문의합니다.",
+      destinationCountry: null,
+      destinationPort: null,
+      destinationPortUndecided: false,
+      shippingMethod: null,
+      consent: true,
+      companyWebsite: "",
+      lang: "ko",
+    },
+    { firstReferralCode: null, submitReferralCode: null },
+    buyer.id,
+  );
+  assert.equal(inquiry.memberId, buyer.id);
+  const firstMessages = await store.listInquiryMessages(inquiry.id);
+  assert.equal(firstMessages.length, 1);
+  assert.equal(firstMessages[0]?.authorRole, "buyer");
+
+  const buyerInbox = await store.listMemberInquiries(buyer);
+  assert.equal(buyerInbox.some((item) => item.id === inquiry.id), true);
+  const ownerInbox = await store.listOwnerInquiries(dealer.id);
+  assert.equal(ownerInbox.some((item) => item.id === inquiry.id), true);
+
+  const buyerThread = await store.openInquiryThread(inquiry.id, { memberId: buyer.id, email: buyer.email });
+  assert.equal(buyerThread?.viewerRole, "buyer");
+  const sellerThread = await store.openInquiryThread(inquiry.id, { memberId: dealer.id, email: dealer.email });
+  assert.equal(sellerThread?.viewerRole, "seller");
+  assert.equal(await store.openInquiryThread(inquiry.id, { memberId: "other", email: "other@example.com" }), null);
+
+  await store.addInquiryMessage(inquiry.id, { authorRole: "seller", authorId: dealer.id, body: "재고 있습니다. 방문 가능합니다." });
+  await store.addInquiryMessage(inquiry.id, { authorRole: "buyer", authorId: buyer.id, body: "내일 오전에 가겠습니다." });
+  const thread = await store.openInquiryThread(inquiry.id, { memberId: buyer.id, email: buyer.email });
+  assert.equal(thread?.messages.length, 3);
+  assert.equal(inquiryViewerRole(inquiry, { memberId: dealer.id, email: dealer.email }, dealer.id), "seller");
+  assert.equal(inquiryViewerRole(inquiry, { memberId: null, email: null, admin: true }, dealer.id), "staff");
 });

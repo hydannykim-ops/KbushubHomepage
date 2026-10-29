@@ -1,3 +1,4 @@
+import { getSession } from "@/lib/auth/session";
 import { acceptOrReject } from "@/lib/domain/submit";
 import { parseInquiry } from "@/lib/domain/validation";
 import { allowRequest, clientKey } from "@/lib/http/rate-limit";
@@ -22,6 +23,8 @@ export async function POST(request: Request) {
   }
   const gate = await openGate();
   const referral = await referralFromRequest();
-  const result = await acceptOrReject(gate, () => getRepository().createInquiry(parsed.data, referral));
+  const session = await getSession();
+  const memberId = session && (session.role === "customer" || session.role === "dealer") ? session.sub : null;
+  const result = await acceptOrReject(gate, () => getRepository().createInquiry(parsed.data, referral, memberId));
   return resultResponse(request, result, `/${lang}/inquiry`);
 }

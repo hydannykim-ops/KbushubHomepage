@@ -248,5 +248,20 @@ export const es: Messages = {
   "mediaVideoHint": "Un enlace corto de un vehículo real se reproduce aquí. No se reproduce automáticamente.",
   "mediaYard": "Foto de oficina o patio",
   "listingTitle": "Registrar un vehículo",
-  "listingBody": "El juego de portada es frontal, tres cuartos delantera y trasera. Las demás fotos son opcionales."
+  "listingBody": "El juego de portada es frontal, tres cuartos delantera y trasera. Las demás fotos son opcionales.",
+  "myInquiries": "Mis consultas",
+  "listingInquiries": "Consultas de mis anuncios",
+  "noInquiries": "Aún no ha dejado una consulta.",
+  "noListingInquiries": "Aún no hay consultas en sus anuncios.",
+  "openChat": "Abrir chat",
+  "inquiryChat": "Chat de consulta",
+  "inquiryChatBody": "Pueden seguir escribiendo en esta consulta. No hay aviso en tiempo real.",
+  "chatReply": "Responder",
+  "chatSend": "Enviar",
+  "chatClosed": "Esta consulta está cerrada. No se pueden añadir mensajes.",
+  "chatYou": "Usted",
+  "chatBuyer": "Comprador",
+  "chatSeller": "Vendedor",
+  "chatStaff": "Personal",
+  "backToAccount": "Volver a la cuenta"
 };

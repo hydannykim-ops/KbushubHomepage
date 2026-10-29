@@ -248,5 +248,20 @@ export const en: Messages = {
   "mediaVideoHint": "A short real-vehicle link plays here. It does not autoplay.",
   "mediaYard": "Office or yard photo",
   "listingTitle": "Register a vehicle",
-  "listingBody": "The cover set is front, front three-quarter, and rear. Other photos are optional."
+  "listingBody": "The cover set is front, front three-quarter, and rear. Other photos are optional.",
+  "myInquiries": "My inquiries",
+  "listingInquiries": "Inquiries on my listings",
+  "noInquiries": "You have not left an inquiry yet.",
+  "noListingInquiries": "No inquiries on your listings yet.",
+  "openChat": "Open chat",
+  "inquiryChat": "Inquiry chat",
+  "inquiryChatBody": "You can keep writing on this inquiry. There is no live notification.",
+  "chatReply": "Reply",
+  "chatSend": "Send",
+  "chatClosed": "This inquiry is closed. New messages cannot be added.",
+  "chatYou": "You",
+  "chatBuyer": "Buyer",
+  "chatSeller": "Seller",
+  "chatStaff": "Staff",
+  "backToAccount": "Back to account"
 };

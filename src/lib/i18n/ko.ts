@@ -248,5 +248,20 @@ export const ko: Messages = {
   "mediaVideoHint": "짧은 실차 영상 링크를 넣으면 여기 재생됩니다. 자동 재생은 하지 않습니다.",
   "mediaYard": "회사·야드 사진",
   "listingTitle": "매물 등록",
-  "listingBody": "대표 사진은 정면, 정측면, 후면입니다. 나머지는 있는 만큼 넣으면 됩니다."
+  "listingBody": "대표 사진은 정면, 정측면, 후면입니다. 나머지는 있는 만큼 넣으면 됩니다.",
+  "myInquiries": "내가 남긴 문의",
+  "listingInquiries": "내 매물 문의",
+  "noInquiries": "남긴 문의가 없습니다.",
+  "noListingInquiries": "내 매물에 들어온 문의가 없습니다.",
+  "openChat": "채팅 열기",
+  "inquiryChat": "문의 채팅",
+  "inquiryChatBody": "문의 내용을 서로 이어서 남길 수 있습니다. 실시간 알림은 없습니다.",
+  "chatReply": "답장",
+  "chatSend": "보내기",
+  "chatClosed": "종료된 문의에는 더 이상 메시지를 남길 수 없습니다.",
+  "chatYou": "나",
+  "chatBuyer": "문의자",
+  "chatSeller": "판매자",
+  "chatStaff": "담당자",
+  "backToAccount": "내 계정으로"
 };

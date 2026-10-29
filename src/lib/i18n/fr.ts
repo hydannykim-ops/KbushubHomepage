@@ -248,5 +248,20 @@ export const fr: Messages = {
   "mediaVideoHint": "Un court lien de véhicule réel se lit ici. Pas de lecture automatique.",
   "mediaYard": "Photo bureau ou cour",
   "listingTitle": "Enregistrer un véhicule",
-  "listingBody": "Le jeu de couverture est avant, trois-quarts avant et arrière. Les autres photos sont facultatives."
+  "listingBody": "Le jeu de couverture est avant, trois-quarts avant et arrière. Les autres photos sont facultatives.",
+  "myInquiries": "Mes demandes",
+  "listingInquiries": "Demandes sur mes annonces",
+  "noInquiries": "Vous n’avez pas encore laissé de demande.",
+  "noListingInquiries": "Aucune demande sur vos annonces pour le moment.",
+  "openChat": "Ouvrir le chat",
+  "inquiryChat": "Chat de demande",
+  "inquiryChatBody": "Vous pouvez continuer à écrire sur cette demande. Pas de notification en direct.",
+  "chatReply": "Répondre",
+  "chatSend": "Envoyer",
+  "chatClosed": "Cette demande est clôturée. Impossible d’ajouter des messages.",
+  "chatYou": "Vous",
+  "chatBuyer": "Acheteur",
+  "chatSeller": "Vendeur",
+  "chatStaff": "Équipe",
+  "backToAccount": "Retour au compte"
 };
