@@ -13,9 +13,7 @@ export async function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   const lang = pathname.match(/^\/(ko|en|es|fr|km|mn)(\/|$)/)?.[1] ?? "ko";
   requestHeaders.set("x-kb-lang", lang);
-  const headerMode = searchParams.get("mode");
   const headerRef = normalizeReferralCode(searchParams.get("ref"));
-  if (headerMode === "domestic" || headerMode === "export") requestHeaders.set("x-kb-mode", headerMode);
   if (headerRef) requestHeaders.set("x-kb-ref", headerRef);
   let response = NextResponse.next({ request: { headers: requestHeaders } });
 
@@ -43,7 +41,6 @@ export async function proxy(request: NextRequest) {
   }
 
   const ref = normalizeReferralCode(searchParams.get("ref"));
-  const mode = searchParams.get("mode");
   const cookieBase = {
     path: "/",
     sameSite: "lax" as const,
@@ -54,7 +51,7 @@ export async function proxy(request: NextRequest) {
     if (!request.cookies.get("kb_ref_first")) response.cookies.set("kb_ref_first", ref, cookieBase);
     response.cookies.set("kb_ref_latest", ref, cookieBase);
   }
-  if (mode === "domestic" || mode === "export") response.cookies.set("kb_mode", mode, cookieBase);
+  if (request.cookies.get("kb_mode")) response.cookies.set("kb_mode", "", { ...cookieBase, maxAge: 0 });
   if (pathname.startsWith("/admin") || pathname.includes("/agent")) {
     response.headers.set("X-Robots-Tag", "noindex, nofollow");
   }

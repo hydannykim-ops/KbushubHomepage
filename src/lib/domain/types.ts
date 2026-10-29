@@ -111,6 +111,7 @@ export type Member = {
   email: string;
   phone: string | null;
   company: string | null;
+  country: string | null;
   createdAt: string;
 };
 

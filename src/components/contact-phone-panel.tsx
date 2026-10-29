@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import type { Lang, TradeMode } from "@/lib/domain/types";
+import type { Lang } from "@/lib/domain/types";
 import { contactTelHref, formatContactPhone } from "@/lib/domain/phone-display";
 import { copy } from "@/lib/i18n";
 
@@ -12,7 +12,6 @@ export function ContactPhonePanel({
   ctaLabel,
   autoOpen = false,
   stockNo,
-  mode,
   signedIn = false,
 }: {
   lang: Lang;
@@ -20,7 +19,6 @@ export function ContactPhonePanel({
   ctaLabel: string;
   autoOpen?: boolean;
   stockNo?: string;
-  mode?: TradeMode;
   signedIn?: boolean;
 }) {
   const text = copy(lang);
@@ -67,7 +65,7 @@ export function ContactPhonePanel({
     void fetch("/api/inquiries/interest", {
       method: "POST",
       headers: { "content-type": "application/json", accept: "application/json" },
-      body: JSON.stringify({ lang, stockNo, tradeMode: mode ?? "domestic" }),
+      body: JSON.stringify({ lang, stockNo }),
     })
       .then(async (response) => {
         if (!response.ok) return;
@@ -76,7 +74,7 @@ export function ContactPhonePanel({
       .catch(() => {
         recorded.current = false;
       });
-  }, [open, signedIn, stockNo, lang, mode, text.inquiryRecorded]);
+  }, [open, signedIn, stockNo, lang, text.inquiryRecorded]);
 
   function openPanel() {
     setOpen(true);

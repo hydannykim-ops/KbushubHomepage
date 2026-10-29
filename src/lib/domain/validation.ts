@@ -813,6 +813,7 @@ export type SignupInput = {
   password: string;
   phone: string | null;
   company: string | null;
+  country: string;
   consent: boolean;
   companyWebsite: string;
 };
@@ -827,6 +828,7 @@ export function parseSignup(body: unknown, lang: Lang): { ok: true; data: Signup
       passwordConfirm: z.string().max(80).optional().or(z.literal("")),
       phone: z.string().trim().max(40).optional().or(z.literal("")),
       company: z.string().trim().max(80).optional().or(z.literal("")),
+      country: z.string().trim().min(1, text(lang, "국적을 입력해 주세요.", "Enter your nationality/country.")).max(80),
       consent: z.union([z.boolean(), z.string()]),
       companyWebsite: z.string().optional(),
     })
@@ -859,6 +861,7 @@ export function parseSignup(body: unknown, lang: Lang): { ok: true; data: Signup
       password: parsed.data.password,
       phone: parsed.data.phone?.trim() || null,
       company: parsed.data.role === "dealer" ? parsed.data.company?.trim() || null : null,
+      country: parsed.data.country.trim(),
       consent: true,
       companyWebsite: "",
     },

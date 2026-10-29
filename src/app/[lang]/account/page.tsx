@@ -66,6 +66,7 @@ export default async function AccountPage({
     email: member?.email || session.email,
     phone: member?.phone ?? null,
     company: member?.company ?? null,
+    country: member?.country ?? null,
   };
   const inquiries = await site.repo.listInquiriesByEmail(profile.email);
   const inquiryCards = await Promise.all(

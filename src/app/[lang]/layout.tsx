@@ -46,14 +46,14 @@ export default async function LangLayout({
   return (
     <>
       <Suspense fallback={null}>
-        <Header lang={lang} defaultMode={ctx.mode} refCode={ctx.ref} member={session ? { role: session.role, name: session.name } : null} />
+        <Header lang={lang} refCode={ctx.ref} member={session ? { role: session.role, name: session.name } : null} />
       </Suspense>
       <main id="content">{children}</main>
       <Suspense fallback={null}>
-        <Footer lang={lang} mode={ctx.mode} refCode={ctx.ref} company={settings} />
+        <Footer lang={lang} refCode={ctx.ref} company={settings} />
       </Suspense>
       <Suspense fallback={null}>
-        <SiteChat lang={lang} mode={ctx.mode} refCode={ctx.ref} />
+        <SiteChat lang={lang} refCode={ctx.ref} />
       </Suspense>
     </>
   );

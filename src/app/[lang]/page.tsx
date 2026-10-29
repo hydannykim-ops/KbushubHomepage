@@ -81,7 +81,7 @@ export default async function HomePage({
         {fresh.length ? (
           <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {fresh.map((vehicle) => (
-              <VehicleCard key={vehicle.id} vehicle={vehicle} lang={lang} mode={ctx.mode} href={cardHref(vehicle)} listedBy={site.settings.companyName} />
+              <VehicleCard key={vehicle.id} vehicle={vehicle} lang={lang} href={cardHref(vehicle)} listedBy={site.settings.companyName} />
             ))}
           </div>
         ) : (
@@ -94,7 +94,7 @@ export default async function HomePage({
         {featured.length ? (
           <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {featured.map((vehicle) => (
-              <VehicleCard key={vehicle.id} vehicle={vehicle} lang={lang} mode={ctx.mode} href={cardHref(vehicle)} listedBy={site.settings.companyName} />
+              <VehicleCard key={vehicle.id} vehicle={vehicle} lang={lang} href={cardHref(vehicle)} listedBy={site.settings.companyName} />
             ))}
           </div>
         ) : (

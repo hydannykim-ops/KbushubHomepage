@@ -5,8 +5,9 @@ import path from "node:path";
 import test from "node:test";
 import { containsInternalKey, publicJson, visibleReferrals } from "../src/lib/domain/access";
 import { readSession, signSession } from "../src/lib/domain/auth-token";
+import { inquiryTradeModeForCountry, isKoreaCountry } from "../src/lib/domain/country";
 import { filterVehicles, parseVehicleQuery, serializeVehicleQuery } from "../src/lib/domain/filters";
-import { internalProfit, summarizeQuote } from "../src/lib/domain/money";
+import { catalogPriceView, internalProfit, summarizeQuote } from "../src/lib/domain/money";
 import { normalizeReferralCode, referralForInquiry, rememberReferral, whatsappHref, whatsappMessage } from "../src/lib/domain/referral";
 import { acceptOrReject, submissionGate } from "../src/lib/domain/submit";
 import { checkImage } from "../src/lib/domain/uploads";
@@ -58,17 +59,38 @@ test("export price filter does not compare different currencies", () => {
   );
 });
 
+test("country nationality routes inquiry trade mode", () => {
+  assert.equal(isKoreaCountry("한국"), true);
+  assert.equal(isKoreaCountry("KR"), true);
+  assert.equal(isKoreaCountry("South Korea"), true);
+  assert.equal(isKoreaCountry("Cambodia"), false);
+  assert.equal(inquiryTradeModeForCountry("한국"), "domestic");
+  assert.equal(inquiryTradeModeForCountry("UAE"), "export");
+  assert.equal(inquiryTradeModeForCountry(null), "domestic");
+});
+
+test("catalog price shows domestic primary with optional export line", () => {
+  const seed = buildSeed();
+  const vehicle = seed.vehicles.find((item) => item.stockNo === "HB-C-01");
+  assert.ok(vehicle);
+  const view = catalogPriceView(vehicle, "ko");
+  assert.equal(view.ask, false);
+  assert.match(view.primary, /원|₩|KRW/i);
+  assert.ok(view.exportLine);
+});
+
 test("filters and shareable query round-trip", () => {
-  const raw = "class=county&maker=현대&transmission=automatic&status=available&sort=year_desc&mode=export";
+  const raw = "class=county&maker=현대&transmission=automatic&status=available&sort=year_desc";
   const query = parseVehicleQuery(new URLSearchParams(raw));
   const seed = buildSeed();
-  const result = filterVehicles(seed.vehicles, query, "export");
+  const result = filterVehicles(seed.vehicles, query, "domestic");
   assert.deepEqual(result.items.map((item) => item.stockNo).sort(), ["HB-C-01", "HB-C-02"]);
-  const serialized = serializeVehicleQuery(query, { mode: "export", ref: "DEMOAGT1" });
+  const serialized = serializeVehicleQuery(query, { ref: "DEMOAGT1" });
   const again = parseVehicleQuery(new URLSearchParams(serialized));
   assert.equal(again.vehicleClass, "county");
   assert.equal(again.sort, "year_desc");
   assert.equal(new URLSearchParams(serialized).get("ref"), "DEMOAGT1");
+  assert.equal(new URLSearchParams(serialized).get("mode"), null);
 });
 
 test("transfer filter and export shipping preference", () => {
@@ -374,6 +396,7 @@ test("dealer listings stay in review and customers cannot publish", async () => 
     password: "password1",
     phone: null,
     company: "데모상사",
+    country: "한국",
     consent: true,
     companyWebsite: "",
   });
@@ -384,9 +407,12 @@ test("dealer listings stay in review and customers cannot publish", async () => 
     password: "password1",
     phone: null,
     company: null,
+    country: "Cambodia",
     consent: true,
     companyWebsite: "",
   });
+  assert.equal(dealer.country, "한국");
+  assert.equal(customer.country, "Cambodia");
   const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0]);
   const input = {
     vehicleClass: "county" as const,

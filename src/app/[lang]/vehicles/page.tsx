@@ -125,7 +125,6 @@ export default async function VehiclesPage({
                   key={vehicle.id}
                   vehicle={vehicle}
                   lang={lang}
-                  mode={ctx.mode}
                   href={hrefTo(lang, `/vehicles/${vehicle.stockNo}`, ctx)}
                   listedBy={site.settings.companyName}
                 />

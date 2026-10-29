@@ -554,7 +554,16 @@ export function createDemoStore(dir: string) {
     async getMember(id: string): Promise<Member | null> {
       const member = (await read()).members.find((item) => item.id === id);
       if (!member) return null;
-      return { id: member.id, role: member.role, name: member.name, email: member.email, phone: member.phone, company: member.company, createdAt: member.createdAt };
+      return {
+        id: member.id,
+        role: member.role,
+        name: member.name,
+        email: member.email,
+        phone: member.phone,
+        company: member.company,
+        country: member.country ?? null,
+        createdAt: member.createdAt,
+      };
     },
     async signupMember(input: SignupInput): Promise<Member> {
       return update((state) => {
@@ -566,11 +575,21 @@ export function createDemoStore(dir: string) {
           email: input.email,
           phone: input.phone,
           company: input.company,
+          country: input.country,
           passwordHash: hashPassword(input.password),
           createdAt: nowIso(),
         };
         state.members.push(member);
-        return { id: member.id, role: member.role, name: member.name, email: member.email, phone: member.phone, company: member.company, createdAt: member.createdAt };
+        return {
+          id: member.id,
+          role: member.role,
+          name: member.name,
+          email: member.email,
+          phone: member.phone,
+          company: member.company,
+          country: member.country,
+          createdAt: member.createdAt,
+        };
       });
     },
     async updateMember(
@@ -583,13 +602,31 @@ export function createDemoStore(dir: string) {
         member.name = patch.name;
         member.phone = patch.phone;
         member.company = patch.company;
-        return { id: member.id, role: member.role, name: member.name, email: member.email, phone: member.phone, company: member.company, createdAt: member.createdAt };
+        return {
+          id: member.id,
+          role: member.role,
+          name: member.name,
+          email: member.email,
+          phone: member.phone,
+          company: member.company,
+          country: member.country ?? null,
+          createdAt: member.createdAt,
+        };
       });
     },
     async verifyMember(email: string, password: string): Promise<Member | null> {
       const member = (await read()).members.find((item) => item.email === email.trim().toLowerCase());
       if (!member || !verifyPassword(password, member.passwordHash)) return null;
-      return { id: member.id, role: member.role, name: member.name, email: member.email, phone: member.phone, company: member.company, createdAt: member.createdAt };
+      return {
+        id: member.id,
+        role: member.role,
+        name: member.name,
+        email: member.email,
+        phone: member.phone,
+        company: member.company,
+        country: member.country ?? null,
+        createdAt: member.createdAt,
+      };
     },
     async listOwned(ownerId: string) {
       return (await read()).vehicles.filter((vehicle) => vehicle.ownerId === ownerId).map((vehicle) => toOwnedListing(clone(vehicle)));
