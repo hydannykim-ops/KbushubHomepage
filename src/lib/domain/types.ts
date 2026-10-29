@@ -16,7 +16,7 @@ export type InquiryKind = "purchase" | "visit" | "quote" | "video" | "general";
 export type InquiryStatus = "new" | "consulting" | "quoted" | "negotiating" | "contracted" | "closed";
 export type MoneyStatus = "amount" | "zero" | "unknown";
 export type AgentStatus = "pending" | "approved" | "rejected" | "suspended";
-export type RequestType = "wanted" | "sell";
+export type RequestType = "wanted" | "sell" | "scrap";
 export type RequestStatus = "new" | "consulting" | "closed";
 export type SortKey = "newest" | "year_desc" | "year_asc" | "price_asc" | "price_desc" | "mileage_asc";
 
@@ -263,6 +263,8 @@ export type VehicleRequest = {
   id: string;
   type: RequestType;
   model: string;
+  /** Vehicle plate / registration number — mainly for scrap quotes. */
+  plateNo: string | null;
   modelYear: number | null;
   mileageKm: number | null;
   seats: number | null;

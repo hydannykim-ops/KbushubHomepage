@@ -24,7 +24,19 @@ import type {
   VehicleQuery,
   VehicleRequest,
 } from "../domain/types";
-import type { DealerListingInput, InquiryInput, InquiryUpdate, PartnerInput, QuoteInput, SellInput, SettingsInput, SignupInput, VehicleInput, WantedInput } from "../domain/validation";
+import type {
+  DealerListingInput,
+  InquiryInput,
+  InquiryUpdate,
+  PartnerInput,
+  QuoteInput,
+  ScrapInput,
+  SellInput,
+  SettingsInput,
+  SignupInput,
+  VehicleInput,
+  WantedInput,
+} from "../domain/validation";
 import { hashPassword, verifyPassword } from "../domain/password";
 import { extensionFor, type ImageType } from "../domain/uploads";
 import { buildSeed } from "./seed";
@@ -113,6 +125,9 @@ export function createDemoStore(dir: string) {
       const state = JSON.parse(raw) as DemoState;
       state.members ??= [];
       state.inquiryMessages ??= [];
+      for (const request of state.requests ?? []) {
+        request.plateNo ??= null;
+      }
       for (const vehicle of state.vehicles ?? []) {
         vehicle.ownerId ??= null;
         vehicle.listingSource ??= "company";
@@ -538,6 +553,7 @@ export function createDemoStore(dir: string) {
           id: randomUUID(),
           type: "wanted",
           model: input.model,
+          plateNo: null,
           modelYear: input.modelYear,
           mileageKm: null,
           seats: input.seats,
@@ -592,6 +608,7 @@ export function createDemoStore(dir: string) {
           id,
           type: "sell",
           model: input.model,
+          plateNo: null,
           modelYear: input.modelYear,
           mileageKm: input.mileageKm,
           seats: null,
@@ -611,6 +628,40 @@ export function createDemoStore(dir: string) {
           staffMemo: null,
           firstReferralCode: referralCode,
           files: stored,
+          createdAt: nowIso(),
+          updatedAt: nowIso(),
+          demo: true,
+        };
+        state.requests.push(request);
+        return clone(request);
+      });
+    },
+    async createScrap(input: ScrapInput, referralCode: string | null): Promise<VehicleRequest> {
+      return update((state) => {
+        const request: VehicleRequest = {
+          id: randomUUID(),
+          type: "scrap",
+          model: input.model,
+          plateNo: input.plateNo,
+          modelYear: input.modelYear,
+          mileageKm: null,
+          seats: null,
+          quantity: null,
+          budgetAmount: null,
+          budgetCurrency: null,
+          askingPriceAmount: null,
+          askingPriceCurrency: null,
+          location: input.location,
+          destinationCountry: null,
+          desiredTime: null,
+          name: input.name,
+          email: input.email,
+          phone: input.phone,
+          message: input.message,
+          status: "new",
+          staffMemo: null,
+          firstReferralCode: referralCode,
+          files: [],
           createdAt: nowIso(),
           updatedAt: nowIso(),
           demo: true,

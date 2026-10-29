@@ -94,6 +94,7 @@ export function Field({
   type = "text",
   required = false,
   defaultValue,
+  placeholder,
   as = "input",
 }: {
   label: string;
@@ -101,15 +102,30 @@ export function Field({
   type?: string;
   required?: boolean;
   defaultValue?: string;
+  placeholder?: string;
   as?: "input" | "textarea";
 }) {
   return (
     <label className="grid gap-1 text-sm font-medium">
       {label}
       {as === "textarea" ? (
-        <textarea name={name} required={required} defaultValue={defaultValue} rows={5} className="rounded-md border border-line px-3 py-2 font-normal" />
+        <textarea
+          name={name}
+          required={required}
+          defaultValue={defaultValue}
+          placeholder={placeholder}
+          rows={5}
+          className="rounded-md border border-line px-3 py-2 font-normal"
+        />
       ) : (
-        <input name={name} type={type} required={required} defaultValue={defaultValue} className="rounded-md border border-line px-3 py-2 font-normal" />
+        <input
+          name={name}
+          type={type}
+          required={required}
+          defaultValue={defaultValue}
+          placeholder={placeholder}
+          className="rounded-md border border-line px-3 py-2 font-normal"
+        />
       )}
     </label>
   );

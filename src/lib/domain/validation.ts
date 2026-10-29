@@ -10,6 +10,7 @@ import type {
   Transmission,
   VehicleClass,
 } from "./types";
+import { scrapRegionsKo } from "./scrap-regions";
 import { knownMakerModel } from "./vehicle-catalog";
 
 export type FieldErrors = Record<string, string>;
@@ -343,6 +344,68 @@ export function parseSell(body: unknown, lang: Lang): { ok: true; data: SellInpu
       name: value.name,
       email: value.email?.trim() || null,
       phone: value.phone?.trim() || null,
+      message: value.message,
+      consent: true,
+      companyWebsite: "",
+    },
+  };
+}
+
+export type ScrapInput = {
+  plateNo: string;
+  model: string;
+  modelYear: number | null;
+  location: string;
+  name: string;
+  phone: string;
+  email: string | null;
+  message: string | null;
+  consent: boolean;
+  companyWebsite: string;
+};
+
+export function parseScrap(body: unknown, lang: Lang): { ok: true; data: ScrapInput } | { ok: false; errors: FieldErrors } {
+  const schema = z
+    .object({
+      plateNo: z
+        .string()
+        .trim()
+        .min(4, text(lang, "차량번호를 입력해 주세요.", "Enter the plate number."))
+        .max(20, text(lang, "차량번호가 너무 깁니다.", "Plate number is too long.")),
+      model: z.string().trim().min(1, text(lang, "차종을 입력해 주세요.", "Enter the model.")).max(80),
+      modelYear: optionalInt(1980, 2035),
+      location: z.enum(scrapRegionsKo, {
+        message: text(lang, "지역을 선택해 주세요.", "Choose a region."),
+      }),
+      name: z.string().trim().min(1, text(lang, "이름을 입력해 주세요.", "Enter your name.")).max(80),
+      phone: z.string().trim().min(8, text(lang, "연락처를 입력해 주세요.", "Enter a phone number.")).max(40),
+      email: z.string().trim().max(120).optional().or(z.literal("")),
+      message: optionalText(4000),
+      consent: z.union([z.boolean(), z.string()]),
+      companyWebsite: z.string().optional(),
+    })
+    .superRefine((value, ctx) => {
+      const email = value.email?.trim() ?? "";
+      if (email && !z.email().safeParse(email).success) {
+        ctx.addIssue({ code: "custom", path: ["email"], message: text(lang, "이메일 형식을 확인해 주세요.", "Check the email format.") });
+      }
+      const consent = value.consent === true || value.consent === "true" || value.consent === "on" || value.consent === "1";
+      if (!consent) ctx.addIssue({ code: "custom", path: ["consent"], message: text(lang, "안내를 확인하고 동의해 주세요.", "Please confirm the notice.") });
+      if ((value.companyWebsite ?? "").trim()) ctx.addIssue({ code: "custom", path: ["form"], message: "invalid" });
+    });
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) return { ok: false, errors: fieldErrors(parsed.error) };
+  const value = parsed.data;
+  return {
+    ok: true,
+    data: {
+      plateNo: value.plateNo.replace(/\s+/g, "").toUpperCase(),
+      model: value.model,
+      modelYear: value.modelYear,
+      location: value.location,
+      name: value.name,
+      phone: value.phone,
+      email: value.email?.trim() || null,
       message: value.message,
       consent: true,
       companyWebsite: "",

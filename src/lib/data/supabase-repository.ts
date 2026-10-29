@@ -24,7 +24,19 @@ import type {
   VehicleRequest,
 } from "../domain/types";
 import { extensionFor, type ImageType } from "../domain/uploads";
-import type { DealerListingInput, InquiryInput, InquiryUpdate, PartnerInput, QuoteInput, SellInput, SettingsInput, SignupInput, VehicleInput, WantedInput } from "../domain/validation";
+import type {
+  DealerListingInput,
+  InquiryInput,
+  InquiryUpdate,
+  PartnerInput,
+  QuoteInput,
+  ScrapInput,
+  SellInput,
+  SettingsInput,
+  SignupInput,
+  VehicleInput,
+  WantedInput,
+} from "../domain/validation";
 import { createAnonClient, createServiceClient, createSupabaseServer } from "../supabase/clients";
 import { DataAccessError } from "./errors";
 import { StoreError } from "../demo/store";
@@ -348,6 +360,7 @@ function mapRequest(row: Record<string, unknown>, files: VehicleRequest["files"]
     id: String(row.id),
     type: row.type as VehicleRequest["type"],
     model: String(row.model),
+    plateNo: text(row.plate_no),
     modelYear: num(row.model_year),
     mileageKm: num(row.mileage_km),
     seats: num(row.seats),
@@ -932,6 +945,27 @@ export function createSupabaseRepository() {
         });
       }
       return mapRequest(inserted.data as Record<string, unknown>, stored);
+    },
+    async createScrap(input: ScrapInput, referralCode: string | null) {
+      const service = createServiceClient();
+      const inserted = await service
+        .from("vehicle_requests")
+        .insert({
+          type: "scrap",
+          model: input.model,
+          plate_no: input.plateNo,
+          model_year: input.modelYear,
+          location: input.location,
+          name: input.name,
+          email: input.email,
+          phone: input.phone,
+          message: input.message,
+          first_referral_code: referralCode,
+        })
+        .select("*")
+        .single();
+      if (inserted.error) fail(inserted.error, "scrap_insert");
+      return mapRequest(inserted.data as Record<string, unknown>, []);
     },
     async updateRequest(id: string, patch: { status: VehicleRequest["status"]; staffMemo: string | null }) {
       const service = createServiceClient();

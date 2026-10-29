@@ -10,7 +10,7 @@ import { internalProfit, summarizeQuote } from "../src/lib/domain/money";
 import { normalizeReferralCode, referralForInquiry, rememberReferral, whatsappHref, whatsappMessage } from "../src/lib/domain/referral";
 import { acceptOrReject, submissionGate } from "../src/lib/domain/submit";
 import { checkImage } from "../src/lib/domain/uploads";
-import { parseInquiry, parseQuote } from "../src/lib/domain/validation";
+import { parseInquiry, parseQuote, parseScrap } from "../src/lib/domain/validation";
 import { clampPhotoWidth, photoUrl } from "../src/lib/domain/photo-url";
 import {
   makerLabel,
@@ -426,6 +426,7 @@ test("dealer listings stay in review and customers cannot publish", async () => 
 test("migration locks down internal tables and admin role grants", async () => {
   const sql = await readFile(path.join(process.cwd(), "supabase/migrations/0001_init.sql"), "utf8");
   const messagesSql = await readFile(path.join(process.cwd(), "supabase/migrations/0004_inquiry_messages.sql"), "utf8");
+  const scrapSql = await readFile(path.join(process.cwd(), "supabase/migrations/0005_scrap_requests.sql"), "utf8");
   assert.match(sql, /revoke all on table public\.vehicle_internal from anon, authenticated/i);
   assert.match(sql, /revoke all on table public\.inquiries from anon, authenticated/i);
   assert.match(sql, /enable row level security/i);
@@ -433,6 +434,9 @@ test("migration locks down internal tables and admin role grants", async () => {
   assert.match(sql, /agent_my_referrals/);
   assert.match(messagesSql, /create table if not exists public\.inquiry_messages/i);
   assert.match(messagesSql, /revoke all on table public\.inquiry_messages from anon, authenticated/i);
+  assert.match(scrapSql, /check \(type in \('wanted', 'sell', 'scrap'\)\)/i);
+  assert.match(scrapSql, /add column if not exists plate_no text/i);
+  assert.match(scrapSql, /revoke select \(plate_no\) on table public\.vehicle_requests from anon, authenticated/i);
   assert.match(sql, /privacy_collection_enabled boolean not null default false/i);
   const members = await readFile(path.join(process.cwd(), "supabase/migrations/0002_members_and_review.sql"), "utf8");
   assert.match(members, /revoke all on table public\.member_profiles from anon, authenticated/i);
@@ -650,4 +654,43 @@ test("inquiry chat lets buyer and listing owner reply on the same thread", async
   assert.equal(thread?.messages.length, 3);
   assert.equal(inquiryViewerRole(inquiry, { memberId: dealer.id, email: dealer.email }, dealer.id), "seller");
   assert.equal(inquiryViewerRole(inquiry, { memberId: null, email: null, admin: true }, dealer.id), "staff");
+});
+
+test("parseScrap accepts plate region and stores scrap requests", async () => {
+  const invalid = parseScrap({ plateNo: "12", model: "카운티", location: "서울", name: "홍길동", phone: "01012345678", consent: "on" }, "ko");
+  assert.equal(invalid.ok, false);
+  const badRegion = parseScrap(
+    { plateNo: "12가3456", model: "카운티", location: "도쿄", name: "홍길동", phone: "01012345678", consent: "on" },
+    "ko",
+  );
+  assert.equal(badRegion.ok, false);
+  const parsed = parseScrap(
+    {
+      plateNo: "12가 3456",
+      model: "현대 유니버스",
+      modelYear: "2015",
+      location: "경기",
+      name: "김폐차",
+      phone: "010-1111-2222",
+      email: "scrap@example.com",
+      message: "견적만",
+      consent: "on",
+      companyWebsite: "",
+    },
+    "ko",
+  );
+  assert.equal(parsed.ok, true);
+  if (!parsed.ok) return;
+  assert.equal(parsed.data.plateNo, "12가3456");
+  assert.equal(parsed.data.location, "경기");
+  assert.equal(parsed.data.modelYear, 2015);
+
+  const dir = await mkdtemp(path.join(tmpdir(), "kbus-scrap-"));
+  const store = createDemoStore(dir);
+  const created = await store.createScrap(parsed.data, null);
+  assert.equal(created.type, "scrap");
+  assert.equal(created.plateNo, "12가3456");
+  assert.equal(created.location, "경기");
+  const listed = await store.listRequests();
+  assert.ok(listed.some((item) => item.id === created.id && item.type === "scrap"));
 });

@@ -164,7 +164,7 @@ export function Header({
   const links = [
     [text.navVehicles, href("/vehicles")],
     [text.navSell, href("/sell")],
-    [text.navPartner, href("/partner")],
+    [text.navScrap, href("/scrap")],
   ] as const;
 
   const accountLinks = signedIn
@@ -255,6 +255,7 @@ export function Footer({
         <div className="grid content-start gap-2">
           <Link href={href("/vehicles")}>{text.navVehicles}</Link>
           <Link href={href("/sell")}>{text.navSell}</Link>
+          <Link href={href("/scrap")}>{text.navScrap}</Link>
           <Link href={href("/privacy")}>{text.privacyTitle}</Link>
           <Link href={href("/account/login")}>{text.navLogin}</Link>
           <Link href={href("/agent/login")}>{text.navAgent}</Link>
