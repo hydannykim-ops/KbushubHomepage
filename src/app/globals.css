@@ -132,3 +132,150 @@ button {
   line-height: 1.45;
   color: var(--muted);
 }
+
+/* Vehicle detail specs — editorial hierarchy, not a data table */
+.spec-showcase {
+  display: grid;
+  gap: 1.75rem;
+  padding: 0.25rem 0 0.5rem;
+}
+
+.spec-showcase__identity {
+  animation: spec-rise 420ms ease-out both;
+}
+
+.spec-showcase__maker {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.spec-showcase__model {
+  margin: 0.55rem 0 0;
+  color: var(--ink);
+  font-size: clamp(2rem, 4.2vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+}
+
+.spec-showcase__trim {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--muted);
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.spec-showcase__highlights {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 1.25rem 0;
+  animation: spec-rise 520ms ease-out both;
+  animation-delay: 60ms;
+}
+
+.spec-showcase__stat {
+  flex: 1 1 9rem;
+  min-width: 8.5rem;
+}
+
+.spec-showcase__stat-value {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(2.15rem, 5vw, 3.1rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.spec-showcase__stat-unit {
+  margin-left: 0.2rem;
+  color: var(--muted);
+  font-size: 0.42em;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.spec-showcase__stat-label {
+  margin: 0.55rem 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.spec-showcase__stat-rule {
+  display: none;
+  width: 1px;
+  margin: 0.35rem 1.5rem;
+  background: color-mix(in srgb, var(--line) 85%, var(--ink));
+  align-self: stretch;
+}
+
+@media (min-width: 640px) {
+  .spec-showcase__stat-rule {
+    display: block;
+  }
+}
+
+.spec-showcase__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  animation: spec-rise 620ms ease-out both;
+  animation-delay: 110ms;
+}
+
+.spec-showcase__meta-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem 0.45rem 0;
+  margin-right: 0.35rem;
+  border-right: 1px solid var(--line);
+}
+
+.spec-showcase__meta-item:last-child {
+  border-right: 0;
+  margin-right: 0;
+}
+
+.spec-showcase__meta-label {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.spec-showcase__meta-value {
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+@keyframes spec-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spec-showcase__identity,
+  .spec-showcase__highlights,
+  .spec-showcase__meta {
+    animation: none;
+  }
+}

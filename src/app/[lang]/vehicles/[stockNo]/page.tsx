@@ -174,23 +174,23 @@ export default async function VehicleDetailPage({
           </div>
         </aside>
       </div>
-      <section>
-        <h2 className="mb-3 text-xl font-bold">{text.specs}</h2>
+      <section className="border-y border-line bg-white px-1 py-8 sm:px-2 md:py-10">
+        <p className="mb-5 text-xs font-semibold tracking-[0.14em] text-muted">{text.specs}</p>
         <SpecTable vehicle={vehicle} lang={lang} />
       </section>
-      <section className="grid gap-4 md:grid-cols-2">
-        <article className="rounded-lg border border-line bg-white p-5">
-          <h2 className="font-bold">{text.maintenance}</h2>
-          <p className="mt-2 whitespace-pre-wrap text-sm leading-6">{showText(maintenance, lang)}</p>
+      <section className="grid gap-8 md:grid-cols-2 md:gap-10">
+        <article>
+          <h2 className="text-lg font-semibold tracking-tight text-ink">{text.maintenance}</h2>
+          <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-muted">{showText(maintenance, lang)}</p>
         </article>
-        <article className="rounded-lg border border-line bg-white p-5">
-          <h2 className="font-bold">{text.defects}</h2>
-          <p className="mt-2 whitespace-pre-wrap text-sm leading-6">{showText(defects, lang)}</p>
+        <article>
+          <h2 className="text-lg font-semibold tracking-tight text-ink">{text.defects}</h2>
+          <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-muted">{showText(defects, lang)}</p>
         </article>
       </section>
-      <section className="rounded-lg border border-line bg-white p-5">
-        <h2 className="font-bold">{text.description}</h2>
-        <p className="mt-2 whitespace-pre-wrap text-sm leading-6">{showText(description, lang)}</p>
+      <section>
+        <h2 className="text-lg font-semibold tracking-tight text-ink">{text.description}</h2>
+        <p className="mt-3 max-w-3xl whitespace-pre-wrap text-sm leading-7 text-muted">{showText(description, lang)}</p>
       </section>
       {!sold ? (
         <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white p-3 md:hidden">

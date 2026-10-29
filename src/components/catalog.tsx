@@ -122,9 +122,11 @@ export function Gallery({ photos, lang }: { photos: VehiclePhoto[]; lang: Lang }
 export function SpecTable({ vehicle, lang }: { vehicle: PublicVehicle; lang: Lang }) {
   const text = copy(lang);
   const maker = makerLabel(vehicle.maker, lang);
-  const model = `${modelLabel(vehicle.model, lang)}${vehicle.trim ? ` ${vehicle.trim}` : ""}`;
-  const year = vehicle.modelYear ? String(vehicle.modelYear) : text.unknown;
-  const mileage = formatKm(vehicle.mileageKm, lang);
+  const model = modelLabel(vehicle.model, lang);
+  const trim = vehicle.trim?.trim() || "";
+  const year = vehicle.modelYear != null ? String(vehicle.modelYear) : null;
+  const mileageValue =
+    vehicle.mileageKm != null ? vehicle.mileageKm.toLocaleString(localeTag(lang)) : null;
   const horsepower =
     vehicle.horsepowerPs != null
       ? lang === "ko"
@@ -132,49 +134,50 @@ export function SpecTable({ vehicle, lang }: { vehicle: PublicVehicle; lang: Lan
         : `${vehicle.horsepowerPs.toLocaleString(localeTag(lang))} PS`
       : null;
 
-  const secondary: Array<[string, string]> = [
-    [text.classLabel, classLabel(vehicle.vehicleClass, lang)],
-    vehicle.seats != null ? [text.seats, String(vehicle.seats)] : null,
-    horsepower ? [text.horsepower, horsepower] : null,
-    vehicle.transmission !== "unknown" ? [text.transmission, transmissionLabel(vehicle.transmission, lang)] : null,
-    vehicle.fuel !== "unknown" ? [text.fuel, fuelLabel(vehicle.fuel, lang)] : null,
-    vehicle.transferType !== "unknown" ? [text.transferType, transferLabel(vehicle.transferType, lang)] : null,
-    vehicle.location ? [text.location, vehicle.location] : null,
-  ].filter((row): row is [string, string] => Boolean(row));
+  const secondary: Array<{ label: string; value: string }> = [
+    { label: text.classLabel, value: classLabel(vehicle.vehicleClass, lang) },
+    vehicle.seats != null ? { label: text.seats, value: String(vehicle.seats) } : null,
+    horsepower ? { label: text.horsepower, value: horsepower } : null,
+    vehicle.transmission !== "unknown" ? { label: text.transmission, value: transmissionLabel(vehicle.transmission, lang) } : null,
+    vehicle.fuel !== "unknown" ? { label: text.fuel, value: fuelLabel(vehicle.fuel, lang) } : null,
+    vehicle.transferType !== "unknown" ? { label: text.transferType, value: transferLabel(vehicle.transferType, lang) } : null,
+    vehicle.location ? { label: text.location, value: vehicle.location } : null,
+  ].filter((row): row is { label: string; value: string } => Boolean(row));
 
   return (
-    <div className="border border-line bg-white">
-      <div className="grid gap-6 border-b border-line px-5 py-6 sm:grid-cols-2">
-        <div>
-          <p className="text-xs font-medium tracking-wide text-muted">{text.maker}</p>
-          <p className="mt-2 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">{maker}</p>
-        </div>
-        <div>
-          <p className="text-xs font-medium tracking-wide text-muted">{text.model}</p>
-          <p className="mt-2 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">{model}</p>
-        </div>
+    <div className="spec-showcase">
+      <div className="spec-showcase__identity">
+        <p className="spec-showcase__maker">{maker}</p>
+        <h2 className="spec-showcase__model">
+          {model}
+          {trim ? <span className="spec-showcase__trim">{trim}</span> : null}
+        </h2>
       </div>
 
-      <div className="grid gap-px bg-line sm:grid-cols-2">
-        <div className="bg-white px-5 py-5">
-          <p className="text-xs font-medium tracking-wide text-muted">{text.year}</p>
-          <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight text-ink">{year}</p>
+      <div className="spec-showcase__highlights" aria-label={text.specs}>
+        <div className="spec-showcase__stat">
+          <p className="spec-showcase__stat-value tabular-nums">{year ?? text.unknown}</p>
+          <p className="spec-showcase__stat-label">{text.year}</p>
         </div>
-        <div className="bg-white px-5 py-5">
-          <p className="text-xs font-medium tracking-wide text-muted">{text.mileage}</p>
-          <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight text-ink">{mileage}</p>
+        <div className="spec-showcase__stat-rule" aria-hidden="true" />
+        <div className="spec-showcase__stat">
+          <p className="spec-showcase__stat-value tabular-nums">
+            {mileageValue ?? text.unknown}
+            {mileageValue ? <span className="spec-showcase__stat-unit"> km</span> : null}
+          </p>
+          <p className="spec-showcase__stat-label">{text.mileage}</p>
         </div>
       </div>
 
       {secondary.length ? (
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-3 border-t border-line px-5 py-4 sm:grid-cols-3">
-          {secondary.map(([label, value]) => (
-            <div key={label}>
-              <dt className="text-[11px] text-muted">{label}</dt>
-              <dd className="mt-0.5 text-sm text-ink">{value}</dd>
-            </div>
+        <ul className="spec-showcase__meta">
+          {secondary.map((item) => (
+            <li key={item.label} className="spec-showcase__meta-item">
+              <span className="spec-showcase__meta-label">{item.label}</span>
+              <span className="spec-showcase__meta-value">{item.value}</span>
+            </li>
           ))}
-        </dl>
+        </ul>
       ) : null}
     </div>
   );
