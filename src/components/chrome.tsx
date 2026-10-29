@@ -176,10 +176,10 @@ export function Header({
 
   return (
     <header className="sticky top-0 z-40 overflow-visible border-b border-line bg-white">
-      <div className="relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <Link href={href("")} className="flex items-center gap-2.5 text-foreground" aria-label="K-BUS HUB">
-          <BrandLogo size="sm" priority />
-          <BrandWordmark />
+      <div className="relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3.5 sm:py-4">
+        <Link href={href("")} className="flex items-center gap-3 text-foreground" aria-label="K-BUS HUB">
+          <BrandLogo size="lg" priority />
+          <BrandWordmark size="lg" />
         </Link>
         <nav className="hidden items-center gap-5 text-sm font-medium md:flex" aria-label="main">
           {links.map(([label, hrefValue]) => (
