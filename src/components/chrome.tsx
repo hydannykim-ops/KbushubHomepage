@@ -184,7 +184,7 @@ export function Header({
   return (
     <header className="sticky top-0 z-[60] overflow-visible border-b border-line bg-white">
       <div className="relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3.5 sm:py-4">
-        <Link href={href("")} className="flex items-center gap-3 text-foreground" aria-label="K-BUS HUB">
+        <Link href={href("")} className="flex min-w-0 items-center gap-3 text-foreground sm:gap-3.5" aria-label="K-BUS HUB">
           <BrandLogo size="lg" priority />
           <BrandWordmark size="lg" />
         </Link>
@@ -256,9 +256,7 @@ export function Footer({
         <div>
           <div className="flex items-center gap-2.5">
             <BrandLogo size="sm" />
-            <p className="text-base font-semibold tracking-tight">
-              K-BUS HUB
-            </p>
+            <BrandWordmark className="text-white" />
           </div>
           <p className="mt-3 max-w-xs leading-6 text-white/70">{text.footerNote}</p>
         </div>
