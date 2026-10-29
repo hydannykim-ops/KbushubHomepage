@@ -134,7 +134,13 @@ export function SpecTable({ vehicle, lang }: { vehicle: PublicVehicle; lang: Lan
         : `${vehicle.horsepowerPs.toLocaleString(localeTag(lang))} PS`
       : null;
 
+  const transferValue =
+    vehicle.transferType === "transfer" || vehicle.transferType === "scrap_replace"
+      ? transferLabel(vehicle.transferType, lang)
+      : "";
+
   const secondary: Array<{ label: string; value: string }> = [
+    { label: text.transferMode, value: transferValue },
     { label: text.classLabel, value: classLabel(vehicle.vehicleClass, lang) },
     vehicle.seats != null ? { label: text.seats, value: String(vehicle.seats) } : null,
     horsepower ? { label: text.horsepower, value: horsepower } : null,
@@ -169,7 +175,7 @@ export function SpecTable({ vehicle, lang }: { vehicle: PublicVehicle; lang: Lan
           {secondary.map((item) => (
             <div key={item.label} className="spec-board__row">
               <dt>{item.label}</dt>
-              <dd>{item.value}</dd>
+              <dd>{item.value || "\u00A0"}</dd>
             </div>
           ))}
         </dl>
