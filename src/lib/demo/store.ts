@@ -852,7 +852,10 @@ export function createDemoStore(dir: string) {
           trim: null,
           modelYear: input.modelYear,
           modelMonth: input.modelMonth,
-          firstRegisteredOn: null,
+          firstRegisteredOn:
+            input.modelYear != null && input.modelMonth != null
+              ? `${input.modelYear}-${String(input.modelMonth).padStart(2, "0")}-01`
+              : null,
           mileageKm: input.mileageKm,
           seats: input.seats,
           horsepowerPs: null,

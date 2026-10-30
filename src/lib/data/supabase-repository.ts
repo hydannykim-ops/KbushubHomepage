@@ -41,10 +41,23 @@ import { createAnonClient, createServiceClient, createSupabaseServer } from "../
 import { DataAccessError, sanitizeErrorDetail } from "./errors";
 import { StoreError } from "../demo/store";
 
+/** Catalog fields. Prefer service role for listing_source/seller_company (column grants may block anon). */
 const publicColumns =
-  "id, stock_no, status, vehicle_class, maker, model, trim, model_year, model_month, first_registered_on, mileage_km, seats, horsepower_ps, transmission, fuel, engine_model, displacement_cc, steering, long_body, transfer_type, length_mm, width_mm, height_mm, previous_use_ko, previous_use_en, location, maintenance_ko, maintenance_en, defects_ko, defects_en, description_ko, description_en, photographed_on, stock_checked_on, featured, domestic_price_krw, export_price_amount, export_price_currency, export_price_terms_ko, export_price_terms_en, video_url, created_at, updated_at, listing_source, seller_company, vehicle_photos(id, vehicle_id, category, storage_path, content_type, sort_order, is_cover, alt_ko, alt_en)";
+  "id, stock_no, status, vehicle_class, maker, model, trim, model_year, first_registered_on, mileage_km, seats, horsepower_ps, transmission, fuel, engine_model, displacement_cc, steering, long_body, transfer_type, length_mm, width_mm, height_mm, previous_use_ko, previous_use_en, location, maintenance_ko, maintenance_en, defects_ko, defects_en, description_ko, description_en, photographed_on, stock_checked_on, featured, domestic_price_krw, export_price_amount, export_price_currency, export_price_terms_ko, export_price_terms_en, video_url, created_at, updated_at, listing_source, seller_company, vehicle_photos(id, vehicle_id, category, storage_path, content_type, sort_order, is_cover, alt_ko, alt_en)";
 
 const adminColumns = `${publicColumns}, owner_id, seller_name, seller_email`;
+
+function monthFromRow(row: Record<string, unknown>): number | null {
+  const direct = num(row.model_month);
+  if (direct != null && direct >= 1 && direct <= 12) return direct;
+  const registered = day(row.first_registered_on);
+  if (!registered) return null;
+  const year = num(row.model_year);
+  if (year == null) return null;
+  if (!registered.startsWith(`${year}-`)) return null;
+  const month = Number(registered.slice(5, 7));
+  return Number.isInteger(month) && month >= 1 && month <= 12 ? month : null;
+}
 
 function fail(error: unknown, context: string): never {
   const upstream =
@@ -142,7 +155,7 @@ function mapVehicle(row: Record<string, unknown>, includeInternal: boolean): Adm
     model: String(row.model),
     trim: text(row.trim),
     modelYear: num(row.model_year),
-    modelMonth: num(row.model_month),
+    modelMonth: monthFromRow(row),
     firstRegisteredOn: day(row.first_registered_on),
     mileageKm: num(row.mileage_km),
     seats: num(row.seats),
@@ -200,7 +213,6 @@ function vehicleRow(input: VehicleInput) {
     model: input.model,
     trim: input.trim,
     model_year: input.modelYear,
-    model_month: input.modelMonth,
     first_registered_on: input.firstRegisteredOn,
     mileage_km: input.mileageKm,
     seats: input.seats,
@@ -436,15 +448,21 @@ export function createSupabaseRepository() {
       return mapSettings(result.data as Record<string, unknown>);
     },
     async listPublic(query: VehicleQuery, mode: TradeMode): Promise<FilterResult> {
-      const anon = createAnonClient();
-      const result = await anon.from("vehicles").select(publicColumns).in("status", ["available", "reserved", "sold"]);
+      // Service role: seller_company is revoked for anon; status filter keeps the catalog public.
+      const service = createServiceClient();
+      const result = await service.from("vehicles").select(publicColumns).in("status", ["available", "reserved", "sold"]);
       if (result.error) fail(result.error, "public_list");
       const vehicles = (result.data ?? []).map((row) => mapVehicle(row as Record<string, unknown>, false));
       return filterVehicles(vehicles, query, mode);
     },
     async getPublicByStockNo(stockNo: string) {
-      const anon = createAnonClient();
-      const result = await anon.from("vehicles").select(publicColumns).eq("stock_no", stockNo).in("status", ["available", "reserved", "sold"]).maybeSingle();
+      const service = createServiceClient();
+      const result = await service
+        .from("vehicles")
+        .select(publicColumns)
+        .eq("stock_no", stockNo)
+        .in("status", ["available", "reserved", "sold"])
+        .maybeSingle();
       if (result.error) fail(result.error, "public_vehicle");
       if (!result.data) return null;
       return toPublicVehicle(mapVehicle(result.data as Record<string, unknown>, false));
@@ -452,8 +470,8 @@ export function createSupabaseRepository() {
     async getPublicByStockNos(stockNos: string[]) {
       const wanted = [...new Set(stockNos.map((item) => item.trim()).filter(Boolean))];
       if (!wanted.length) return new Map();
-      const anon = createAnonClient();
-      const result = await anon.from("vehicles").select(publicColumns).in("stock_no", wanted).in("status", ["available", "reserved", "sold"]);
+      const service = createServiceClient();
+      const result = await service.from("vehicles").select(publicColumns).in("stock_no", wanted).in("status", ["available", "reserved", "sold"]);
       if (result.error) fail(result.error, "public_vehicles");
       const map = new Map<string, ReturnType<typeof toPublicVehicle>>();
       for (const row of result.data ?? []) {
@@ -1175,7 +1193,10 @@ export function createSupabaseRepository() {
         maker: input.maker,
         model: input.model,
         model_year: input.modelYear,
-        model_month: input.modelMonth,
+        first_registered_on:
+          input.modelYear != null && input.modelMonth != null
+            ? `${input.modelYear}-${String(input.modelMonth).padStart(2, "0")}-01`
+            : null,
         mileage_km: input.mileageKm,
         seats: input.seats,
         transmission: input.transmission,
