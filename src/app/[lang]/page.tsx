@@ -44,7 +44,7 @@ export default async function HomePage({
         slides={[
           {
             id: "hub",
-            image: "/demo/hero-yard.jpg",
+            image: "/demo/hero-hub.jpg",
             imageAlt: text.mediaHero,
             brand: "K-BUS HUB",
             title: text.heroTitle,
@@ -55,7 +55,7 @@ export default async function HomePage({
           },
           {
             id: "sell",
-            image: "/demo/medium-cover.jpg",
+            image: "/demo/hero-sell.jpg",
             imageAlt: text.navSell,
             title: text.sellTitle,
             body: text.sellBody,
@@ -64,7 +64,7 @@ export default async function HomePage({
           },
           {
             id: "scrap",
-            image: "/demo/large-cover.jpg",
+            image: "/demo/hero-scrap.jpg",
             imageAlt: text.navScrap,
             title: text.scrapTitle,
             body: text.scrapBody,
