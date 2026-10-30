@@ -30,6 +30,7 @@ export function PhotoSlotUploader({
   const text = copy(lang);
   const [slots, setSlots] = useState(emptySlots);
   const [extras, setExtras] = useState<ExtraItem[]>([]);
+  const slotInputRefs = useRef<Partial<Record<PhotoSlotId, HTMLInputElement | null>>>({});
   const extraInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -43,6 +44,7 @@ export function PhotoSlotUploader({
       for (const item of current) URL.revokeObjectURL(item.preview);
       return [];
     });
+    for (const slot of PHOTO_SLOTS) assignFiles(slotInputRefs.current[slot.id] ?? null, []);
     assignFiles(extraInputRef.current, []);
   }, [resetKey]);
 
@@ -62,6 +64,8 @@ export function PhotoSlotUploader({
 
   function onPick(id: PhotoSlotId, fileList: FileList | null) {
     const file = fileList?.[0] ?? null;
+    // Keep the same input mounted — remounting clears FormData and triggers "select a file" again.
+    assignFiles(slotInputRefs.current[id] ?? null, file ? [file] : []);
     setSlots((current) => {
       const previous = current[id];
       if (previous.preview) URL.revokeObjectURL(previous.preview);
@@ -76,6 +80,7 @@ export function PhotoSlotUploader({
   }
 
   function clearSlot(id: PhotoSlotId) {
+    assignFiles(slotInputRefs.current[id] ?? null, []);
     setSlots((current) => {
       const previous = current[id];
       if (previous.preview) URL.revokeObjectURL(previous.preview);
@@ -168,7 +173,9 @@ export function PhotoSlotUploader({
                   </span>
                 )}
                 <input
-                  key={`${slot.id}-${state.file ? `${state.file.name}-${state.file.size}` : "empty"}`}
+                  ref={(node) => {
+                    slotInputRefs.current[slot.id] = node;
+                  }}
                   name={slot.field}
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
