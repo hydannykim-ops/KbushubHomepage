@@ -58,7 +58,14 @@ export default async function VehicleDetailPage({
   const text = copy(lang);
   const site = await loadSite();
   if (!site.ok) return <DataProblem lang={lang} code={site.code} />;
-  const vehicle = await site.repo.getPublicByStockNo(stockNo);
+  const publicVehicle = await site.repo.getPublicByStockNo(stockNo);
+  const session = await getSession();
+  const ownedVehicle =
+    !publicVehicle && session && (session.role === "dealer" || session.role === "customer")
+      ? await site.repo.getOwnedByStockNo(stockNo, session.sub)
+      : null;
+  const vehicle = publicVehicle ?? ownedVehicle;
+  const ownerPreview = Boolean(ownedVehicle && !publicVehicle);
   if (!vehicle) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16">
@@ -71,7 +78,6 @@ export default async function VehicleDetailPage({
   }
   const listedBy = vehicle.listingCompany ?? site.settings.companyName;
   const price = catalogPriceView(vehicle, lang, listedBy);
-  const session = await getSession();
   const signedIn = Boolean(session && (session.role === "customer" || session.role === "dealer"));
   const member = signedIn && session ? await site.repo.getMember(session.sub) : null;
   const inquiryMode = inquiryTradeModeForCountry(member?.country);
@@ -85,6 +91,7 @@ export default async function VehicleDetailPage({
     referralCode: ctx.ref,
   });
   const sold = vehicle.status === "sold";
+  const showConsult = !sold && !ownerPreview && vehicle.status !== "review" && vehicle.status !== "hidden";
   const field = contentFieldLang(lang);
   const description = field === "ko" ? vehicle.descriptionKo : vehicle.descriptionEn;
   const maintenance = field === "ko" ? vehicle.maintenanceKo : vehicle.maintenanceEn;
@@ -108,8 +115,13 @@ export default async function VehicleDetailPage({
   const showTransfer = vehicle.transferType !== "unknown";
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-7 px-4 py-7 pb-28 md:pb-10">
+    <div className={`mx-auto grid max-w-6xl gap-7 px-4 py-7 ${showConsult || sold ? "pb-28 md:pb-10" : "pb-10"}`}>
       <SubmitBanner lang={lang} submitted={typeof rawParams.submitted === "string" ? rawParams.submitted : undefined} error={typeof rawParams.error === "string" ? rawParams.error : undefined} />
+      {ownerPreview ? (
+        <p className="rounded-md border border-line bg-[#e8eef8] px-4 py-3 text-sm text-ink" role="status">
+          {text.reviewNote}
+        </p>
+      ) : null}
 
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.78fr)] lg:gap-6">
         <Gallery photos={vehicle.photos} lang={lang} />
@@ -167,7 +179,7 @@ export default async function VehicleDetailPage({
           </div>
 
           <div className="vehicle-summary__block">
-            {!sold ? (
+            {showConsult ? (
               <ContactPhonePanel
                 lang={lang}
                 phone={contactPhone}
@@ -176,11 +188,15 @@ export default async function VehicleDetailPage({
                 stockNo={vehicle.stockNo}
                 signedIn={signedIn}
               />
-            ) : (
+            ) : sold ? (
               <Link href={hrefTo(lang, "/wanted", ctx, { model: vehicle.model })} className="inline-flex w-full justify-center bg-primary px-4 py-3 text-sm font-semibold text-white">
                 {text.similar}
               </Link>
-            )}
+            ) : ownerPreview ? (
+              <Link href={hrefTo(lang, "/account", ctx, { tab: "listings" })} className="inline-flex w-full justify-center border border-line px-4 py-3 text-center text-sm font-semibold">
+                {text.myListings}
+              </Link>
+            ) : null}
           </div>
         </aside>
       </div>
@@ -208,7 +224,7 @@ export default async function VehicleDetailPage({
         <p className="mt-2 max-w-3xl whitespace-pre-wrap text-sm leading-6 text-muted">{showText(description, lang)}</p>
       </section>
 
-      {!sold ? (
+      {showConsult ? (
         <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white p-3 md:hidden">
           <div className="mx-auto max-w-6xl">
             <a href="#inquiry" className="block bg-primary px-3 py-3 text-center text-sm font-semibold text-white">
@@ -216,13 +232,13 @@ export default async function VehicleDetailPage({
             </a>
           </div>
         </div>
-      ) : (
+      ) : sold ? (
         <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white p-3 md:hidden">
           <Link href={hrefTo(lang, "/wanted", ctx, { model: vehicle.model })} className="block bg-primary px-3 py-3 text-center text-sm font-semibold text-white">
             {text.similar}
           </Link>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

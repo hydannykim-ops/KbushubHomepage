@@ -3,7 +3,7 @@ import { mkdtemp, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { containsInternalKey, publicJson, visibleReferrals } from "../src/lib/domain/access";
+import { containsInternalKey, inquiryViewerRole, publicJson, visibleReferrals } from "../src/lib/domain/access";
 import { readSession, signSession } from "../src/lib/domain/auth-token";
 import { inquiryTradeModeForCountry, isKoreaCountry } from "../src/lib/domain/country";
 import { filterVehicles, parseVehicleQuery, serializeVehicleQuery } from "../src/lib/domain/filters";
@@ -11,7 +11,8 @@ import { catalogPriceView, internalProfit, summarizeQuote } from "../src/lib/dom
 import { normalizeReferralCode, referralForInquiry, rememberReferral, whatsappHref, whatsappMessage } from "../src/lib/domain/referral";
 import { acceptOrReject, submissionGate } from "../src/lib/domain/submit";
 import { checkImage } from "../src/lib/domain/uploads";
-import { parseInquiry, parseQuote } from "../src/lib/domain/validation";
+import { parseInquiry, parseQuote, parseScrap } from "../src/lib/domain/validation";
+import { clampPhotoWidth, photoUrl } from "../src/lib/domain/photo-url";
 import {
   makerLabel,
   makersForClass,
@@ -449,6 +450,9 @@ test("dealer listings stay in review and customers cannot publish", async () => 
   assert.equal(publicJson({ ...listing, internal: { purchaseCost: 1, purchaseCurrency: "KRW", actualSaleAmount: null, saleCurrency: null, extraCosts: null, agentFee: null, feeCurrency: null, note: "비밀" }, ownerId: dealer.id, sellerName: dealer.name, sellerEmail: dealer.email, sellerCompany: dealer.company }), null);
   const owned = await store.listOwned(dealer.id);
   assert.equal(owned[0]?.stockNo, listing.stockNo);
+  assert.equal((await store.getOwnedByStockNo(listing.stockNo, dealer.id))?.stockNo, listing.stockNo);
+  assert.equal(await store.getOwnedByStockNo(listing.stockNo, customer.id), null);
+  assert.equal(await store.getPublicByStockNo(listing.stockNo), null);
   await store.createInquiry(
     {
       kind: "purchase",
@@ -484,11 +488,18 @@ test("dealer listings stay in review and customers cannot publish", async () => 
 
 test("migration locks down internal tables and admin role grants", async () => {
   const sql = await readFile(path.join(process.cwd(), "supabase/migrations/0001_init.sql"), "utf8");
+  const messagesSql = await readFile(path.join(process.cwd(), "supabase/migrations/0004_inquiry_messages.sql"), "utf8");
+  const scrapSql = await readFile(path.join(process.cwd(), "supabase/migrations/0005_scrap_requests.sql"), "utf8");
   assert.match(sql, /revoke all on table public\.vehicle_internal from anon, authenticated/i);
   assert.match(sql, /revoke all on table public\.inquiries from anon, authenticated/i);
   assert.match(sql, /enable row level security/i);
   assert.doesNotMatch(sql, /create policy[^;]+insert[^;]+user_roles/i);
   assert.match(sql, /agent_my_referrals/);
+  assert.match(messagesSql, /create table if not exists public\.inquiry_messages/i);
+  assert.match(messagesSql, /revoke all on table public\.inquiry_messages from anon, authenticated/i);
+  assert.match(scrapSql, /check \(type in \('wanted', 'sell', 'scrap'\)\)/i);
+  assert.match(scrapSql, /add column if not exists plate_no text/i);
+  assert.match(scrapSql, /revoke select \(plate_no\) on table public\.vehicle_requests from anon, authenticated/i);
   assert.match(sql, /privacy_collection_enabled boolean not null default false/i);
   const members = await readFile(path.join(process.cwd(), "supabase/migrations/0002_members_and_review.sql"), "utf8");
   assert.match(members, /revoke all on table public\.member_profiles from anon, authenticated/i);
@@ -549,4 +560,206 @@ test("catalog labels localize maker model series for non-Korean UI", () => {
   assert.equal(vehicleTitle({ maker: "현대", model: "카운티", trim: "데모" }, "en"), "Hyundai County 데모");
   assert.equal(vehicleTitle({ maker: "현대", model: "카운티", trim: "데모" }, "en", { includeTrim: false }), "Hyundai County");
   assert.equal(vehicleTitle({ maker: "현대", model: "카운티" }, "ko"), "현대 카운티");
+});
+
+test("photo urls use width variants for uploads and keep demo paths static", () => {
+  assert.equal(clampPhotoWidth("200"), 320);
+  assert.equal(clampPhotoWidth("900"), 1200);
+  assert.equal(clampPhotoWidth("9999"), 1600);
+  const uploaded = {
+    id: "p1",
+    vehicleId: "v1",
+    category: "front" as const,
+    placeholder: false,
+    storage: "file" as const,
+    path: "uploads/p1.jpg",
+    contentType: "image/jpeg",
+    sortOrder: 0,
+    isCover: true,
+    altKo: "",
+    altEn: "",
+  };
+  const demo = { ...uploaded, id: "p2", placeholder: true, storage: "placeholder" as const, path: "/demo/county-cover.jpg", contentType: null };
+  assert.equal(photoUrl(uploaded, 320), "/api/media/photo/p1?w=320");
+  assert.equal(photoUrl(demo, 320), "/demo/county-cover.jpg");
+});
+
+test("inquiry chat lets buyer and listing owner reply on the same thread", async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), "kbus-chat-"));
+  const store = createDemoStore(dir);
+  const dealer = await store.signupMember({
+    role: "dealer",
+    name: "딜러",
+    email: "dealer-chat@example.com",
+    password: "password1",
+    phone: null,
+    company: "딜러상사",
+    country: "한국",
+    consent: true,
+    companyWebsite: "",
+  });
+  const buyer = await store.signupMember({
+    role: "customer",
+    name: "구매자",
+    email: "buyer-chat@example.com",
+    password: "password1",
+    phone: null,
+    company: null,
+    country: "한국",
+    consent: true,
+    companyWebsite: "",
+  });
+  const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0]);
+  const listing = await store.createDealerListing(
+    dealer,
+    {
+      vehicleClass: "county",
+      maker: "현대",
+      model: "카운티",
+      modelYear: 2019,
+      mileageKm: 5000,
+      seats: 15,
+      transmission: "automatic",
+      fuel: "diesel",
+      location: "오산",
+      domesticPriceKrw: 2000000,
+      descriptionKo: null,
+      descriptionEn: null,
+    },
+    [
+      { bytes: png, contentType: "image/png", category: "front", cover: true, label: "정면" },
+      { bytes: png, contentType: "image/png", category: "front_side", cover: false, label: "좌측" },
+      { bytes: png, contentType: "image/png", category: "exterior", cover: false, label: "우측" },
+      { bytes: png, contentType: "image/png", category: "rear", cover: false, label: "후면" },
+    ],
+  );
+  // Publish so createInquiry can attach the stock number.
+  const adminVehicle = await store.getAdminVehicle(listing.id);
+  assert.ok(adminVehicle);
+  await store.updateVehicle(listing.id, {
+    stockNo: adminVehicle.stockNo,
+    status: "available",
+    vehicleClass: adminVehicle.vehicleClass,
+    maker: adminVehicle.maker,
+    model: adminVehicle.model,
+    trim: adminVehicle.trim,
+    modelYear: adminVehicle.modelYear,
+    firstRegisteredOn: adminVehicle.firstRegisteredOn,
+    mileageKm: adminVehicle.mileageKm,
+    seats: adminVehicle.seats,
+    horsepowerPs: adminVehicle.horsepowerPs,
+    transmission: adminVehicle.transmission,
+    fuel: adminVehicle.fuel,
+    engineModel: adminVehicle.engineModel,
+    displacementCc: adminVehicle.displacementCc,
+    steering: adminVehicle.steering,
+    longBody: adminVehicle.longBody,
+    transferType: adminVehicle.transferType,
+    lengthMm: adminVehicle.lengthMm,
+    widthMm: adminVehicle.widthMm,
+    heightMm: adminVehicle.heightMm,
+    previousUseKo: adminVehicle.previousUseKo,
+    previousUseEn: adminVehicle.previousUseEn,
+    location: adminVehicle.location,
+    maintenanceKo: adminVehicle.maintenanceKo,
+    maintenanceEn: adminVehicle.maintenanceEn,
+    defectsKo: adminVehicle.defectsKo,
+    defectsEn: adminVehicle.defectsEn,
+    descriptionKo: adminVehicle.descriptionKo,
+    descriptionEn: adminVehicle.descriptionEn,
+    photographedOn: adminVehicle.photographedOn,
+    stockCheckedOn: adminVehicle.stockCheckedOn,
+    featured: adminVehicle.featured,
+    domesticPriceKrw: adminVehicle.domesticPriceKrw,
+    exportPriceAmount: adminVehicle.exportPriceAmount,
+    exportPriceCurrency: adminVehicle.exportPriceCurrency,
+    exportPriceTermsKo: adminVehicle.exportPriceTermsKo,
+    exportPriceTermsEn: adminVehicle.exportPriceTermsEn,
+    videoUrl: adminVehicle.videoUrl,
+    internal: adminVehicle.internal,
+  });
+
+  const inquiry = await store.createInquiry(
+    {
+      kind: "purchase",
+      tradeMode: "domestic",
+      name: buyer.name,
+      email: buyer.email,
+      phone: null,
+      messenger: null,
+      country: "KR",
+      stockNo: adminVehicle.stockNo,
+      message: "이 버스 보고 문의합니다.",
+      destinationCountry: null,
+      destinationPort: null,
+      destinationPortUndecided: false,
+      shippingMethod: null,
+      consent: true,
+      companyWebsite: "",
+      lang: "ko",
+    },
+    { firstReferralCode: null, submitReferralCode: null },
+    buyer.id,
+  );
+  assert.equal(inquiry.memberId, buyer.id);
+  const firstMessages = await store.listInquiryMessages(inquiry.id);
+  assert.equal(firstMessages.length, 1);
+  assert.equal(firstMessages[0]?.authorRole, "buyer");
+
+  const buyerInbox = await store.listMemberInquiries(buyer);
+  assert.equal(buyerInbox.some((item) => item.id === inquiry.id), true);
+  const ownerInbox = await store.listOwnerInquiries(dealer.id);
+  assert.equal(ownerInbox.some((item) => item.id === inquiry.id), true);
+
+  const buyerThread = await store.openInquiryThread(inquiry.id, { memberId: buyer.id, email: buyer.email });
+  assert.equal(buyerThread?.viewerRole, "buyer");
+  const sellerThread = await store.openInquiryThread(inquiry.id, { memberId: dealer.id, email: dealer.email });
+  assert.equal(sellerThread?.viewerRole, "seller");
+  assert.equal(await store.openInquiryThread(inquiry.id, { memberId: "other", email: "other@example.com" }), null);
+
+  await store.addInquiryMessage(inquiry.id, { authorRole: "seller", authorId: dealer.id, body: "재고 있습니다. 방문 가능합니다." });
+  await store.addInquiryMessage(inquiry.id, { authorRole: "buyer", authorId: buyer.id, body: "내일 오전에 가겠습니다." });
+  const thread = await store.openInquiryThread(inquiry.id, { memberId: buyer.id, email: buyer.email });
+  assert.equal(thread?.messages.length, 3);
+  assert.equal(inquiryViewerRole(inquiry, { memberId: dealer.id, email: dealer.email }, dealer.id), "seller");
+  assert.equal(inquiryViewerRole(inquiry, { memberId: null, email: null, admin: true }, dealer.id), "staff");
+});
+
+test("parseScrap accepts plate region and stores scrap requests", async () => {
+  const invalid = parseScrap({ plateNo: "12", model: "카운티", location: "서울", name: "홍길동", phone: "01012345678", consent: "on" }, "ko");
+  assert.equal(invalid.ok, false);
+  const badRegion = parseScrap(
+    { plateNo: "12가3456", model: "카운티", location: "도쿄", name: "홍길동", phone: "01012345678", consent: "on" },
+    "ko",
+  );
+  assert.equal(badRegion.ok, false);
+  const parsed = parseScrap(
+    {
+      plateNo: "12가 3456",
+      model: "현대 유니버스",
+      modelYear: "2015",
+      location: "경기",
+      name: "김폐차",
+      phone: "010-1111-2222",
+      email: "scrap@example.com",
+      message: "견적만",
+      consent: "on",
+      companyWebsite: "",
+    },
+    "ko",
+  );
+  assert.equal(parsed.ok, true);
+  if (!parsed.ok) return;
+  assert.equal(parsed.data.plateNo, "12가3456");
+  assert.equal(parsed.data.location, "경기");
+  assert.equal(parsed.data.modelYear, 2015);
+
+  const dir = await mkdtemp(path.join(tmpdir(), "kbus-scrap-"));
+  const store = createDemoStore(dir);
+  const created = await store.createScrap(parsed.data, null);
+  assert.equal(created.type, "scrap");
+  assert.equal(created.plateNo, "12가3456");
+  assert.equal(created.location, "경기");
+  const listed = await store.listRequests();
+  assert.ok(listed.some((item) => item.id === created.id && item.type === "scrap"));
 });

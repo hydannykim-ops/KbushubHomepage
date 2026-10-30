@@ -50,12 +50,14 @@ export default async function EditVehiclePage({ params }: { params: Promise<{ id
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {realPhotos.map((photo) => (
               <figure key={photo.id} className="overflow-hidden border border-line bg-[#f3f5f8]">
-                <a href={`/api/media/photo/${photo.id}`} target="_blank" rel="noreferrer" className="block">
+                <a href={`/api/media/photo/${photo.id}?w=1600`} target="_blank" rel="noreferrer" className="block">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={`/api/media/photo/${photo.id}`}
+                    src={`/api/media/photo/${photo.id}?w=640`}
                     alt={photo.altKo || photo.altEn || photoLabel(photo.category, "ko")}
                     className="aspect-[4/3] w-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                   />
                 </a>
                 <figcaption className="flex items-center justify-between gap-2 border-t border-line bg-white px-3 py-2 text-xs">
@@ -63,7 +65,7 @@ export default async function EditVehiclePage({ params }: { params: Promise<{ id
                     {photoLabel(photo.category, "ko")}
                     {photo.isCover ? " · 대표" : ""}
                   </span>
-                  <a href={`/api/media/photo/${photo.id}`} target="_blank" rel="noreferrer" className="text-primary">
+                  <a href={`/api/media/photo/${photo.id}?w=1600`} target="_blank" rel="noreferrer" className="text-primary">
                     원본
                   </a>
                 </figcaption>
@@ -109,9 +111,11 @@ export default async function EditVehiclePage({ params }: { params: Promise<{ id
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={`/api/media/photo/${photo.id}`}
+                  src={`/api/media/photo/${photo.id}?w=320`}
                   alt=""
                   className="aspect-square w-full object-cover"
+                  loading="lazy"
+                  decoding="async"
                 />
               )}
               <select name="category" defaultValue={photo.category} className="rounded-md border border-line px-2 py-1 text-sm">

@@ -392,6 +392,7 @@ export function buildSeed(): DemoState {
       vehicleId: "veh-c-01",
       stockNo: "HB-C-01",
       message: "데모 문의입니다. 실제 상담이 아닙니다.",
+      memberId: null,
       destinationCountry: "AE",
       destinationPort: null,
       destinationPortUndecided: true,
@@ -419,6 +420,7 @@ export function buildSeed(): DemoState {
       vehicleId: "veh-l-02",
       stockNo: "HB-L-02",
       message: "다른 추천 코드의 데모 문의",
+      memberId: null,
       destinationCountry: null,
       destinationPort: null,
       destinationPortUndecided: false,
@@ -454,10 +456,20 @@ export function buildSeed(): DemoState {
     updatedAt: "2026-07-06T00:00:00.000Z",
   };
 
+  const inquiryMessages = inquiries.map((inquiry) => ({
+    id: `msg-${inquiry.id}`,
+    inquiryId: inquiry.id,
+    authorRole: "buyer" as const,
+    authorId: inquiry.memberId,
+    body: inquiry.message,
+    createdAt: inquiry.createdAt,
+  }));
+
   return {
     settings,
     vehicles,
     inquiries,
+    inquiryMessages,
     quotes: [],
     agents,
     requests: [],

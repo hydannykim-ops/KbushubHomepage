@@ -1,6 +1,6 @@
 import "server-only";
 import { randomBytes, randomUUID } from "node:crypto";
-import { toOwnedListing, toPublicVehicle } from "../domain/access";
+import { inquiryViewerRole, toInquiryThreadSummary, toOwnedListing, toPublicVehicle } from "../domain/access";
 import { filterVehicles, type FilterResult } from "../domain/filters";
 import { quoteLineKeys } from "../domain/money";
 import { generateReferralCode } from "../domain/referral";
@@ -10,6 +10,8 @@ import type {
   AgentReferral,
   AssignmentHistory,
   Inquiry,
+  InquiryMessage,
+  InquiryMessageAuthor,
   Member,
   PhotoCategory,
   Quote,
@@ -22,7 +24,19 @@ import type {
   VehicleRequest,
 } from "../domain/types";
 import { extensionFor, type ImageType } from "../domain/uploads";
-import type { DealerListingInput, InquiryInput, InquiryUpdate, PartnerInput, QuoteInput, SellInput, SettingsInput, SignupInput, VehicleInput, WantedInput } from "../domain/validation";
+import type {
+  DealerListingInput,
+  InquiryInput,
+  InquiryUpdate,
+  PartnerInput,
+  QuoteInput,
+  ScrapInput,
+  SellInput,
+  SettingsInput,
+  SignupInput,
+  VehicleInput,
+  WantedInput,
+} from "../domain/validation";
 import { createAnonClient, createServiceClient, createSupabaseServer } from "../supabase/clients";
 import { DataAccessError } from "./errors";
 import { StoreError } from "../demo/store";
@@ -249,6 +263,24 @@ function mapSettings(row: Record<string, unknown>): SiteSettings {
   };
 }
 
+function mapInquiryMessage(row: Record<string, unknown>): InquiryMessage {
+  return {
+    id: String(row.id),
+    inquiryId: String(row.inquiry_id),
+    authorRole: row.author_role as InquiryMessageAuthor,
+    authorId: text(row.author_id),
+    body: String(row.body ?? ""),
+    createdAt: String(row.created_at),
+  };
+}
+
+async function fetchInquiryMessages(inquiryId: string): Promise<InquiryMessage[]> {
+  const service = createServiceClient();
+  const result = await service.from("inquiry_messages").select("*").eq("inquiry_id", inquiryId).order("created_at");
+  if (result.error) fail(result.error, "inquiry_messages");
+  return (result.data ?? []).map((row) => mapInquiryMessage(row as Record<string, unknown>));
+}
+
 function mapInquiry(row: Record<string, unknown>): Inquiry {
   return {
     id: String(row.id),
@@ -262,6 +294,7 @@ function mapInquiry(row: Record<string, unknown>): Inquiry {
     vehicleId: text(row.vehicle_id),
     stockNo: text(row.stock_no),
     message: String(row.message ?? ""),
+    memberId: text(row.member_id),
     destinationCountry: text(row.destination_country),
     destinationPort: text(row.destination_port),
     destinationPortUndecided: Boolean(row.destination_port_undecided),
@@ -328,6 +361,7 @@ function mapRequest(row: Record<string, unknown>, files: VehicleRequest["files"]
     id: String(row.id),
     type: row.type as VehicleRequest["type"],
     model: String(row.model),
+    plateNo: text(row.plate_no),
     modelYear: num(row.model_year),
     mileageKm: num(row.mileage_km),
     seats: num(row.seats),
@@ -508,7 +542,11 @@ export function createSupabaseRepository() {
       if (downloaded.error || !downloaded.data) return null;
       return { bytes: Buffer.from(await downloaded.data.arrayBuffer()), contentType: found.data.content_type };
     },
-    async createInquiry(input: InquiryInput, referral: { firstReferralCode: string | null; submitReferralCode: string | null }): Promise<Inquiry> {
+    async createInquiry(
+      input: InquiryInput,
+      referral: { firstReferralCode: string | null; submitReferralCode: string | null },
+      memberId: string | null = null,
+    ): Promise<Inquiry> {
       const service = createServiceClient();
       let vehicleId: string | null = null;
       let stockNo = input.stockNo;
@@ -524,6 +562,7 @@ export function createSupabaseRepository() {
         const agent = await service.from("agent_profiles").select("id").eq("referral_code", referral.firstReferralCode).eq("status", "approved").maybeSingle();
         assigned = agent.data?.id ?? null;
       }
+      const consentAt = new Date().toISOString();
       const inserted = await service
         .from("inquiries")
         .insert({
@@ -537,6 +576,7 @@ export function createSupabaseRepository() {
           vehicle_id: vehicleId,
           stock_no: stockNo,
           message: input.message,
+          member_id: memberId,
           destination_country: input.destinationCountry,
           destination_port: input.destinationPort,
           destination_port_undecided: input.destinationPortUndecided,
@@ -544,11 +584,19 @@ export function createSupabaseRepository() {
           first_referral_code: referral.firstReferralCode,
           submit_referral_code: referral.submitReferralCode,
           assigned_agent_id: assigned,
-          consent_at: new Date().toISOString(),
+          consent_at: consentAt,
         })
         .select("*")
         .single();
       if (inserted.error) fail(inserted.error, "inquiry_insert");
+      const firstMessage = await service.from("inquiry_messages").insert({
+        inquiry_id: inserted.data.id,
+        author_role: "buyer",
+        author_id: memberId,
+        body: input.message,
+        created_at: consentAt,
+      });
+      if (firstMessage.error) fail(firstMessage.error, "inquiry_message_insert");
       if (assigned) {
         await service.from("inquiry_agent_history").insert({
           inquiry_id: inserted.data.id,
@@ -612,6 +660,96 @@ export function createSupabaseRepository() {
       const result = await service.from("inquiries").select("*").eq("id", id).maybeSingle();
       if (result.error) fail(result.error, "inquiry_get");
       return result.data ? mapInquiry(result.data as Record<string, unknown>) : null;
+    },
+    async listInquiryMessages(inquiryId: string): Promise<InquiryMessage[]> {
+      return fetchInquiryMessages(inquiryId);
+    },
+    async listMemberInquiries(member: Pick<Member, "id" | "email">) {
+      const service = createServiceClient();
+      const byMember = await service.from("inquiries").select("*").eq("member_id", member.id).order("updated_at", { ascending: false });
+      if (byMember.error) fail(byMember.error, "member_inquiries");
+      const email = member.email.trim().toLowerCase();
+      const byEmail = email
+        ? await service.from("inquiries").select("*").ilike("email", email).order("updated_at", { ascending: false })
+        : { data: [], error: null };
+      if (byEmail.error) fail(byEmail.error, "member_inquiries_email");
+      const merged = new Map<string, Inquiry>();
+      for (const row of [...(byMember.data ?? []), ...(byEmail.data ?? [])]) {
+        const inquiry = mapInquiry(row as Record<string, unknown>);
+        merged.set(inquiry.id, inquiry);
+      }
+      const items = [];
+      for (const inquiry of merged.values()) {
+        const messages = await fetchInquiryMessages(inquiry.id);
+        items.push(toInquiryThreadSummary(inquiry, messages, "buyer"));
+      }
+      return items.sort((a, b) => b.lastMessageAt.localeCompare(a.lastMessageAt));
+    },
+    async listOwnerInquiries(ownerId: string) {
+      const service = createServiceClient();
+      const owned = await service.from("vehicles").select("id").eq("owner_id", ownerId);
+      if (owned.error) fail(owned.error, "owner_vehicles");
+      const ids = (owned.data ?? []).map((row) => String(row.id));
+      if (!ids.length) return [];
+      const result = await service.from("inquiries").select("*").in("vehicle_id", ids).order("updated_at", { ascending: false });
+      if (result.error) fail(result.error, "owner_inquiries");
+      const items = [];
+      for (const row of result.data ?? []) {
+        const inquiry = mapInquiry(row as Record<string, unknown>);
+        const messages = await fetchInquiryMessages(inquiry.id);
+        items.push(toInquiryThreadSummary(inquiry, messages, "seller"));
+      }
+      return items.sort((a, b) => b.lastMessageAt.localeCompare(a.lastMessageAt));
+    },
+    async openInquiryThread(
+      inquiryId: string,
+      viewer: { memberId: string | null; email: string | null; admin?: boolean },
+    ): Promise<{ inquiry: Inquiry; messages: InquiryMessage[]; viewerRole: InquiryMessageAuthor } | null> {
+      const service = createServiceClient();
+      const found = await service.from("inquiries").select("*").eq("id", inquiryId).maybeSingle();
+      if (found.error) fail(found.error, "inquiry_thread");
+      if (!found.data) return null;
+      const inquiry = mapInquiry(found.data as Record<string, unknown>);
+      let ownerId: string | null = null;
+      if (inquiry.vehicleId) {
+        const vehicle = await service.from("vehicles").select("owner_id").eq("id", inquiry.vehicleId).maybeSingle();
+        if (vehicle.error) fail(vehicle.error, "inquiry_thread_owner");
+        ownerId = text(vehicle.data?.owner_id);
+      }
+      const viewerRole = inquiryViewerRole(inquiry, viewer, ownerId);
+      if (!viewerRole) return null;
+      const messages = await fetchInquiryMessages(inquiryId);
+      return { inquiry, messages, viewerRole };
+    },
+    async addInquiryMessage(
+      inquiryId: string,
+      input: { authorRole: InquiryMessageAuthor; authorId: string | null; body: string },
+    ): Promise<InquiryMessage> {
+      const body = input.body.trim();
+      if (body.length < 1 || body.length > 4000) throw new StoreError("invalid_message");
+      const service = createServiceClient();
+      const current = await service.from("inquiries").select("id, status").eq("id", inquiryId).maybeSingle();
+      if (current.error) fail(current.error, "inquiry_message_lookup");
+      if (!current.data) throw new StoreError("not_found");
+      if (current.data.status === "closed") throw new StoreError("inquiry_closed");
+      const createdAt = new Date().toISOString();
+      const inserted = await service
+        .from("inquiry_messages")
+        .insert({
+          inquiry_id: inquiryId,
+          author_role: input.authorRole,
+          author_id: input.authorId,
+          body,
+          created_at: createdAt,
+        })
+        .select("*")
+        .single();
+      if (inserted.error) fail(inserted.error, "inquiry_message_insert");
+      const patch: Record<string, unknown> = { updated_at: createdAt };
+      if (current.data.status === "new" && input.authorRole !== "buyer") patch.status = "consulting";
+      const updated = await service.from("inquiries").update(patch).eq("id", inquiryId);
+      if (updated.error) fail(updated.error, "inquiry_message_touch");
+      return mapInquiryMessage(inserted.data as Record<string, unknown>);
     },
     async historyFor(inquiryId: string): Promise<AssignmentHistory[]> {
       const service = createServiceClient();
@@ -850,6 +988,27 @@ export function createSupabaseRepository() {
       }
       return mapRequest(inserted.data as Record<string, unknown>, stored);
     },
+    async createScrap(input: ScrapInput, referralCode: string | null) {
+      const service = createServiceClient();
+      const inserted = await service
+        .from("vehicle_requests")
+        .insert({
+          type: "scrap",
+          model: input.model,
+          plate_no: input.plateNo,
+          model_year: input.modelYear,
+          location: input.location,
+          name: input.name,
+          email: input.email,
+          phone: input.phone,
+          message: input.message,
+          first_referral_code: referralCode,
+        })
+        .select("*")
+        .single();
+      if (inserted.error) fail(inserted.error, "scrap_insert");
+      return mapRequest(inserted.data as Record<string, unknown>, []);
+    },
     async updateRequest(id: string, patch: { status: VehicleRequest["status"]; staffMemo: string | null }) {
       const service = createServiceClient();
       const updated = await service
@@ -956,6 +1115,18 @@ export function createSupabaseRepository() {
       const result = await service.from("vehicles").select(adminColumns).eq("owner_id", ownerId).order("created_at", { ascending: false });
       if (result.error) fail(result.error, "owned_list");
       return (result.data ?? []).map((row) => toOwnedListing(mapVehicle(row as Record<string, unknown>, false)));
+    },
+    async getOwnedByStockNo(stockNo: string, ownerId: string) {
+      const service = createServiceClient();
+      const result = await service
+        .from("vehicles")
+        .select(adminColumns)
+        .eq("owner_id", ownerId)
+        .eq("stock_no", stockNo)
+        .maybeSingle();
+      if (result.error) fail(result.error, "owned_vehicle");
+      if (!result.data) return null;
+      return toOwnedListing(mapVehicle(result.data as Record<string, unknown>, false));
     },
     async createDealerListing(
       owner: Member,

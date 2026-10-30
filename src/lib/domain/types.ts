@@ -16,7 +16,7 @@ export type InquiryKind = "purchase" | "visit" | "quote" | "video" | "general";
 export type InquiryStatus = "new" | "consulting" | "quoted" | "negotiating" | "contracted" | "closed";
 export type MoneyStatus = "amount" | "zero" | "unknown";
 export type AgentStatus = "pending" | "approved" | "rejected" | "suspended";
-export type RequestType = "wanted" | "sell";
+export type RequestType = "wanted" | "sell" | "scrap";
 export type RequestStatus = "new" | "consulting" | "closed";
 export type SortKey = "newest" | "year_desc" | "year_asc" | "price_asc" | "price_desc" | "mileage_asc";
 
@@ -137,6 +137,18 @@ export type SiteSettings = {
   updatedAt: string;
 };
 
+/** Who wrote a line in an inquiry thread (async chat, not realtime). */
+export type InquiryMessageAuthor = "buyer" | "seller" | "staff";
+
+export type InquiryMessage = {
+  id: string;
+  inquiryId: string;
+  authorRole: InquiryMessageAuthor;
+  authorId: string | null;
+  body: string;
+  createdAt: string;
+};
+
 export type Inquiry = {
   id: string;
   kind: InquiryKind;
@@ -149,6 +161,8 @@ export type Inquiry = {
   vehicleId: string | null;
   stockNo: string | null;
   message: string;
+  /** Logged-in member who submitted the inquiry, when known. */
+  memberId: string | null;
   destinationCountry: string | null;
   destinationPort: string | null;
   destinationPortUndecided: boolean;
@@ -163,6 +177,20 @@ export type Inquiry = {
   createdAt: string;
   updatedAt: string;
   demo: boolean;
+};
+
+/** Inquiry row shown in account inboxes (no staff memo). */
+export type InquiryThreadSummary = {
+  id: string;
+  kind: InquiryKind;
+  tradeMode: TradeMode;
+  stockNo: string | null;
+  status: InquiryStatus;
+  createdAt: string;
+  updatedAt: string;
+  lastMessageAt: string;
+  lastMessagePreview: string;
+  viewerRole: InquiryMessageAuthor;
 };
 
 export type AgentReferral = {
@@ -239,6 +267,8 @@ export type VehicleRequest = {
   id: string;
   type: RequestType;
   model: string;
+  /** Vehicle plate / registration number — mainly for scrap quotes. */
+  plateNo: string | null;
   modelYear: number | null;
   mileageKm: number | null;
   seats: number | null;

@@ -81,7 +81,7 @@ export default async function AdminVehiclesPage({
                       {cover ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={`/api/media/photo/${cover.id}`}
+                          src={`/api/media/photo/${cover.id}?w=320`}
                           alt=""
                           className="h-12 w-16 object-cover"
                         />

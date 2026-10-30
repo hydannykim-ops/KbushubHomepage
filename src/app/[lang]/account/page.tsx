@@ -152,6 +152,7 @@ export default async function AccountPage({
           {tab === "inbound" ? (
             <InboundPanel
               lang={lang}
+              ctx={ctx}
               title={text.listingInquiriesTitle}
               body={text.listingInquiriesBody}
               empty={text.listingInquiriesEmpty}
@@ -246,6 +247,9 @@ function InquiriesPanel({
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="font-semibold">{inquiryStatusLabel(inquiry.status, lang)}</span>
+                  <Link href={hrefTo(lang, `/account/inquiries/${encodeURIComponent(inquiry.id)}`, ctx)} className="text-primary underline">
+                    {text.openChat}
+                  </Link>
                   {inquiry.stockNo ? (
                     <Link href={hrefTo(lang, `/vehicles/${inquiry.stockNo}`, ctx)} className="text-primary underline">
                       {text.view}
@@ -279,6 +283,7 @@ function InquiriesPanel({
 
 function InboundPanel({
   lang,
+  ctx,
   title,
   body,
   empty,
@@ -286,6 +291,7 @@ function InboundPanel({
   text,
 }: {
   lang: Lang;
+  ctx: AccountCtx;
   title: string;
   body: string;
   empty: string;
@@ -310,7 +316,12 @@ function InboundPanel({
                     {inquiry.createdAt.slice(0, 10)} · {inquiry.tradeMode === "export" ? text.modeExport : text.modeDomestic}
                   </p>
                 </div>
-                <span className="font-semibold">{inquiryStatusLabel(inquiry.status, lang)}</span>
+                <div className="flex items-center gap-3">
+                  <span className="font-semibold">{inquiryStatusLabel(inquiry.status, lang)}</span>
+                  <Link href={hrefTo(lang, `/account/inquiries/${encodeURIComponent(inquiry.id)}`, ctx)} className="text-primary underline">
+                    {text.openChat}
+                  </Link>
+                </div>
               </div>
               <p className="text-ink">
                 {inquiry.name}
