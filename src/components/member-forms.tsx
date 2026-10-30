@@ -246,7 +246,15 @@ export function DealerListingForm({ lang }: { lang: Lang }) {
             headers: { accept: "application/json" },
             body: compressed,
           });
-          let data: { ok?: boolean; code?: string; errors?: Record<string, string>; step?: string; detail?: string } = {};
+          let data: {
+            ok?: boolean;
+            code?: string;
+            errors?: Record<string, string>;
+            step?: string;
+            detail?: string;
+            stockNo?: string;
+            id?: string;
+          } = {};
           try {
             data = (await response.json()) as typeof data;
           } catch {
@@ -255,6 +263,10 @@ export function DealerListingForm({ lang }: { lang: Lang }) {
           setPending(false);
           setPendingLabel(null);
           if (response.ok && data.ok) {
+            if (data.stockNo) {
+              window.location.href = `/${lang}/vehicles/${encodeURIComponent(data.stockNo)}`;
+              return;
+            }
             setMessage({ ok: true, text: text.listingSaved });
             form.reset();
             setVehicleClass("county");

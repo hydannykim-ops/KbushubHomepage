@@ -36,7 +36,7 @@ export const en: Messages = {
   "classCountyBody": "View Hyundai County stock.",
   "classMediumBody": "View medium buses.",
   "classLargeBody": "View large buses.",
-  "classFilterHint": "Pick class → maker → series → model. Only models in that class appear.",
+  "classFilterHint": "All listings show first. Narrow by class, maker, then model.",
   "newArrivals": "New arrivals",
   "featured": "Featured",
   "noVehicles": "No vehicles to show.",

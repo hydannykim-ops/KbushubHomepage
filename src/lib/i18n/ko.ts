@@ -36,7 +36,7 @@ export const ko: Messages = {
   "classCountyBody": "현대 카운티 재고를 따로 봅니다.",
   "classMediumBody": "중형 버스를 봅니다.",
   "classLargeBody": "대형 버스를 봅니다.",
-  "classFilterHint": "차급 → 제조사 → 차종류 → 차모델 순으로 고르세요. 선택한 차급의 모델만 보입니다.",
+  "classFilterHint": "처음에는 전체 매물이 보입니다. 차급·제조사·모델을 고르면 그 조건만 남습니다.",
   "newArrivals": "신규 매물",
   "featured": "추천 매물",
   "noVehicles": "표시할 매물이 없습니다.",

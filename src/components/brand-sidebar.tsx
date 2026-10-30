@@ -63,8 +63,8 @@ export function BrandSidebar({
     large: text.classLarge,
   };
 
-  /** Class is step 1; empty URL class still counts once the user picks “전체”. */
-  const [classPicked, setClassPicked] = useState(() => Boolean(query.vehicleClass || query.maker || query.model));
+  /** Empty URL = 전체 목록. Only re-enter class pick when the user clears the locked class chip. */
+  const [classPicked, setClassPicked] = useState(true);
   /** Intermediate series pick before a concrete model URL is chosen. */
   const [draftSeries, setDraftSeries] = useState("");
 
@@ -101,7 +101,7 @@ export function BrandSidebar({
               href={clearAllHref}
               className="text-xs font-medium text-muted hover:text-ink"
               onClick={() => {
-                setClassPicked(false);
+                setClassPicked(true);
                 setDraftSeries("");
               }}
             >
