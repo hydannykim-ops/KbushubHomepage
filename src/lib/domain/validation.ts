@@ -953,6 +953,7 @@ export type DealerListingInput = {
   seats: number | null;
   transmission: Transmission;
   fuel: Fuel;
+  transferType: "transfer" | "scrap_replace" | "unknown";
   location: string | null;
   domesticPriceKrw: number | null;
   descriptionKo: string | null;
@@ -973,6 +974,9 @@ export function parseDealerListing(body: unknown, lang: Lang): { ok: true; data:
       seats: optionalInt(1, 80, text(lang, "인승은 1~80 사이 정수로 입력해 주세요.", "Enter seats as a whole number from 1 to 80.")),
       transmission: z.enum(transmissions, { message: text(lang, "변속기를 선택해 주세요.", "Choose a transmission.") }),
       fuel: z.enum(fuels, { message: text(lang, "연료를 선택해 주세요.", "Choose a fuel type.") }),
+      transferType: z.enum(transferTypes, {
+        message: text(lang, "양도양수·대폐차 여부를 선택해 주세요.", "Choose transfer or scrap-and-replace."),
+      }),
       location: optionalText(120, text(lang, "위치는 120자 이내로 입력해 주세요.", "Location must be 120 characters or fewer.")),
       domesticPriceKrw: optionalInt(0, 5_000_000_000, text(lang, "가격은 숫자(원)로 입력해 주세요.", "Enter price as a whole number in KRW.")),
       descriptionKo: optionalText(8000, text(lang, "설명은 8000자 이내로 입력해 주세요.", "Description must be 8000 characters or fewer.")),

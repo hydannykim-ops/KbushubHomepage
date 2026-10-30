@@ -1180,6 +1180,7 @@ export function createSupabaseRepository() {
         seats: input.seats,
         transmission: input.transmission,
         fuel: input.fuel,
+        transfer_type: input.transferType,
         location: input.location,
         description_ko: input.descriptionKo,
         description_en: input.descriptionEn,

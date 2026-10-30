@@ -862,7 +862,7 @@ export function createDemoStore(dir: string) {
           displacementCc: null,
           steering: "unknown",
           longBody: null,
-          transferType: "unknown",
+          transferType: input.transferType,
           lengthMm: null,
           widthMm: null,
           heightMm: null,

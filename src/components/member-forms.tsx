@@ -7,6 +7,7 @@ import { compressFormImages } from "@/lib/domain/compress-image-client";
 import type { Lang } from "@/lib/domain/types";
 import { scrollFormAlert } from "@/lib/http/scroll-form-alert";
 import { copy } from "@/lib/i18n";
+import { transferLabel } from "@/lib/labels";
 
 const field = "border border-line bg-white px-3 py-2.5 font-normal";
 
@@ -351,6 +352,14 @@ export function DealerListingForm({ lang }: { lang: Lang }) {
           <option value="electric">EV</option>
           <option value="hybrid">Hybrid</option>
           <option value="unknown">{text.unknown}</option>
+        </select>
+      </label>
+      <label className="grid gap-1 text-sm font-medium">
+        {text.transferMode}
+        <select name="transferType" className={field} defaultValue="unknown">
+          <option value="unknown">{text.unknown}</option>
+          <option value="transfer">{transferLabel("transfer", lang)}</option>
+          <option value="scrap_replace">{transferLabel("scrap_replace", lang)}</option>
         </select>
       </label>
       <label className="grid gap-1 text-sm font-medium">
