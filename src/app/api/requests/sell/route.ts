@@ -2,6 +2,7 @@ import { getRepository } from "@/lib/data/repository";
 import { acceptOrReject } from "@/lib/domain/submit";
 import { readGuidedPhotos } from "@/lib/domain/guided-photos";
 import { parseSell } from "@/lib/domain/validation";
+import { MAX_SELL_PHOTOS } from "@/lib/domain/uploads";
 import { crossOrigin, resultResponse } from "@/lib/http/form";
 import { allowRequest, clientKey } from "@/lib/http/rate-limit";
 import { langFromBody, referralFromRequest } from "@/lib/request-context";
@@ -20,7 +21,7 @@ export async function POST(request: Request) {
   const parsed = parseSell(body, lang);
   if (!parsed.ok) return resultResponse(request, { status: 400, body: { ok: false, code: "invalid", errors: parsed.errors } }, `/${lang}/sell`);
 
-  const photos = await readGuidedPhotos(form, lang);
+  const photos = await readGuidedPhotos(form, lang, MAX_SELL_PHOTOS);
   if (!photos.ok) {
     return resultResponse(
       request,

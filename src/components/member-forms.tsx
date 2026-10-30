@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MakerModelPicker } from "@/components/maker-model-picker";
 import { PhotoSlotUploader } from "@/components/photo-slot-uploader";
 import type { Lang } from "@/lib/domain/types";
+import { scrollFormAlert } from "@/lib/http/scroll-form-alert";
 import { copy } from "@/lib/i18n";
 
 const field = "border border-line bg-white px-3 py-2.5 font-normal";
@@ -202,24 +203,35 @@ export function ProfileForm({
 
 export function DealerListingForm({ lang }: { lang: Lang }) {
   const text = copy(lang);
+  const formRef = useRef<HTMLFormElement | null>(null);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [vehicleClass, setVehicleClass] = useState<"county" | "medium" | "large">("county");
   const [photoReset, setPhotoReset] = useState(0);
+  const [scrollToken, setScrollToken] = useState(0);
+
+  useEffect(() => {
+    if (!scrollToken || !formRef.current) return;
+    scrollFormAlert(formRef.current, fieldErrors);
+  }, [scrollToken, fieldErrors, message]);
 
   return (
     <form
+      ref={formRef}
       className="grid gap-4"
       encType="multipart/form-data"
       onSubmit={async (event) => {
         event.preventDefault();
         setPending(true);
         setMessage(null);
+        setFieldErrors({});
         const form = event.currentTarget;
         const payload = new FormData(form);
         if (!String(payload.get("maker") ?? "").trim() || !String(payload.get("model") ?? "").trim()) {
           setPending(false);
           setMessage({ ok: false, text: text.pickMakerModel });
+          setScrollToken((value) => value + 1);
           return;
         }
         const response = await fetch("/api/listings", {
@@ -238,12 +250,14 @@ export function DealerListingForm({ lang }: { lang: Lang }) {
         }
         const code = data.code ?? "save_failed";
         const known = text.errors[code as keyof typeof text.errors];
+        setFieldErrors(data.errors ?? {});
         setMessage({ ok: false, text: data.errors ? Object.values(data.errors).join(" ") : known ?? text.errors.save_failed });
+        setScrollToken((value) => value + 1);
       }}
     >
       <input type="hidden" name="lang" value={lang} />
       {message ? (
-        <p role={message.ok ? "status" : "alert"} className={`border px-3 py-2 text-sm ${message.ok ? "border-[#bbf7d0] bg-[#f0fdf4]" : "border-[#fecdd3] bg-[#fff1f2]"}`}>
+        <p role={message.ok ? "status" : "alert"} className={`scroll-mt-28 border px-3 py-2 text-sm ${message.ok ? "border-[#bbf7d0] bg-[#f0fdf4]" : "border-[#fecdd3] bg-[#fff1f2]"}`}>
           {message.text}
         </p>
       ) : null}

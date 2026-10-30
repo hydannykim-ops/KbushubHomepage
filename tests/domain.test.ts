@@ -387,7 +387,7 @@ test("session token rejects tampering", () => {
   assert.equal(readSession(`${token}x`, "secret"), null);
 });
 
-test("dealer listings stay in review and customers cannot publish", async () => {
+test("dealer listings publish immediately and customers cannot publish", async () => {
   const dir = await mkdtemp(path.join(tmpdir(), "kbus-member-"));
   const store = createDemoStore(dir);
   const dealer = await store.signupMember({
@@ -440,7 +440,7 @@ test("dealer listings stay in review and customers cannot publish", async () => 
     (error: unknown) => error instanceof Error && "code" in error && error.code === "dealer_only",
   );
   const listing = await store.createDealerListing(dealer, input, shots);
-  assert.equal(listing.status, "review");
+  assert.equal(listing.status, "available");
   assert.equal(listing.listingSource, "dealer");
   assert.equal(JSON.stringify(listing).includes("password"), false);
   assert.equal(JSON.stringify(listing).includes("scrypt"), false);

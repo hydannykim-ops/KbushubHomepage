@@ -278,6 +278,7 @@ export type Messages = {
   photoFrontSide: string;
   photoRear: string;
   photoExtra: string;
+  photoExtraHint: string;
   photoRequired: string;
   mediaLogo: string;
   mediaHero: string;

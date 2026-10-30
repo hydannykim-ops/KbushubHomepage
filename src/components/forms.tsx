@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Lang } from "@/lib/domain/types";
+import { scrollFormAlert } from "@/lib/http/scroll-form-alert";
 import { copy, submitMessage } from "@/lib/i18n";
 
 export function SubmitBanner({ lang, submitted, error }: { lang: Lang; submitted?: string; error?: string }) {
@@ -9,7 +10,7 @@ export function SubmitBanner({ lang, submitted, error }: { lang: Lang; submitted
   if (!message) return null;
   const ok = submitted === "demo" || submitted === "live";
   return (
-    <p role={ok ? "status" : "alert"} className={`mb-4 rounded-md border px-3 py-2 text-sm ${ok ? "border-[#bbf7d0] bg-[#f0fdf4]" : "border-[#fecdd3] bg-[#fff1f2]"}`}>
+    <p role={ok ? "status" : "alert"} className={`mb-4 scroll-mt-28 rounded-md border px-3 py-2 text-sm ${ok ? "border-[#bbf7d0] bg-[#f0fdf4]" : "border-[#fecdd3] bg-[#fff1f2]"}`}>
       {message}
     </p>
   );
@@ -25,12 +26,20 @@ export function EnhanceForm({
   children: React.ReactNode;
 }) {
   const text = copy(lang);
+  const formRef = useRef<HTMLFormElement | null>(null);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [scrollToken, setScrollToken] = useState(0);
+
+  useEffect(() => {
+    if (!scrollToken || !formRef.current) return;
+    scrollFormAlert(formRef.current, fieldErrors);
+  }, [scrollToken, fieldErrors, message]);
 
   return (
     <form
+      ref={formRef}
       action={action}
       method="post"
       encType="multipart/form-data"
@@ -54,16 +63,19 @@ export function EnhanceForm({
             form.reset();
           } else {
             setMessage({ ok: false, text: text.errors[(data.code ?? "save_failed") as keyof typeof text.errors] ?? text.errors.save_failed });
+            setScrollToken((value) => value + 1);
           }
         } catch {
+          setFieldErrors({});
           setMessage({ ok: false, text: text.errors.save_failed });
+          setScrollToken((value) => value + 1);
         } finally {
           setPending(false);
         }
       }}
     >
       {message ? (
-        <p role={message.ok ? "status" : "alert"} className={`rounded-md border px-3 py-2 text-sm ${message.ok ? "border-[#bbf7d0] bg-[#f0fdf4]" : "border-[#fecdd3] bg-[#fff1f2]"}`}>
+        <p role={message.ok ? "status" : "alert"} className={`scroll-mt-28 rounded-md border px-3 py-2 text-sm ${message.ok ? "border-[#bbf7d0] bg-[#f0fdf4]" : "border-[#fecdd3] bg-[#fff1f2]"}`}>
           {message.text}
         </p>
       ) : null}
@@ -80,7 +92,7 @@ function FieldErrors({ errors }: { errors: Record<string, string> }) {
   const entries = Object.entries(errors);
   if (!entries.length) return null;
   return (
-    <ul className="grid gap-1 text-sm text-[#9f1239]" role="alert">
+    <ul className="grid scroll-mt-28 gap-1 text-sm text-[#9f1239]" role="alert">
       {entries.map(([key, value]) => (
         <li key={key}>{value}</li>
       ))}

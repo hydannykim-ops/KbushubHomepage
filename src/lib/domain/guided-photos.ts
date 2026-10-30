@@ -1,9 +1,9 @@
 import { PHOTO_SLOTS, type PhotoSlotId } from "@/lib/domain/photo-slots";
 import type { PhotoCategory } from "@/lib/domain/types";
-import { checkImage, type ImageType } from "@/lib/domain/uploads";
+import { checkImage, MAX_EXTRA_PHOTOS, MAX_VEHICLE_PHOTOS, type ImageType } from "@/lib/domain/uploads";
 
 export type GuidedPhotoShot = {
-  slot: PhotoSlotId;
+  slot: PhotoSlotId | `extra-${number}`;
   bytes: Buffer;
   contentType: ImageType;
   category: PhotoCategory;
@@ -40,6 +40,7 @@ const labelsEn: Record<PhotoSlotId, string> = {
 export async function readGuidedPhotos(
   form: FormData,
   lang: string,
+  maxTotal: number = MAX_VEHICLE_PHOTOS,
 ): Promise<{ ok: true; shots: GuidedPhotoShot[] } | { ok: false; code: "missing_required" | "invalid_image" }> {
   const shots: GuidedPhotoShot[] = [];
   for (const slot of PHOTO_SLOTS) {
@@ -60,5 +61,26 @@ export async function readGuidedPhotos(
       label: lang === "ko" ? labelsKo[slot.id] : labelsEn[slot.id],
     });
   }
+
+  const extras = form
+    .getAll("extra")
+    .filter((value): value is File => value instanceof File && value.size > 0)
+    .slice(0, MAX_EXTRA_PHOTOS);
+
+  for (const [index, file] of extras.entries()) {
+    if (shots.length >= maxTotal) break;
+    const bytes = Buffer.from(await file.arrayBuffer());
+    const checked = checkImage(bytes);
+    if (!checked.ok) return { ok: false, code: "invalid_image" };
+    shots.push({
+      slot: `extra-${index + 1}`,
+      bytes,
+      contentType: checked.contentType,
+      category: "exterior",
+      cover: false,
+      label: lang === "ko" ? `추가 ${index + 1}` : `Extra ${index + 1}`,
+    });
+  }
+
   return { ok: true, shots };
 }

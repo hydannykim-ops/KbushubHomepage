@@ -53,7 +53,7 @@ export async function POST(request: Request) {
   if (!owner || owner.role !== "dealer") return resultResponse(request, { status: 403, body: { ok: false, code: "dealer_only" } }, back);
   try {
     const listing = await getRepository().createDealerListing(owner, parsed.data, photos.shots);
-    return resultResponse(request, { status: 201, body: { ok: true, demo: listing.demo, id: listing.id, code: "review" } }, back);
+    return resultResponse(request, { status: 201, body: { ok: true, demo: listing.demo, id: listing.id, stockNo: listing.stockNo } }, back);
   } catch (error) {
     if (error instanceof StoreError && error.code === "dealer_only") {
       return resultResponse(request, { status: 403, body: { ok: false, code: "dealer_only" } }, back);

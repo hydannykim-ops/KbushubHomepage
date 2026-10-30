@@ -831,7 +831,7 @@ export function createDemoStore(dir: string) {
         const vehicle: AdminVehicle = {
           id,
           stockNo,
-          status: "review",
+          status: "available",
           vehicleClass: input.vehicleClass,
           maker: input.maker,
           model: input.model,

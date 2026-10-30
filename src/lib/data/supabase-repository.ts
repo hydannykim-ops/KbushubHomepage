@@ -1150,7 +1150,7 @@ export function createSupabaseRepository() {
       const inserted = await service.from("vehicles").insert({
         id,
         stock_no: stockNo,
-        status: "review",
+        status: "available",
         vehicle_class: input.vehicleClass,
         maker: input.maker,
         model: input.model,
