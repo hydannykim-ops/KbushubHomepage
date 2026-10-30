@@ -1,13 +1,15 @@
 import "server-only";
+import { cache } from "react";
 import { getDataSource } from "./config";
 import { getRepository, type AppRepository } from "./data/repository";
 import { DataAccessError } from "./data/errors";
 import type { SiteSettings } from "./domain/types";
 
-export async function loadSite(): Promise<
+/** Deduped per request — layout + page both call this. */
+export const loadSite = cache(async (): Promise<
   | { ok: true; source: "demo" | "supabase"; repo: AppRepository; settings: SiteSettings }
   | { ok: false; code: "misconfigured" | "upstream" }
-> {
+> => {
   const source = getDataSource();
   if (source === "misconfigured") return { ok: false, code: "misconfigured" };
   try {
@@ -18,4 +20,4 @@ export async function loadSite(): Promise<
     if (error instanceof DataAccessError) return { ok: false, code: error.code };
     throw error;
   }
-}
+});

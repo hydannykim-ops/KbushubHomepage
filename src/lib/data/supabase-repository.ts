@@ -442,6 +442,19 @@ export function createSupabaseRepository() {
       if (!result.data) return null;
       return toPublicVehicle(mapVehicle(result.data as Record<string, unknown>, false));
     },
+    async getPublicByStockNos(stockNos: string[]) {
+      const wanted = [...new Set(stockNos.map((item) => item.trim()).filter(Boolean))];
+      if (!wanted.length) return new Map();
+      const anon = createAnonClient();
+      const result = await anon.from("vehicles").select(publicColumns).in("stock_no", wanted).in("status", ["available", "reserved", "sold"]);
+      if (result.error) fail(result.error, "public_vehicles");
+      const map = new Map<string, ReturnType<typeof toPublicVehicle>>();
+      for (const row of result.data ?? []) {
+        const vehicle = toPublicVehicle(mapVehicle(row as Record<string, unknown>, false));
+        if (vehicle) map.set(vehicle.stockNo, vehicle);
+      }
+      return map;
+    },
     async listAdminVehicles(): Promise<AdminVehicle[]> {
       const service = createServiceClient();
       const result = await service.from("vehicles").select(`${adminColumns}, vehicle_internal(*)`).order("created_at", { ascending: false });

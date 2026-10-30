@@ -159,7 +159,7 @@ export function Header({
           </Link>
           <nav className="hidden items-center gap-5 text-sm font-medium md:flex" aria-label="main">
             {links.map(([label, hrefValue]) => (
-              <Link key={label} href={hrefValue} className="hover:text-primary">
+              <Link key={label} href={hrefValue} prefetch className="hover:text-primary">
                 {label}
               </Link>
             ))}

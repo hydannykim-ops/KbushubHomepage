@@ -34,7 +34,9 @@ export async function proxy(request: NextRequest) {
           },
         },
       });
-      await supabase.auth.getUser();
+      // Cookie refresh only — avoid auth-server round-trip on every navigation.
+      // Pages that need verified identity still call getUser() via getSession().
+      await supabase.auth.getSession();
     } catch {
       console.error(JSON.stringify({ context: "supabase_session_refresh_failed" }));
     }

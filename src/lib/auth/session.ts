@@ -1,5 +1,6 @@
 import "server-only";
 import { cookies } from "next/headers";
+import { cache } from "react";
 import { demoCredentials, getDataSource } from "../config";
 import { readSession, safeEqualText, signSession } from "../domain/auth-token";
 import type { Session } from "../domain/types";
@@ -7,7 +8,8 @@ import { createServiceClient, createSupabaseServer } from "../supabase/clients";
 
 export const SESSION_COOKIE = "kb_session";
 
-export async function getSession(): Promise<Session | null> {
+/** Deduped per request — layout + page both call this. */
+export const getSession = cache(async (): Promise<Session | null> => {
   if (getDataSource() === "demo") {
     const jar = await cookies();
     return readSession(jar.get(SESSION_COOKIE)?.value, demoCredentials().sessionSecret);
@@ -48,7 +50,7 @@ export async function getSession(): Promise<Session | null> {
     };
   }
   return null;
-}
+});
 
 export async function requireAdmin(): Promise<Session | null> {
   const session = await getSession();

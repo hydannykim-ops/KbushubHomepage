@@ -200,6 +200,18 @@ export function createDemoStore(dir: string) {
       if (!found) return null;
       return toPublicVehicle(found);
     },
+    async getPublicByStockNos(stockNos: string[]) {
+      const wanted = [...new Set(stockNos.map((item) => item.trim()).filter(Boolean))];
+      const state = await read();
+      const map = new Map<string, NonNullable<ReturnType<typeof toPublicVehicle>>>();
+      for (const stockNo of wanted) {
+        const found = state.vehicles.find((vehicle) => vehicle.stockNo.toLowerCase() === stockNo.toLowerCase());
+        if (!found) continue;
+        const vehicle = toPublicVehicle(found);
+        if (vehicle) map.set(vehicle.stockNo, vehicle);
+      }
+      return map;
+    },
     async listAdminVehicles(): Promise<AdminVehicle[]> {
       return clone((await read()).vehicles);
     },
