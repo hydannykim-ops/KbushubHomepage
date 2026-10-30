@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 type BrandLogoProps = {
-  /** Compact footer mark vs header lockup (HeyDealer-scale). */
+  /** Compact footer mark vs larger header mark. */
   size?: "sm" | "md" | "lg";
   className?: string;
   priority?: boolean;
@@ -10,8 +10,7 @@ type BrandLogoProps = {
 const sizes = {
   sm: { width: 44, height: 44, className: "h-10 w-10" },
   md: { width: 56, height: 56, className: "h-12 w-12" },
-  /** Header mark — closer to HeyDealer’s ~130px-wide brand presence. */
-  lg: { width: 72, height: 72, className: "h-[3.25rem] w-[3.25rem] sm:h-14 sm:w-14" },
+  lg: { width: 88, height: 88, className: "h-14 w-14 sm:h-16 sm:w-16" },
 } as const;
 
 export function BrandLogo({ size = "sm", className = "", priority = false }: BrandLogoProps) {
@@ -30,19 +29,11 @@ export function BrandLogo({ size = "sm", className = "", priority = false }: Bra
   );
 }
 
-export function BrandWordmark({ className = "", size = "sm" }: { className?: string; size?: "sm" | "lg" }) {
-  if (size === "lg") {
-    return (
-      <span className={`leading-none ${className}`}>
-        <span className="block text-[12px] font-semibold tracking-[0.2em] text-muted sm:text-[13px]">K-BUS</span>
-        <span className="mt-0.5 block text-[1.35rem] font-semibold leading-none tracking-wide text-ink sm:text-[1.5rem]">HUB</span>
-      </span>
-    );
-  }
-  return (
-    <span className={`leading-none ${className}`}>
-      <span className="block text-[11px] font-semibold tracking-[0.18em] text-muted">K-BUS</span>
-      <span className="block text-lg font-semibold leading-none tracking-wide text-ink">HUB</span>
-    </span>
-  );
+/** Single-line wordmark — same layout as the footer lockup. */
+export function BrandWordmark({ className = "text-ink", size = "sm" }: { className?: string; size?: "sm" | "lg" }) {
+  const scale =
+    size === "lg"
+      ? "text-[1.35rem] font-semibold tracking-tight sm:text-[1.65rem]"
+      : "text-base font-semibold tracking-tight";
+  return <span className={`leading-none whitespace-nowrap ${scale} ${className}`}>K-BUS HUB</span>;
 }

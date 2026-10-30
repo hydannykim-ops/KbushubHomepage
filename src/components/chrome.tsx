@@ -152,18 +152,20 @@ export function Header({
   return (
     <header className="sticky top-0 z-[60] overflow-visible border-b border-line bg-white">
       <div className="relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3.5 sm:py-4">
-        <Link href={href("")} className="flex min-w-0 items-center gap-3 text-foreground sm:gap-3.5" aria-label="K-BUS HUB">
-          <BrandLogo size="lg" priority />
-          <BrandWordmark size="lg" />
-        </Link>
-        <nav className="hidden items-center gap-5 text-sm font-medium md:flex" aria-label="main">
-          {links.map(([label, hrefValue]) => (
-            <Link key={label} href={hrefValue} className="hover:text-primary">
-              {label}
-            </Link>
-          ))}
-        </nav>
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="flex min-w-0 flex-1 items-center gap-6 lg:gap-8">
+          <Link href={href("")} className="flex min-w-0 shrink-0 items-center gap-3 text-foreground sm:gap-3.5" aria-label="K-BUS HUB">
+            <BrandLogo size="lg" priority />
+            <BrandWordmark size="lg" />
+          </Link>
+          <nav className="hidden items-center gap-5 text-sm font-medium md:flex" aria-label="main">
+            {links.map(([label, hrefValue]) => (
+              <Link key={label} href={hrefValue} className="hover:text-primary">
+                {label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+        <div className="hidden shrink-0 items-center gap-3 md:flex">
           {accountLinks.map(([label, hrefValue]) => (
             <Link key={`desk-${label}`} href={hrefValue} prefetch className="text-sm font-semibold text-foreground hover:text-primary">
               {label}
