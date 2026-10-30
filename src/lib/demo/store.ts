@@ -69,6 +69,7 @@ function applyVehicleInput(current: AdminVehicle | null, input: VehicleInput, id
     model: input.model,
     trim: input.trim,
     modelYear: input.modelYear,
+    modelMonth: input.modelMonth,
     firstRegisteredOn: input.firstRegisteredOn,
     mileageKm: input.mileageKm,
     seats: input.seats,
@@ -134,6 +135,7 @@ export function createDemoStore(dir: string) {
         vehicle.sellerName ??= null;
         vehicle.sellerEmail ??= null;
         vehicle.sellerCompany ??= null;
+        vehicle.modelMonth ??= null;
       }
       for (const inquiry of state.inquiries ?? []) {
         inquiry.memberId ??= null;
@@ -849,6 +851,7 @@ export function createDemoStore(dir: string) {
           model: input.model,
           trim: null,
           modelYear: input.modelYear,
+          modelMonth: input.modelMonth,
           firstRegisteredOn: null,
           mileageKm: input.mileageKm,
           seats: input.seats,

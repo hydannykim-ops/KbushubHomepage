@@ -38,6 +38,7 @@ function base(partial: Pick<AdminVehicle, "id" | "stockNo" | "status" | "vehicle
   return {
     trim: null,
     modelYear: null,
+    modelMonth: null,
     firstRegisteredOn: null,
     mileageKm: null,
     seats: null,

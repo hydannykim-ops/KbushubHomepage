@@ -322,7 +322,8 @@ export function DealerListingForm({ lang }: { lang: Lang }) {
       <MakerModelPicker key={vehicleClass} lang={lang} required vehicleClass={vehicleClass} />
       <label className="grid gap-1 text-sm font-medium">
         {text.modelYear}
-        <input name="modelYear" inputMode="numeric" placeholder="2017" className={field} />
+        <input name="modelYear" inputMode="text" placeholder="2020/03" className={field} />
+        <span className="text-xs font-normal text-muted">{lang === "ko" ? "연도만 또는 2020/03처럼 월까지 입력" : "Year only, or year/month like 2020/03"}</span>
       </label>
       <label className="grid gap-1 text-sm font-medium">
         {text.mileage}

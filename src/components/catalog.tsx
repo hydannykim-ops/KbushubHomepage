@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MediaSlot } from "./media-slot";
 import { GalleryClient } from "./gallery-client";
 import { catalogPriceView, formatKm } from "@/lib/domain/money";
+import { formatModelYearMonth } from "@/lib/domain/model-year";
 import type { Lang, OwnedListing, PublicVehicle, TradeMode, VehiclePhoto, VehicleQuery } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
 import { contentFieldLang, localeTag } from "@/lib/i18n/langs";
@@ -63,7 +64,7 @@ export function VehicleCard({
 }) {
   const text = copy(lang);
   const price = catalogPriceView(vehicle, lang, vehicle.listingCompany ?? listedBy);
-  const yearLabel = vehicle.modelYear ? (lang === "ko" ? `${vehicle.modelYear}년` : String(vehicle.modelYear)) : text.unknown;
+  const yearLabel = formatModelYearMonth(vehicle.modelYear, vehicle.modelMonth, lang, text.unknown);
   const seatsLabel =
     vehicle.seats != null ? `${vehicle.seats}${lang === "ko" ? text.seatsShort : ` ${text.seatsShort}`}` : text.unknown;
   const hpLabel =
@@ -74,6 +75,7 @@ export function VehicleCard({
       : null;
   const meta = [yearLabel, formatKm(vehicle.mileageKm, lang), seatsLabel, hpLabel].filter(Boolean).join(" · ");
   const transfer = transferLabel(vehicle.transferType, lang);
+  const seller = (vehicle.listingCompany ?? listedBy)?.trim() || null;
   return (
     <article className="group overflow-hidden border-b border-line pb-5">
       <Link href={href} className="block">
@@ -85,8 +87,9 @@ export function VehicleCard({
           </h2>
           <p className="text-sm text-muted">{meta}</p>
           <p className="text-sm text-muted">
-            {vehicle.location ? vehicle.location : text.unknown}
-            {vehicle.transferType !== "unknown" ? ` · ${transfer}` : null}
+            {[vehicle.location?.trim() || text.unknown, seller, vehicle.transferType !== "unknown" ? transfer : null]
+              .filter(Boolean)
+              .join(" · ")}
           </p>
           <div className="flex flex-wrap items-end gap-2 pt-1">
             <p className="text-2xl font-bold tabular-nums tracking-tight text-primary">{price.primary}</p>
@@ -122,7 +125,7 @@ export function SpecTable({ vehicle, lang }: { vehicle: PublicVehicle | OwnedLis
   const maker = makerLabel(vehicle.maker, lang);
   const model = modelLabel(vehicle.model, lang);
   const trim = vehicle.trim?.trim() || "";
-  const year = vehicle.modelYear != null ? (lang === "ko" ? `${vehicle.modelYear}년` : String(vehicle.modelYear)) : text.unknown;
+  const year = formatModelYearMonth(vehicle.modelYear, vehicle.modelMonth, lang, text.unknown);
   const mileage = formatKm(vehicle.mileageKm, lang);
   const horsepower =
     vehicle.horsepowerPs != null

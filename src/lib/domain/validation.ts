@@ -10,6 +10,7 @@ import type {
   Transmission,
   VehicleClass,
 } from "./types";
+import { parseModelYearMonth } from "./model-year";
 import { scrapRegionsKo } from "./scrap-regions";
 import { knownMakerModel } from "./vehicle-catalog";
 
@@ -539,6 +540,7 @@ export type VehicleInput = {
   model: string;
   trim: string | null;
   modelYear: number | null;
+  modelMonth: number | null;
   firstRegisteredOn: string | null;
   mileageKm: number | null;
   seats: number | null;
@@ -602,7 +604,8 @@ export function parseVehicle(body: unknown): { ok: true; data: VehicleInput } | 
       maker: z.string().trim().min(1).max(80),
       model: z.string().trim().min(1).max(80),
       trim: optionalText(80),
-      modelYear: optionalInt(1980, 2035),
+      modelYear: z.union([z.string(), z.number(), z.null()]).optional(),
+      modelMonth: optionalInt(1, 12),
       firstRegisteredOn: optionalDate(),
       mileageKm: optionalInt(0, 5_000_000),
       seats: optionalInt(1, 80),
@@ -649,6 +652,12 @@ export function parseVehicle(body: unknown): { ok: true; data: VehicleInput } | 
         .optional(),
     })
     .superRefine((value, ctx) => {
+      const yearMonth = parseModelYearMonth(value.modelYear);
+      if (!yearMonth.ok) {
+        ctx.addIssue({ code: "custom", path: ["modelYear"], message: "연식은 2020 또는 2020/03 형식으로 입력해 주세요." });
+      } else if (value.modelMonth != null && yearMonth.value.month != null && value.modelMonth !== yearMonth.value.month) {
+        ctx.addIssue({ code: "custom", path: ["modelMonth"], message: "연식의 월과 월 필드가 다릅니다." });
+      }
       const currency = value.exportPriceCurrency?.trim().toUpperCase() || "";
       if (value.exportPriceAmount != null && !currency) {
         ctx.addIssue({ code: "custom", path: ["exportPriceCurrency"], message: "Export price needs a currency." });
@@ -663,6 +672,8 @@ export function parseVehicle(body: unknown): { ok: true; data: VehicleInput } | 
   const parsed = schema.safeParse(body);
   if (!parsed.success) return { ok: false, errors: fieldErrors(parsed.error) };
   const value = parsed.data;
+  const yearMonth = parseModelYearMonth(value.modelYear);
+  if (!yearMonth.ok) return { ok: false, errors: { modelYear: "연식은 2020 또는 2020/03 형식으로 입력해 주세요." } };
   const internal = value.internal;
   return {
     ok: true,
@@ -673,7 +684,8 @@ export function parseVehicle(body: unknown): { ok: true; data: VehicleInput } | 
       maker: value.maker,
       model: value.model,
       trim: value.trim,
-      modelYear: value.modelYear,
+      modelYear: yearMonth.value.year,
+      modelMonth: value.modelMonth ?? yearMonth.value.month,
       firstRegisteredOn: value.firstRegisteredOn,
       mileageKm: value.mileageKm,
       seats: value.seats,
@@ -936,6 +948,7 @@ export type DealerListingInput = {
   maker: string;
   model: string;
   modelYear: number | null;
+  modelMonth: number | null;
   mileageKm: number | null;
   seats: number | null;
   transmission: Transmission;
@@ -947,6 +960,7 @@ export type DealerListingInput = {
 };
 
 export function parseDealerListing(body: unknown, lang: Lang): { ok: true; data: DealerListingInput } | { ok: false; errors: FieldErrors } {
+  const yearHint = text(lang, "연식은 2020 또는 2020/03 형식으로 입력해 주세요.", "Enter year as 2020 or 2020/03.");
   const schema = z
     .object({
       vehicleClass: z.enum(classes, {
@@ -954,7 +968,7 @@ export function parseDealerListing(body: unknown, lang: Lang): { ok: true; data:
       }),
       maker: z.string().trim().min(1, text(lang, "제조사를 선택해 주세요.", "Choose a maker.")).max(80),
       model: z.string().trim().min(1, text(lang, "모델을 선택해 주세요.", "Choose a model.")).max(80),
-      modelYear: optionalInt(1980, 2035, text(lang, "연식은 1980~2035 사이 정수로 입력해 주세요.", "Enter a whole model year between 1980 and 2035.")),
+      modelYear: z.union([z.string(), z.number(), z.null()]).optional(),
       mileageKm: optionalInt(0, 5_000_000, text(lang, "주행거리는 숫자(km)로 입력해 주세요.", "Enter mileage as a whole number in km.")),
       seats: optionalInt(1, 80, text(lang, "인승은 1~80 사이 정수로 입력해 주세요.", "Enter seats as a whole number from 1 to 80.")),
       transmission: z.enum(transmissions, { message: text(lang, "변속기를 선택해 주세요.", "Choose a transmission.") }),
@@ -965,6 +979,9 @@ export function parseDealerListing(body: unknown, lang: Lang): { ok: true; data:
       descriptionEn: optionalText(8000, text(lang, "설명은 8000자 이내로 입력해 주세요.", "Description must be 8000 characters or fewer.")),
     })
     .superRefine((value, ctx) => {
+      if (!parseModelYearMonth(value.modelYear).ok) {
+        ctx.addIssue({ code: "custom", path: ["modelYear"], message: yearHint });
+      }
       if (!knownMakerModel(value.maker, value.model, value.vehicleClass)) {
         ctx.addIssue({
           code: "custom",
@@ -975,5 +992,14 @@ export function parseDealerListing(body: unknown, lang: Lang): { ok: true; data:
     });
   const parsed = schema.safeParse(body);
   if (!parsed.success) return { ok: false, errors: fieldErrors(parsed.error) };
-  return { ok: true, data: parsed.data };
+  const yearMonth = parseModelYearMonth(parsed.data.modelYear);
+  if (!yearMonth.ok) return { ok: false, errors: { modelYear: yearHint } };
+  return {
+    ok: true,
+    data: {
+      ...parsed.data,
+      modelYear: yearMonth.value.year,
+      modelMonth: yearMonth.value.month,
+    },
+  };
 }

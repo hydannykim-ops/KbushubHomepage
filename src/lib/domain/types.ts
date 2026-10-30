@@ -54,6 +54,8 @@ export type PublicVehicle = {
   model: string;
   trim: string | null;
   modelYear: number | null;
+  /** 1–12 when known; shown with year as 2020/03. */
+  modelMonth: number | null;
   firstRegisteredOn: string | null;
   mileageKm: number | null;
   seats: number | null;

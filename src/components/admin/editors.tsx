@@ -125,7 +125,14 @@ export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
       </Label>
       <MakerModelPicker lang="ko" required defaultMaker={v?.maker ?? ""} defaultModel={v?.model ?? ""} />
       <Label text="세부 모델"><input name="trim" defaultValue={v?.trim ?? ""} className={field} /></Label>
-      <Label text="연식"><input name="modelYear" defaultValue={v?.modelYear ?? ""} className={field} /></Label>
+      <Label text="연식 (2020 또는 2020/03)">
+        <input
+          name="modelYear"
+          defaultValue={v?.modelYear != null ? (v.modelMonth != null ? `${v.modelYear}/${String(v.modelMonth).padStart(2, "0")}` : String(v.modelYear)) : ""}
+          placeholder="2020/03"
+          className={field}
+        />
+      </Label>
       <Label text="최초 등록일"><input name="firstRegisteredOn" type="date" defaultValue={v?.firstRegisteredOn ?? ""} className={field} /></Label>
       <Label text="주행거리 km"><input name="mileageKm" defaultValue={v?.mileageKm ?? ""} className={field} /></Label>
       <Label text="인승"><input name="seats" defaultValue={v?.seats ?? ""} className={field} /></Label>
