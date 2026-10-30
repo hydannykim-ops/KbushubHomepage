@@ -161,6 +161,7 @@ export const en: Messages = {
     "privacy_disabled": "The privacy policy is not final, so the real inquiry was not saved.",
     "not_configured": "The live store is not connected, so nothing was saved.",
     "save_failed": "Nothing was saved. Please try again.",
+    "payload_too_large": "The photos are too large. Reduce size or fewer photos, then try again.",
     "invalid": "Please check the form.",
     "rate_limited": "Too many requests. Please wait and try again.",
     "origin": "The request was not processed.",

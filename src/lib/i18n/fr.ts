@@ -161,6 +161,7 @@ export const fr: Messages = {
     "privacy_disabled": "La politique de confidentialité n'est pas définitive, la vraie demande n'a donc pas été enregistrée.",
     "not_configured": "Le magasin live n'est pas connecté, rien n'a été enregistré.",
     "save_failed": "Rien n'a été enregistré. Réessayez.",
+    "payload_too_large": "Les photos sont trop volumineuses. Réduisez la taille ou le nombre, puis réessayez.",
     "invalid": "Vérifiez le formulaire.",
     "rate_limited": "Trop de requêtes. Attendez et réessayez.",
     "origin": "La requête n'a pas été traitée.",

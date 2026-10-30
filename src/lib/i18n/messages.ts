@@ -150,6 +150,7 @@ export type Messages = {
     privacy_disabled: string;
     not_configured: string;
     save_failed: string;
+    payload_too_large: string;
     invalid: string;
     rate_limited: string;
     origin: string;

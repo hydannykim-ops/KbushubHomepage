@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { MakerModelPicker } from "@/components/maker-model-picker";
 import { PhotoSlotUploader } from "@/components/photo-slot-uploader";
+import { compressFormImages } from "@/lib/domain/compress-image-client";
 import type { Lang } from "@/lib/domain/types";
 import { scrollFormAlert } from "@/lib/http/scroll-form-alert";
 import { copy } from "@/lib/i18n";
@@ -234,25 +235,41 @@ export function DealerListingForm({ lang }: { lang: Lang }) {
           setScrollToken((value) => value + 1);
           return;
         }
-        const response = await fetch("/api/listings", {
-          method: "POST",
-          headers: { accept: "application/json" },
-          body: payload,
-        });
-        const data = (await response.json()) as { ok?: boolean; code?: string; errors?: Record<string, string> };
-        setPending(false);
-        if (response.ok && data.ok) {
-          setMessage({ ok: true, text: text.listingSaved });
-          form.reset();
-          setVehicleClass("county");
-          setPhotoReset((value) => value + 1);
-          return;
+        try {
+          const compressed = await compressFormImages(payload);
+          const response = await fetch("/api/listings", {
+            method: "POST",
+            headers: { accept: "application/json" },
+            body: compressed,
+          });
+          let data: { ok?: boolean; code?: string; errors?: Record<string, string> } = {};
+          try {
+            data = (await response.json()) as typeof data;
+          } catch {
+            data = {};
+          }
+          setPending(false);
+          if (response.ok && data.ok) {
+            setMessage({ ok: true, text: text.listingSaved });
+            form.reset();
+            setVehicleClass("county");
+            setPhotoReset((value) => value + 1);
+            return;
+          }
+          const code =
+            response.status === 413 || data.code === "payload_too_large" ? "payload_too_large" : (data.code ?? "save_failed");
+          const known = text.errors[code as keyof typeof text.errors];
+          setFieldErrors(data.errors ?? {});
+          setMessage({
+            ok: false,
+            text: data.errors ? Object.values(data.errors).join(" ") : known ?? text.errors.save_failed,
+          });
+          setScrollToken((value) => value + 1);
+        } catch {
+          setPending(false);
+          setMessage({ ok: false, text: text.errors.save_failed });
+          setScrollToken((value) => value + 1);
         }
-        const code = data.code ?? "save_failed";
-        const known = text.errors[code as keyof typeof text.errors];
-        setFieldErrors(data.errors ?? {});
-        setMessage({ ok: false, text: data.errors ? Object.values(data.errors).join(" ") : known ?? text.errors.save_failed });
-        setScrollToken((value) => value + 1);
       }}
     >
       <input type="hidden" name="lang" value={lang} />

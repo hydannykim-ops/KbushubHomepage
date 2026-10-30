@@ -161,6 +161,7 @@ export const ko: Messages = {
     "privacy_disabled": "개인정보 처리방침이 확정되지 않아 실제 문의를 저장하지 않았습니다.",
     "not_configured": "운영 저장소가 연결되지 않아 저장하지 않았습니다.",
     "save_failed": "저장되지 않았습니다. 다시 시도해 주세요.",
+    "payload_too_large": "사진 용량이 너무 큽니다. 사진을 줄이거나 장수를 줄인 뒤 다시 올려 주세요.",
     "invalid": "입력값을 확인해 주세요.",
     "rate_limited": "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.",
     "origin": "요청을 처리하지 않았습니다.",

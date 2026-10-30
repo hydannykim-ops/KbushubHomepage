@@ -48,7 +48,9 @@ const adminColumns = `${publicColumns}, owner_id, listing_source, seller_name, s
 
 function fail(error: unknown, context: string): never {
   const code = error && typeof error === "object" && "code" in error ? String((error as { code?: unknown }).code ?? "unknown") : "unknown";
-  console.error(JSON.stringify({ context, code }));
+  const message =
+    error && typeof error === "object" && "message" in error ? String((error as { message?: unknown }).message ?? "") : String(error);
+  console.error(JSON.stringify({ context, code, message: message.slice(0, 300) }));
   throw new DataAccessError("upstream");
 }
 

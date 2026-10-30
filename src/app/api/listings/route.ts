@@ -16,7 +16,13 @@ export async function POST(request: Request) {
     return resultResponse(request, { status: 429, body: { ok: false, code: "rate_limited" } }, fallback);
   }
   const session = await getSession();
-  const form = await request.formData();
+  let form: FormData;
+  try {
+    form = await request.formData();
+  } catch (error) {
+    console.error(JSON.stringify({ context: "listing_formdata", message: String(error) }));
+    return resultResponse(request, { status: 413, body: { ok: false, code: "payload_too_large" } }, fallback);
+  }
   const body: Record<string, unknown> = {};
   for (const [key, value] of form.entries()) if (typeof value === "string") body[key] = value;
   const lang = langFromBody(body.lang);
@@ -58,6 +64,7 @@ export async function POST(request: Request) {
     if (error instanceof StoreError && error.code === "dealer_only") {
       return resultResponse(request, { status: 403, body: { ok: false, code: "dealer_only" } }, back);
     }
+    console.error(JSON.stringify({ context: "listing_save", message: error instanceof Error ? error.message : String(error) }));
     return resultResponse(request, { status: 500, body: { ok: false, code: "save_failed" } }, back);
   }
 }

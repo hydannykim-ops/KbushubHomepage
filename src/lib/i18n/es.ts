@@ -161,6 +161,7 @@ export const es: Messages = {
     "privacy_disabled": "La política de privacidad no es definitiva, por lo que la consulta real no se guardó.",
     "not_configured": "El almacén en vivo no está conectado, así que no se guardó nada.",
     "save_failed": "No se guardó. Inténtelo de nuevo.",
+    "payload_too_large": "Las fotos son demasiado grandes. Reduzca el tamaño o la cantidad e inténtelo de nuevo.",
     "invalid": "Revise el formulario.",
     "rate_limited": "Demasiadas solicitudes. Espere e inténtelo de nuevo.",
     "origin": "La solicitud no se procesó.",
