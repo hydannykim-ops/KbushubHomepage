@@ -1,6 +1,7 @@
 import { getSession } from "@/lib/auth/session";
-import { StoreError } from "@/lib/demo/store";
+import { DataAccessError, sanitizeErrorDetail } from "@/lib/data/errors";
 import { getRepository } from "@/lib/data/repository";
+import { StoreError } from "@/lib/demo/store";
 import { readGuidedPhotos } from "@/lib/domain/guided-photos";
 import { parseDealerListing } from "@/lib/domain/validation";
 import { crossOrigin, resultResponse } from "@/lib/http/form";
@@ -64,7 +65,28 @@ export async function POST(request: Request) {
     if (error instanceof StoreError && error.code === "dealer_only") {
       return resultResponse(request, { status: 403, body: { ok: false, code: "dealer_only" } }, back);
     }
-    console.error(JSON.stringify({ context: "listing_save", message: error instanceof Error ? error.message : String(error) }));
-    return resultResponse(request, { status: 500, body: { ok: false, code: "save_failed" } }, back);
+    if (error instanceof DataAccessError) {
+      console.error(JSON.stringify({ context: "listing_save", step: error.context, detail: error.detail, code: error.code }));
+      return resultResponse(
+        request,
+        {
+          status: error.code === "misconfigured" ? 503 : 500,
+          body: {
+            ok: false,
+            code: error.code === "misconfigured" ? "not_configured" : "save_failed",
+            step: error.context ?? "data",
+            detail: error.detail ?? error.code,
+          },
+        },
+        back,
+      );
+    }
+    const detail = sanitizeErrorDetail(error);
+    console.error(JSON.stringify({ context: "listing_save", detail }));
+    return resultResponse(
+      request,
+      { status: 500, body: { ok: false, code: "save_failed", step: "listing_save", detail: detail || "unknown" } },
+      back,
+    );
   }
 }

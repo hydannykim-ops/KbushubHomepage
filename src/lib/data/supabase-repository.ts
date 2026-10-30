@@ -38,7 +38,7 @@ import type {
   WantedInput,
 } from "../domain/validation";
 import { createAnonClient, createServiceClient, createSupabaseServer } from "../supabase/clients";
-import { DataAccessError } from "./errors";
+import { DataAccessError, sanitizeErrorDetail } from "./errors";
 import { StoreError } from "../demo/store";
 
 const publicColumns =
@@ -47,11 +47,14 @@ const publicColumns =
 const adminColumns = `${publicColumns}, owner_id, listing_source, seller_name, seller_email, seller_company`;
 
 function fail(error: unknown, context: string): never {
-  const code = error && typeof error === "object" && "code" in error ? String((error as { code?: unknown }).code ?? "unknown") : "unknown";
-  const message =
-    error && typeof error === "object" && "message" in error ? String((error as { message?: unknown }).message ?? "") : String(error);
-  console.error(JSON.stringify({ context, code, message: message.slice(0, 300) }));
-  throw new DataAccessError("upstream");
+  const upstream =
+    error && typeof error === "object" && "code" in error ? String((error as { code?: unknown }).code ?? "unknown") : "unknown";
+  const detail = sanitizeErrorDetail(error);
+  console.error(JSON.stringify({ context, code: upstream, message: detail }));
+  throw new DataAccessError("upstream", {
+    context,
+    detail: detail ? `${upstream}: ${detail}`.slice(0, 200) : upstream,
+  });
 }
 
 function num(value: unknown): number | null {
@@ -1207,7 +1210,7 @@ export function createSupabaseRepository() {
         if (photo.error) fail(photo.error, "dealer_photo_row");
       }
       const vehicle = await loadAdmin(id);
-      if (!vehicle) throw new DataAccessError("upstream");
+      if (!vehicle) throw new DataAccessError("upstream", { context: "dealer_reload", detail: "vehicle_missing_after_insert" });
       return toOwnedListing(vehicle);
     },
     async readPrivateFile(fileId: string) {

@@ -206,7 +206,7 @@ export function DealerListingForm({ lang }: { lang: Lang }) {
   const text = copy(lang);
   const formRef = useRef<HTMLFormElement | null>(null);
   const [pending, setPending] = useState(false);
-  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const [message, setMessage] = useState<{ ok: boolean; text: string; diag?: string } | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [vehicleClass, setVehicleClass] = useState<"county" | "medium" | "large">("county");
   const [photoReset, setPhotoReset] = useState(0);
@@ -242,7 +242,7 @@ export function DealerListingForm({ lang }: { lang: Lang }) {
             headers: { accept: "application/json" },
             body: compressed,
           });
-          let data: { ok?: boolean; code?: string; errors?: Record<string, string> } = {};
+          let data: { ok?: boolean; code?: string; errors?: Record<string, string>; step?: string; detail?: string } = {};
           try {
             data = (await response.json()) as typeof data;
           } catch {
@@ -259,24 +259,34 @@ export function DealerListingForm({ lang }: { lang: Lang }) {
           const code =
             response.status === 413 || data.code === "payload_too_large" ? "payload_too_large" : (data.code ?? "save_failed");
           const known = text.errors[code as keyof typeof text.errors];
+          const base = data.errors ? Object.values(data.errors).join(" ") : known ?? text.errors.save_failed;
+          const parts = [`HTTP ${response.status}`, code];
+          if (data.step) parts.push(data.step);
+          if (data.detail) parts.push(data.detail);
+          if (!data.code && !data.detail) parts.push(lang === "ko" ? "응답 본문 없음(본문 한도 초과 가능)" : "empty body (payload may be too large)");
           setFieldErrors(data.errors ?? {});
+          setMessage({ ok: false, text: base, diag: parts.join(" · ") });
+          setScrollToken((value) => value + 1);
+        } catch (error) {
+          setPending(false);
           setMessage({
             ok: false,
-            text: data.errors ? Object.values(data.errors).join(" ") : known ?? text.errors.save_failed,
+            text: text.errors.save_failed,
+            diag: `client · ${error instanceof Error ? error.message : String(error)}`.slice(0, 200),
           });
-          setScrollToken((value) => value + 1);
-        } catch {
-          setPending(false);
-          setMessage({ ok: false, text: text.errors.save_failed });
           setScrollToken((value) => value + 1);
         }
       }}
     >
       <input type="hidden" name="lang" value={lang} />
       {message ? (
-        <p role={message.ok ? "status" : "alert"} className={`scroll-mt-28 border px-3 py-2 text-sm ${message.ok ? "border-[#bbf7d0] bg-[#f0fdf4]" : "border-[#fecdd3] bg-[#fff1f2]"}`}>
-          {message.text}
-        </p>
+        <div
+          role={message.ok ? "status" : "alert"}
+          className={`scroll-mt-28 border px-3 py-2 text-sm ${message.ok ? "border-[#bbf7d0] bg-[#f0fdf4]" : "border-[#fecdd3] bg-[#fff1f2]"}`}
+        >
+          <p>{message.text}</p>
+          {message.diag ? <p className="mt-1 break-all font-mono text-xs text-[#9f1239]">{message.diag}</p> : null}
+        </div>
       ) : null}
       <label className="grid gap-1 text-sm font-medium">
         {text.classLabel}
