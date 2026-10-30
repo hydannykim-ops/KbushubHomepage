@@ -62,7 +62,12 @@ function askPrimary(lang: Lang, listedBy?: string | null): string {
   return company ? `${label} · ${company}` : label;
 }
 
-export function priceView(vehicle: PublicVehicle, mode: TradeMode, lang: Lang, listedBy?: string | null): PriceView {
+type PricedVehicle = Pick<
+  PublicVehicle,
+  "domesticPriceKrw" | "exportPriceAmount" | "exportPriceCurrency" | "exportPriceTermsKo" | "exportPriceTermsEn"
+>;
+
+export function priceView(vehicle: PricedVehicle, mode: TradeMode, lang: Lang, listedBy?: string | null): PriceView {
   if (mode === "domestic") {
     if (vehicle.domesticPriceKrw == null) {
       return { primary: askPrimary(lang, listedBy), basis: null, ask: true };
@@ -90,7 +95,7 @@ export function priceView(vehicle: PublicVehicle, mode: TradeMode, lang: Lang, l
 }
 
 /** Unified listing/detail pricing after removing the domestic/export browse toggle. */
-export function catalogPriceView(vehicle: PublicVehicle, lang: Lang, listedBy?: string | null): PriceView & { exportLine: string | null } {
+export function catalogPriceView(vehicle: PricedVehicle, lang: Lang, listedBy?: string | null): PriceView & { exportLine: string | null } {
   const domestic = priceView(vehicle, "domestic", lang, listedBy);
   const exported = priceView(vehicle, "export", lang, listedBy);
   return {

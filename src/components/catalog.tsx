@@ -2,9 +2,10 @@ import Link from "next/link";
 import { MediaSlot } from "./media-slot";
 import { GalleryClient } from "./gallery-client";
 import { catalogPriceView, formatKm } from "@/lib/domain/money";
-import type { Lang, PublicVehicle, TradeMode, VehiclePhoto, VehicleQuery } from "@/lib/domain/types";
+import type { Lang, OwnedListing, PublicVehicle, TradeMode, VehiclePhoto, VehicleQuery } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
 import { contentFieldLang, localeTag } from "@/lib/i18n/langs";
+import { photoUrl } from "@/lib/domain/photo-url";
 import { makerLabel, modelLabel, vehicleTitle } from "@/lib/domain/vehicle-catalog";
 import { classLabel, fuelLabel, statusLabel, transferLabel, transmissionLabel } from "@/lib/labels";
 import { whatsappHref, whatsappMessage } from "@/lib/domain/referral";
@@ -27,23 +28,16 @@ export function DataProblem({ lang, code }: { lang: Lang; code: "misconfigured" 
   );
 }
 
-function photoSrc(photo: VehiclePhoto): string | null {
-  if (!photo.placeholder) return `/api/media/photo/${photo.id}`;
-  return photo.path;
-}
-
 function PhotoFrame({ vehicle, lang }: { vehicle: PublicVehicle; lang: Lang }) {
   const text = copy(lang);
   const cover = vehicle.photos.find((photo) => photo.isCover) ?? vehicle.photos[0];
-  const src = cover ? photoSrc(cover) : null;
+  const src = cover ? photoUrl(cover, 640) : null;
   return (
     <div className="relative aspect-[4/3] overflow-hidden bg-[#eef1f5]">
       {src ? (
-        <img
-          src={src}
-          alt={contentFieldLang(lang) === "ko" ? cover!.altKo : cover!.altEn}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-        />
+        // Demo samples are public files; uploaded photos go through the media route.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={src} alt={contentFieldLang(lang) === "ko" ? cover!.altKo : cover!.altEn} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" loading="lazy" decoding="async" />
       ) : (
         <MediaSlot label={text.mediaCover} hint={text.photoNone} />
       )}
@@ -95,9 +89,11 @@ export function VehicleCard({
             {vehicle.transferType !== "unknown" ? ` · ${transfer}` : null}
           </p>
           <div className="flex flex-wrap items-end gap-2 pt-1">
-            <p className="text-xl font-bold tabular-nums tracking-tight text-ink">{price.primary}</p>
+            <p className="text-2xl font-bold tabular-nums tracking-tight text-primary">{price.primary}</p>
             {vehicle.status !== "available" ? (
-              <span className="mb-0.5 text-xs font-semibold text-muted">{statusLabel(vehicle.status, lang)}</span>
+              <span className="mb-0.5 rounded bg-primary-soft px-1.5 py-0.5 text-xs font-semibold text-primary-deep">
+                {statusLabel(vehicle.status, lang)}
+              </span>
             ) : null}
           </div>
           {price.basis ? <p className="text-xs text-muted">{price.basis}</p> : null}
@@ -121,7 +117,7 @@ export function Gallery({ photos, lang }: { photos: VehiclePhoto[]; lang: Lang }
 }
 
 /** Encar-style compact facts: identity, year/mileage emphasis, quiet secondary rows. */
-export function SpecTable({ vehicle, lang }: { vehicle: PublicVehicle; lang: Lang }) {
+export function SpecTable({ vehicle, lang }: { vehicle: PublicVehicle | OwnedListing; lang: Lang }) {
   const text = copy(lang);
   const maker = makerLabel(vehicle.maker, lang);
   const model = modelLabel(vehicle.model, lang);

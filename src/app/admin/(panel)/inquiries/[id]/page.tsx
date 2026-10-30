@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { InquiryEditor } from "@/components/admin/editors";
+import { InquiryChat } from "@/components/inquiry-chat";
 import { getRepository } from "@/lib/data/repository";
 
 export default async function InquiryDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -8,7 +9,11 @@ export default async function InquiryDetailPage({ params }: { params: Promise<{ 
   const repo = getRepository();
   const inquiry = await repo.getInquiry(id);
   if (!inquiry) notFound();
-  const [agents, history] = await Promise.all([repo.listAgents(), repo.historyFor(id)]);
+  const [agents, history, thread] = await Promise.all([
+    repo.listAgents(),
+    repo.historyFor(id),
+    repo.openInquiryThread(id, { memberId: null, email: null, admin: true }),
+  ]);
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <section className="rounded-lg border border-line bg-white p-4 text-sm">
@@ -46,9 +51,23 @@ export default async function InquiryDetailPage({ params }: { params: Promise<{ 
           견적 작성
         </Link>
       </section>
-      <section className="rounded-lg border border-line bg-white p-4">
-        <InquiryEditor inquiry={inquiry} agents={agents} />
-      </section>
+      <div className="grid gap-6">
+        <section className="rounded-lg border border-line bg-white p-4">
+          <InquiryEditor inquiry={inquiry} agents={agents} />
+        </section>
+        {thread ? (
+          <section className="rounded-lg border border-line bg-white p-4">
+            <h2 className="mb-3 text-lg font-bold">문의 채팅</h2>
+            <InquiryChat
+              inquiry={thread.inquiry}
+              messages={thread.messages}
+              viewerRole={thread.viewerRole}
+              lang="ko"
+              action={`/api/account/inquiries/${encodeURIComponent(inquiry.id)}/messages`}
+            />
+          </section>
+        ) : null}
+      </div>
     </div>
   );
 }

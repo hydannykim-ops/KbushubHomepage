@@ -3,6 +3,7 @@ import type {
   Agent,
   AssignmentHistory,
   Inquiry,
+  InquiryMessage,
   Member,
   Quote,
   SiteSettings,
@@ -16,6 +17,7 @@ export type DemoState = {
   settings: SiteSettings;
   vehicles: AdminVehicle[];
   inquiries: Inquiry[];
+  inquiryMessages: InquiryMessage[];
   quotes: Quote[];
   agents: Agent[];
   requests: VehicleRequest[];
