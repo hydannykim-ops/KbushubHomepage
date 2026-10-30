@@ -1191,24 +1191,28 @@ export function createSupabaseRepository() {
       if (inserted.error) fail(inserted.error, "dealer_vehicle");
       const internal = await service.from("vehicle_internal").insert({ vehicle_id: id });
       if (internal.error) fail(internal.error, "dealer_internal");
-      for (const [index, shot] of shots.entries()) {
-        const photoId = randomUUID();
-        const storagePath = `${id}/${photoId}.${extensionFor(shot.contentType)}`;
-        const uploaded = await service.storage.from("vehicle-photos").upload(storagePath, shot.bytes, { contentType: shot.contentType, upsert: false });
-        if (uploaded.error) fail(uploaded.error, "dealer_photo_upload");
-        const photo = await service.from("vehicle_photos").insert({
-          id: photoId,
-          vehicle_id: id,
-          category: shot.category,
-          storage_path: storagePath,
-          content_type: shot.contentType,
-          sort_order: index,
-          is_cover: shot.cover,
-          alt_ko: shot.label,
-          alt_en: shot.label,
-        });
-        if (photo.error) fail(photo.error, "dealer_photo_row");
-      }
+      await Promise.all(
+        shots.map(async (shot, index) => {
+          const photoId = randomUUID();
+          const storagePath = `${id}/${photoId}.${extensionFor(shot.contentType)}`;
+          const uploaded = await service.storage
+            .from("vehicle-photos")
+            .upload(storagePath, shot.bytes, { contentType: shot.contentType, upsert: false });
+          if (uploaded.error) fail(uploaded.error, "dealer_photo_upload");
+          const photo = await service.from("vehicle_photos").insert({
+            id: photoId,
+            vehicle_id: id,
+            category: shot.category,
+            storage_path: storagePath,
+            content_type: shot.contentType,
+            sort_order: index,
+            is_cover: shot.cover,
+            alt_ko: shot.label,
+            alt_en: shot.label,
+          });
+          if (photo.error) fail(photo.error, "dealer_photo_row");
+        }),
+      );
       const vehicle = await loadAdmin(id);
       if (!vehicle) throw new DataAccessError("upstream", { context: "dealer_reload", detail: "vehicle_missing_after_insert" });
       return toOwnedListing(vehicle);

@@ -206,6 +206,7 @@ export function DealerListingForm({ lang }: { lang: Lang }) {
   const text = copy(lang);
   const formRef = useRef<HTMLFormElement | null>(null);
   const [pending, setPending] = useState(false);
+  const [pendingLabel, setPendingLabel] = useState<string | null>(null);
   const [message, setMessage] = useState<{ ok: boolean; text: string; diag?: string } | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [vehicleClass, setVehicleClass] = useState<"county" | "medium" | "large">("county");
@@ -225,18 +226,21 @@ export function DealerListingForm({ lang }: { lang: Lang }) {
       onSubmit={async (event) => {
         event.preventDefault();
         setPending(true);
+        setPendingLabel(lang === "ko" ? "사진 줄이는 중…" : "Compressing photos…");
         setMessage(null);
         setFieldErrors({});
         const form = event.currentTarget;
         const payload = new FormData(form);
         if (!String(payload.get("maker") ?? "").trim() || !String(payload.get("model") ?? "").trim()) {
           setPending(false);
+          setPendingLabel(null);
           setMessage({ ok: false, text: text.pickMakerModel });
           setScrollToken((value) => value + 1);
           return;
         }
         try {
           const compressed = await compressFormImages(payload);
+          setPendingLabel(lang === "ko" ? "올리는 중…" : "Uploading…");
           const response = await fetch("/api/listings", {
             method: "POST",
             headers: { accept: "application/json" },
@@ -249,6 +253,7 @@ export function DealerListingForm({ lang }: { lang: Lang }) {
             data = {};
           }
           setPending(false);
+          setPendingLabel(null);
           if (response.ok && data.ok) {
             setMessage({ ok: true, text: text.listingSaved });
             form.reset();
@@ -269,6 +274,7 @@ export function DealerListingForm({ lang }: { lang: Lang }) {
           setScrollToken((value) => value + 1);
         } catch (error) {
           setPending(false);
+          setPendingLabel(null);
           setMessage({
             ok: false,
             text: text.errors.save_failed,
@@ -348,7 +354,7 @@ export function DealerListingForm({ lang }: { lang: Lang }) {
       </label>
       <PhotoSlotUploader lang={lang} resetKey={photoReset} />
       <button disabled={pending} className="bg-primary px-4 py-3 text-sm font-semibold text-white disabled:opacity-60">
-        {text.submit}
+        {pendingLabel ?? text.submit}
       </button>
     </form>
   );
