@@ -41,9 +41,9 @@ import { createAnonClient, createServiceClient, createSupabaseServer } from "../
 import { DataAccessError, sanitizeErrorDetail } from "./errors";
 import { StoreError } from "../demo/store";
 
-/** Catalog fields. Prefer service role for listing_source/seller_company (column grants may block anon). */
+/** Catalog fields. Service role is used for public reads so seller_company is available even before column grants. */
 const publicColumns =
-  "id, stock_no, status, vehicle_class, maker, model, trim, model_year, first_registered_on, mileage_km, seats, horsepower_ps, transmission, fuel, engine_model, displacement_cc, steering, long_body, transfer_type, length_mm, width_mm, height_mm, previous_use_ko, previous_use_en, location, maintenance_ko, maintenance_en, defects_ko, defects_en, description_ko, description_en, photographed_on, stock_checked_on, featured, domestic_price_krw, export_price_amount, export_price_currency, export_price_terms_ko, export_price_terms_en, video_url, created_at, updated_at, listing_source, seller_company, vehicle_photos(id, vehicle_id, category, storage_path, content_type, sort_order, is_cover, alt_ko, alt_en)";
+  "id, stock_no, status, vehicle_class, maker, model, trim, model_year, model_month, first_registered_on, mileage_km, seats, horsepower_ps, transmission, fuel, engine_model, displacement_cc, steering, long_body, transfer_type, length_mm, width_mm, height_mm, previous_use_ko, previous_use_en, location, maintenance_ko, maintenance_en, defects_ko, defects_en, description_ko, description_en, photographed_on, stock_checked_on, featured, domestic_price_krw, export_price_amount, export_price_currency, export_price_terms_ko, export_price_terms_en, video_url, created_at, updated_at, listing_source, seller_company, vehicle_photos(id, vehicle_id, category, storage_path, content_type, sort_order, is_cover, alt_ko, alt_en)";
 
 const adminColumns = `${publicColumns}, owner_id, seller_name, seller_email`;
 
@@ -213,6 +213,7 @@ function vehicleRow(input: VehicleInput) {
     model: input.model,
     trim: input.trim,
     model_year: input.modelYear,
+    model_month: input.modelMonth,
     first_registered_on: input.firstRegisteredOn,
     mileage_km: input.mileageKm,
     seats: input.seats,
@@ -1193,6 +1194,7 @@ export function createSupabaseRepository() {
         maker: input.maker,
         model: input.model,
         model_year: input.modelYear,
+        model_month: input.modelMonth,
         first_registered_on:
           input.modelYear != null && input.modelMonth != null
             ? `${input.modelYear}-${String(input.modelMonth).padStart(2, "0")}-01`
