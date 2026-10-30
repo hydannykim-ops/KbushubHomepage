@@ -17,6 +17,8 @@ export const fr: Messages = {
   "demoBanner": "",
   "heroTitle": "Bus d'occasion coréens et Hyundai County",
   "heroBody": "K-BUS HUB présente des véhicules vérifiés par l'entreprise aux clients nationaux et aux acheteurs à l'étranger. Il n'y a qu'un seul stock. Une vente nationale met aussi à jour la vue export.",
+  "heroPrev": "Bannière précédente",
+  "heroNext": "Bannière suivante",
   "search": "Rechercher",
   "maker": "Marque",
   "model": "Modèle",

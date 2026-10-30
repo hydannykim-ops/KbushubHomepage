@@ -17,6 +17,8 @@ export const en: Messages = {
   "demoBanner": "",
   "heroTitle": "Korean used buses and Hyundai County",
   "heroBody": "K-BUS HUB presents vehicles checked by the company to domestic customers and overseas buyers. There is one inventory. A domestic sale updates the export view as well.",
+  "heroPrev": "Previous banner",
+  "heroNext": "Next banner",
   "search": "Search",
   "maker": "Maker",
   "model": "Model",

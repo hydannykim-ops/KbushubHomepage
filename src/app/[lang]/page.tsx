@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DataProblem, VehicleCard } from "@/components/catalog";
+import { HeroBanner } from "@/components/hero-banner";
 import { copy } from "@/lib/i18n";
 import { contentFieldLang } from "@/lib/i18n/langs";
 import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
@@ -37,30 +38,41 @@ export default async function HomePage({
 
   return (
     <div className="mx-auto grid max-w-6xl gap-16 px-4 py-10 md:py-14">
-      <section className="relative min-h-[70vh] overflow-hidden border border-line bg-[#0f172a] text-white lg:min-h-[32rem]">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/demo/hero-yard.jpg" alt={text.mediaHero} className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/78 via-black/55 to-primary/25" />
-        <div className="relative flex min-h-[70vh] max-w-2xl flex-col justify-center px-6 py-14 lg:min-h-[32rem] lg:px-10">
-          <p className="text-3xl font-semibold tracking-tight text-white md:text-4xl">K-BUS HUB</p>
-          <h1 className="mt-3 text-2xl font-semibold leading-snug tracking-tight text-white/95 md:text-3xl">{text.heroTitle}</h1>
-          <p className="mt-5 max-w-xl text-base leading-7 text-white/85">{text.heroBody}</p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href={hrefTo(lang, "/vehicles", ctx)}
-              className="bg-primary px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_rgba(21,94,239,0.35)] transition hover:bg-primary-deep"
-            >
-              {text.browseInventory}
-            </Link>
-            <Link
-              href={hrefTo(lang, "/vehicles", ctx, { class: "county" })}
-              className="border border-white/45 bg-white/12 px-5 py-3 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
-            >
-              {text.classCounty}
-            </Link>
-          </div>
-        </div>
-      </section>
+      <HeroBanner
+        prevLabel={text.heroPrev}
+        nextLabel={text.heroNext}
+        slides={[
+          {
+            id: "hub",
+            image: "/demo/hero-yard.jpg",
+            imageAlt: text.mediaHero,
+            brand: "K-BUS HUB",
+            title: text.heroTitle,
+            body: text.heroBody,
+            tone: "hub",
+            primary: { href: hrefTo(lang, "/vehicles", ctx), label: text.browseInventory },
+            secondary: { href: hrefTo(lang, "/vehicles", ctx, { class: "county" }), label: text.classCounty },
+          },
+          {
+            id: "sell",
+            image: "/demo/medium-cover.jpg",
+            imageAlt: text.navSell,
+            title: text.sellTitle,
+            body: text.sellBody,
+            tone: "sell",
+            primary: { href: hrefTo(lang, "/sell", ctx), label: text.navSell },
+          },
+          {
+            id: "scrap",
+            image: "/demo/large-cover.jpg",
+            imageAlt: text.navScrap,
+            title: text.scrapTitle,
+            body: text.scrapBody,
+            tone: "scrap",
+            primary: { href: hrefTo(lang, "/scrap", ctx), label: text.navScrap },
+          },
+        ]}
+      />
 
       <section className="grid gap-4 md:grid-cols-3">
         {(

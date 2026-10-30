@@ -15,6 +15,8 @@ export type Messages = {
   demoBanner: string;
   heroTitle: string;
   heroBody: string;
+  heroPrev: string;
+  heroNext: string;
   search: string;
   maker: string;
   model: string;

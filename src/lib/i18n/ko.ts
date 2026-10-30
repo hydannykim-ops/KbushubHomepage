@@ -17,6 +17,8 @@ export const ko: Messages = {
   "demoBanner": "",
   "heroTitle": "한국 중고버스와 현대 카운티",
   "heroBody": "K-BUS HUB는 회사가 확인한 매물을 국내 고객과 해외 바이어에게 소개합니다. 재고는 하나이며, 국내에서 판매가 끝나면 수출 화면에도 같은 상태가 반영됩니다.",
+  "heroPrev": "이전 배너",
+  "heroNext": "다음 배너",
   "search": "검색",
   "maker": "제조사",
   "model": "차모델",
