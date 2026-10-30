@@ -70,7 +70,7 @@ export const ko: Messages = {
   "guideCtaInventory": "수출 매물 보기",
   "guideCtaQuote": "견적 요청하기",
   "wantedTitle": "원하는 차량 요청",
-  "wantedBody": "조건에 맞는 차량을 찾고 있다면 요청을 남겨 주세요. 재고가 없어도 상담 목록으로 남습니다. 연식·인승은 비워 두면 상관없음입니다.",
+  "wantedBody": "조건에 맞는 차량을 찾고 있다면 요청을 남겨 주세요. 재고가 없어도 상담 목록으로 남습니다. 제조사·모델·연식·인승은 비워 두거나 상관없음으로 두면 됩니다.",
   "wantedYearLabel": "연식 (이하)",
   "wantedYearHint": "예: 2020 → 2020년식 이하. 비우면 상관없음",
   "wantedSeatsLabel": "인승 (이상)",

@@ -227,9 +227,11 @@ export type WantedInput = {
 };
 
 export function parseWanted(body: unknown, lang: Lang): { ok: true; data: WantedInput } | { ok: false; errors: FieldErrors } {
+  const anyModel = text(lang, "상관없음", "Any");
   const schema = z
     .object({
-      model: z.string().trim().min(1).max(80),
+      model: z.union([z.string(), z.null()]).optional(),
+      maker: z.union([z.string(), z.null()]).optional(),
       budgetAmount: optionalNumber(0, 1_000_000_000),
       budgetCurrency: z.union([z.string(), z.null()]).optional(),
       modelYear: optionalInt(1980, 2035),
@@ -266,10 +268,12 @@ export function parseWanted(body: unknown, lang: Lang): { ok: true; data: Wanted
   const parsed = schema.safeParse(body);
   if (!parsed.success) return { ok: false, errors: fieldErrors(parsed.error) };
   const value = parsed.data;
+  const model = (value.model ?? "").trim();
+  const maker = (value.maker ?? "").trim();
   return {
     ok: true,
     data: {
-      model: value.model,
+      model: model || (maker ? maker : anyModel),
       budgetAmount: value.budgetAmount,
       budgetCurrency: value.budgetCurrency?.trim().toUpperCase() || null,
       modelYear: value.modelYear,

@@ -70,6 +70,7 @@ export function MakerModelPicker({
   vehicleClass = "",
   required = false,
   allowEmpty = false,
+  emptyLabel,
   layout = "default",
 }: {
   lang: Lang;
@@ -80,10 +81,12 @@ export function MakerModelPicker({
   vehicleClass?: VehicleClass | "";
   required?: boolean;
   allowEmpty?: boolean;
+  emptyLabel?: string;
   layout?: "default" | "market";
 }) {
   const text = copy(lang);
   const market = layout === "market";
+  const skipLabel = emptyLabel ?? text.all;
   const initialMaker = resolveInitialMaker(defaultMaker, defaultModel, vehicleClass);
   const initialModel = resolveInitialModel(defaultModel, initialMaker, vehicleClass);
   const initialSeries = initialModel ? seriesForModel(initialModel) : "";
@@ -100,7 +103,7 @@ export function MakerModelPicker({
     setMaker(next);
     setSeries("");
     setModel("");
-    setStep(next ? "series" : "maker");
+    setStep(next ? "series" : allowEmpty ? "done" : "maker");
   }
 
   function pickSeries(next: string) {
@@ -176,11 +179,23 @@ export function MakerModelPicker({
         </button>
       ) : null}
 
+      {allowEmpty && step === "done" && !maker && !model ? (
+        <button type="button" className={lockedRowClass(market)} onClick={() => setStep("maker")}>
+          <span>
+            <span className="text-xs font-semibold text-muted">
+              {text.maker} · {text.model}
+            </span>
+            <span className="mt-0.5 block font-semibold text-ink">{skipLabel}</span>
+          </span>
+          <span className="text-xs font-medium text-muted">{text.reset}</span>
+        </button>
+      ) : null}
+
       {step === "maker" ? (
         <div className={market ? "grid gap-0.5" : "grid gap-2"} role="listbox" aria-label={text.maker}>
           {allowEmpty ? (
             <button type="button" className={optionClass(maker === "", market)} aria-pressed={maker === ""} onClick={() => pickMaker("")}>
-              {text.all}
+              {skipLabel}
             </button>
           ) : null}
           {makers.map((item) => (
@@ -219,7 +234,7 @@ export function MakerModelPicker({
                   setStep("done");
                 }}
               >
-                {text.all}
+                {skipLabel}
               </button>
             ) : null}
             {seriesList.map((entry) => (

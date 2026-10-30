@@ -32,7 +32,7 @@ export default async function WantedPage({
         <SubmitBanner lang={lang} submitted={sp.get("submitted") ?? undefined} error={sp.get("error") ?? undefined} />
         <EnhanceForm action="/api/requests/wanted" lang={lang}>
           <input type="hidden" name="lang" value={lang} />
-          <MakerModelPicker lang={lang} required defaultModel={sp.get("model") ?? ""} />
+          <MakerModelPicker lang={lang} allowEmpty emptyLabel={text.noPreference} defaultModel={sp.get("model") ?? ""} />
           <Field label={text.budget} name="budgetAmount" type="number" />
           <label className="grid gap-1 text-sm font-medium">
             {text.currency}
