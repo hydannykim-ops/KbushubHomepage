@@ -107,6 +107,8 @@ export function Field({
   required = false,
   defaultValue,
   placeholder,
+  hint,
+  inputMode,
   as = "input",
 }: {
   label: string;
@@ -115,6 +117,8 @@ export function Field({
   required?: boolean;
   defaultValue?: string;
   placeholder?: string;
+  hint?: string;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
   as?: "input" | "textarea";
 }) {
   return (
@@ -136,9 +140,11 @@ export function Field({
           required={required}
           defaultValue={defaultValue}
           placeholder={placeholder}
+          inputMode={inputMode}
           className="rounded-md border border-line px-3 py-2 font-normal"
         />
       )}
+      {hint ? <span className="text-xs font-normal text-muted">{hint}</span> : null}
     </label>
   );
 }

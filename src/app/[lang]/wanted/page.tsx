@@ -42,8 +42,8 @@ export default async function WantedPage({
               ))}
             </select>
           </label>
-          <Field label={text.modelYear} name="modelYear" />
-          <Field label={text.seats} name="seats" />
+          <Field label={text.wantedYearLabel} name="modelYear" inputMode="numeric" placeholder="2020" hint={text.wantedYearHint} />
+          <Field label={text.wantedSeatsLabel} name="seats" inputMode="numeric" placeholder="28" hint={text.wantedSeatsHint} />
           <Field label={text.quantity} name="quantity" required defaultValue="1" />
           <Field label={text.destinationCountry} name="destinationCountry" required />
           <Field label={text.desiredTime} name="desiredTime" />

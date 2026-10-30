@@ -25,7 +25,22 @@ export default async function RequestsPage() {
             <p>
               {request.name} · {request.email ?? "-"} · {request.phone ?? "-"}
             </p>
-            <p>연식 {request.modelYear ?? "-"} / 주행 {request.mileageKm ?? "-"} / 인승 {request.seats ?? "-"} / 대수 {request.quantity ?? "-"}</p>
+            <p>
+              {request.type === "wanted" ? (
+                <>
+                  연식 {request.modelYear != null ? `${request.modelYear} 이하` : "상관없음"}
+                  {" / "}
+                  인승 {request.seats != null ? `${request.seats} 이상` : "상관없음"}
+                  {" / "}
+                  대수 {request.quantity ?? "-"}
+                </>
+              ) : (
+                <>
+                  연식 {request.modelYear ?? "-"} / 주행 {request.mileageKm ?? "-"} / 인승 {request.seats ?? "-"} / 대수{" "}
+                  {request.quantity ?? "-"}
+                </>
+              )}
+            </p>
             <p>예산 {request.budgetAmount ?? "-"} {request.budgetCurrency ?? ""}</p>
             <p>희망가 {request.askingPriceAmount ?? "-"} {request.askingPriceCurrency ?? ""}</p>
             <p>위치 {request.location ?? "-"} / 목적국 {request.destinationCountry ?? "-"} / 시기 {request.desiredTime ?? "-"}</p>

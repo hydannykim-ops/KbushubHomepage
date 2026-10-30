@@ -54,6 +54,11 @@ export type Messages = {
   guideCtaQuote: string;
   wantedTitle: string;
   wantedBody: string;
+  wantedYearLabel: string;
+  wantedYearHint: string;
+  wantedSeatsLabel: string;
+  wantedSeatsHint: string;
+  noPreference: string;
   sellTitle: string;
   sellBody: string;
   partnerTitle: string;
