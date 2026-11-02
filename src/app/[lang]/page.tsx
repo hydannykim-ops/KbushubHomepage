@@ -134,7 +134,7 @@ export default async function HomePage({
       <section className="grid gap-4 md:grid-cols-3">
         <Link
           href={hrefTo(lang, "/wanted", ctx)}
-          className="border border-primary/20 bg-primary-soft/60 p-6 transition hover:border-primary/45 hover:bg-primary-soft"
+          className="rounded-2xl border border-primary/15 bg-primary-soft/60 p-6 shadow-[0_8px_24px_rgba(15,28,47,0.04)] transition hover:-translate-y-0.5 hover:border-primary/35 hover:bg-primary-soft hover:shadow-[0_16px_36px_rgba(15,28,47,0.08)]"
         >
           <p className="text-xs font-semibold tracking-[0.14em] text-primary">{text.search}</p>
           <h2 className="mt-2 text-xl font-semibold text-ink">{text.wantedTitle}</h2>
@@ -142,7 +142,7 @@ export default async function HomePage({
         </Link>
         <Link
           href={hrefTo(lang, "/sell", ctx)}
-          className="border border-accent-warm/25 bg-accent-warm-soft/70 p-6 transition hover:border-accent-warm/45 hover:bg-accent-warm-soft"
+          className="rounded-2xl border border-accent-warm/20 bg-accent-warm-soft/70 p-6 shadow-[0_8px_24px_rgba(15,28,47,0.04)] transition hover:-translate-y-0.5 hover:border-accent-warm/40 hover:bg-accent-warm-soft hover:shadow-[0_16px_36px_rgba(15,28,47,0.08)]"
         >
           <p className="text-xs font-semibold tracking-[0.14em] text-accent-warm">{text.navSell}</p>
           <h2 className="mt-2 text-xl font-semibold text-ink">{text.sellTitle}</h2>
@@ -150,7 +150,7 @@ export default async function HomePage({
         </Link>
         <Link
           href={hrefTo(lang, "/export-sell", ctx)}
-          className="border border-line bg-white p-6 transition hover:border-primary/40"
+          className="rounded-2xl border border-line bg-white p-6 shadow-[0_8px_24px_rgba(15,28,47,0.04)] transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_16px_36px_rgba(15,28,47,0.08)]"
         >
           <p className="text-xs font-semibold tracking-[0.14em] text-primary">{text.modeExport}</p>
           <h2 className="mt-2 text-xl font-semibold text-ink">{text.navExportSell}</h2>
@@ -158,8 +158,8 @@ export default async function HomePage({
         </Link>
       </section>
 
-      <section className="grid gap-6 border border-line bg-white p-6 md:grid-cols-[0.8fr_1.2fr]">
-        <div className="relative min-h-48 overflow-hidden border border-line bg-primary-soft">
+      <section className="grid gap-6 rounded-2xl border border-line bg-white p-6 shadow-[0_8px_24px_rgba(15,28,47,0.04)] md:grid-cols-[0.8fr_1.2fr]">
+        <div className="relative min-h-48 overflow-hidden rounded-xl border border-line bg-primary-soft">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/demo/hero-yard.jpg" alt={text.mediaYard} className="h-full min-h-48 w-full object-cover" />
         </div>

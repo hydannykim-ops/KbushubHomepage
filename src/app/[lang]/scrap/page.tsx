@@ -25,7 +25,7 @@ export default async function ScrapQuotePage({
   const text = copy(lang);
 
   const form = (
-    <div className="border border-line bg-white p-5 shadow-[0_12px_40px_rgba(15,28,47,0.06)]">
+    <div className="rounded-2xl border border-line bg-white p-5 shadow-[0_12px_36px_rgba(15,28,47,0.06)]">
       <SubmitBanner lang={lang} submitted={sp.get("submitted") ?? undefined} error={sp.get("error") ?? undefined} />
       <EnhanceForm action="/api/requests/scrap" lang={lang}>
         <input type="hidden" name="lang" value={lang} />
