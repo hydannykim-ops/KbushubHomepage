@@ -63,6 +63,15 @@ export default async function HomePage({
             primary: { href: hrefTo(lang, "/sell", ctx), label: text.navSell },
           },
           {
+            id: "export-sell",
+            image: "/demo/hero-export.jpg",
+            imageAlt: text.navExportSell,
+            title: text.exportSellTitle,
+            body: text.exportSellBody,
+            tone: "export",
+            primary: { href: hrefTo(lang, "/export-sell", ctx), label: text.navExportSell },
+          },
+          {
             id: "scrap",
             image: "/demo/hero-scrap.jpg",
             imageAlt: text.navScrap,
@@ -122,7 +131,7 @@ export default async function HomePage({
         )}
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2">
+      <section className="grid gap-4 md:grid-cols-3">
         <Link
           href={hrefTo(lang, "/wanted", ctx)}
           className="border border-primary/20 bg-primary-soft/60 p-6 transition hover:border-primary/45 hover:bg-primary-soft"
@@ -138,6 +147,14 @@ export default async function HomePage({
           <p className="text-xs font-semibold tracking-[0.14em] text-accent-warm">{text.navSell}</p>
           <h2 className="mt-2 text-xl font-semibold text-ink">{text.sellTitle}</h2>
           <p className="mt-2 text-sm leading-6 text-muted">{text.sellBody}</p>
+        </Link>
+        <Link
+          href={hrefTo(lang, "/export-sell", ctx)}
+          className="border border-line bg-white p-6 transition hover:border-primary/40"
+        >
+          <p className="text-xs font-semibold tracking-[0.14em] text-primary">{text.modeExport}</p>
+          <h2 className="mt-2 text-xl font-semibold text-ink">{text.navExportSell}</h2>
+          <p className="mt-2 text-sm leading-6 text-muted">{text.exportSellBody}</p>
         </Link>
       </section>
 

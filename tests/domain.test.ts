@@ -11,7 +11,8 @@ import { catalogPriceView, internalProfit, summarizeQuote } from "../src/lib/dom
 import { normalizeReferralCode, referralForInquiry, rememberReferral, whatsappHref, whatsappMessage } from "../src/lib/domain/referral";
 import { acceptOrReject, submissionGate } from "../src/lib/domain/submit";
 import { checkImage } from "../src/lib/domain/uploads";
-import { parseInquiry, parseQuote, parseScrap } from "../src/lib/domain/validation";
+import { parseInquiry, parseQuote, parseScrap, parseSell } from "../src/lib/domain/validation";
+import { readGuidedPhotos } from "../src/lib/domain/guided-photos";
 import { clampPhotoWidth, photoUrl } from "../src/lib/domain/photo-url";
 import {
   makerLabel,
@@ -762,4 +763,39 @@ test("parseScrap accepts plate region and stores scrap requests", async () => {
   assert.equal(created.location, "경기");
   const listed = await store.listRequests();
   assert.ok(listed.some((item) => item.id === created.id && item.type === "scrap"));
+});
+
+test("export sell reuses sell requests with optional photos", async () => {
+  const parsed = parseSell(
+    {
+      model: "universe",
+      modelYear: "2018",
+      mileageKm: "450000",
+      location: "경기 오산",
+      askingPriceAmount: "35000000",
+      askingPriceCurrency: "KRW",
+      name: "김수출",
+      phone: "010-3333-4444",
+      message: "유니버스 수출 상담",
+      consent: "on",
+      companyWebsite: "",
+    },
+    "ko",
+  );
+  assert.equal(parsed.ok, true);
+  if (!parsed.ok) return;
+
+  const emptyForm = new FormData();
+  const photos = await readGuidedPhotos(emptyForm, "ko", 20, { requireRequiredSlots: false });
+  assert.equal(photos.ok, true);
+  if (!photos.ok) return;
+  assert.equal(photos.shots.length, 0);
+
+  const message = ["[수출 매입]", "목적국: 몽골", "선적: RoRo", parsed.data.message].join("\n");
+  const dir = await mkdtemp(path.join(tmpdir(), "kbus-export-sell-"));
+  const store = createDemoStore(dir);
+  const created = await store.createSell({ ...parsed.data, message }, [], null);
+  assert.equal(created.type, "sell");
+  assert.equal(created.message, message);
+  assert.match(created.message ?? "", /\[수출 매입\]/);
 });

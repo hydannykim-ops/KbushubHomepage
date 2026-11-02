@@ -49,7 +49,7 @@ const intents: Intent[] = [
   },
   {
     id: "sell",
-    keywords: ["팔", "매입", "판매", "sell", "dealer", "딜러", "내 차", "등록", "사업자"],
+    keywords: ["팔", "매입", "판매", "sell", "dealer", "딜러", "내 차", "등록", "사업자", "수출하기", "export my"],
   },
   {
     id: "wanted",
@@ -89,8 +89,9 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       suggestions: ["매물 보기", "원하는 차량 요청"],
     },
     export: {
-      text: "수출은 목적국·목적항을 남겨 주시면 담당자가 차량대금·국내운송·수출비용·해상운임·보험·검사를 구분해 견적합니다. 확인되지 않은 비용은 총액에 넣지 않고, 운임 자동 계산은 하지 않습니다.",
+      text: "수출은 목적국·목적항을 남겨 주시면 담당자가 차량대금·국내운송·수출비용·해상운임·보험·검사를 구분해 견적합니다. 내 버스를 해외로 보내고 싶으면 내 차 수출하기에서 매입 상담을 남길 수 있습니다. 확인되지 않은 비용은 총액에 넣지 않습니다.",
       links: [
+        { href: "/export-sell", label: "내 차 수출하기" },
         { href: "/inquiry", label: "견적·문의" }],
       suggestions: ["매물 보기", "회사 연락처"],
     },
@@ -102,9 +103,10 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       suggestions: ["견적 문의", "내 차 팔기"],
     },
     sell: {
-      text: "판매 사업자(딜러)는 회원가입 후 정면·정측면·후면 사진으로 매물을 등록합니다. 관리자 검토 후에만 공개됩니다. 일반 고객은 매입 상담만 남길 수 있습니다.",
+      text: "판매 사업자(딜러)는 회원가입 후 정면·정측면·후면 사진으로 매물을 등록합니다. 관리자 검토 후에만 공개됩니다. 일반 고객은 매입 상담을, 해외 선적이 필요하면 내 차 수출하기를 남길 수 있습니다.",
       links: [
         { href: "/sell", label: "내 차 팔기" },
+        { href: "/export-sell", label: "내 차 수출하기" },
         { href: "/account/signup", label: "회원가입" }],
       suggestions: ["회사 연락처", "매물 보기"],
     },
@@ -161,8 +163,9 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       suggestions: ["Browse inventory", "Request a vehicle"],
     },
     export: {
-      text: "For export, leave a destination country and port. Staff quote vehicle, inland, export costs, ocean freight, and insurance/inspection separately. Unknown costs are not rolled into a total, and freight is not auto-calculated.",
+      text: "For export, leave a destination country and port. Staff quote vehicle, inland, export costs, ocean freight, and insurance/inspection separately. To sell your own bus for overseas shipping, use Export my bus. Unknown costs are not rolled into a total.",
       links: [
+        { href: "/export-sell", label: "Export my bus" },
         { href: "/inquiry", label: "Ask for a quote" }],
       suggestions: ["Browse inventory", "Company contact"],
     },
@@ -174,9 +177,10 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       suggestions: ["Ask for a quote", "Sell a bus"],
     },
     sell: {
-      text: "Dealers sign up, then register with front, front three-quarter, and rear photos. Listings go public only after admin review. Customers can leave a buy-back consultation instead.",
+      text: "Dealers sign up, then register with front, front three-quarter, and rear photos. Listings go public only after admin review. Customers can leave a buy-back consultation, or Export my bus for overseas shipping.",
       links: [
         { href: "/sell", label: "Sell your bus" },
+        { href: "/export-sell", label: "Export my bus" },
         { href: "/account/signup", label: "Sign up" }],
       suggestions: ["Company contact", "Browse inventory"],
     },
