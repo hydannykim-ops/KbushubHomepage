@@ -91,15 +91,15 @@ export default async function HomePage({
             [...classes[2], "/demo/large-cover.jpg"],
           ] as const
         ).map(([title, body, slot, href, image]) => (
-          <Link key={title} href={href} className="group overflow-hidden border border-line bg-white transition hover:border-primary/40">
-            <div className="relative aspect-[16/9] overflow-hidden bg-primary-soft">
+          <Link key={title} href={href} className="class-card group">
+            <div className="class-card__media">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={image} alt={slot} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
-              <span className="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-primary to-transparent" />
+              <img src={image} alt={slot} />
+              <span className="class-card__accent" />
             </div>
-            <div className="p-5">
-              <h2 className="text-xl font-semibold text-ink transition group-hover:text-primary">{title}</h2>
-              <p className="mt-2 text-sm leading-6 text-muted">{body}</p>
+            <div className="class-card__body">
+              <h2 className="class-card__title">{title}</h2>
+              <p>{body}</p>
             </div>
           </Link>
         ))}
@@ -108,7 +108,7 @@ export default async function HomePage({
       <section>
         <h2 className="section-title text-2xl font-semibold tracking-tight text-ink">{text.newArrivals}</h2>
         {fresh.length ? (
-          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             {fresh.map((vehicle) => (
               <VehicleCard key={vehicle.id} vehicle={vehicle} lang={lang} href={cardHref(vehicle)} listedBy={site.settings.companyName} />
             ))}
@@ -121,7 +121,7 @@ export default async function HomePage({
       <section className="-mx-4 bg-primary-soft/70 px-4 py-8 md:mx-0 md:rounded-2xl md:px-6">
         <h2 className="section-title text-2xl font-semibold tracking-tight text-ink">{text.featured}</h2>
         {featured.length ? (
-          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             {featured.map((vehicle) => (
               <VehicleCard key={vehicle.id} vehicle={vehicle} lang={lang} href={cardHref(vehicle)} listedBy={site.settings.companyName} />
             ))}

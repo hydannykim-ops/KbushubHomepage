@@ -119,7 +119,7 @@ export default async function VehiclesPage({
           )}
 
           {result.items.length ? (
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 xl:gap-6">
               {result.items.map((vehicle) => (
                 <VehicleCard
                   key={vehicle.id}

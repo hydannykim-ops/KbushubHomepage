@@ -29,22 +29,40 @@ export function DataProblem({ lang, code }: { lang: Lang; code: "misconfigured" 
   );
 }
 
-function PhotoFrame({ vehicle, lang }: { vehicle: PublicVehicle; lang: Lang }) {
+function PhotoFrame({
+  vehicle,
+  lang,
+  transfer,
+}: {
+  vehicle: PublicVehicle;
+  lang: Lang;
+  transfer: string | null;
+}) {
   const text = copy(lang);
   const cover = vehicle.photos.find((photo) => photo.isCover) ?? vehicle.photos[0];
   const src = cover ? photoUrl(cover, 640) : null;
   return (
-    <div className="relative aspect-[4/3] overflow-hidden bg-[#eef1f5]">
+    <div className="vehicle-card__media">
       {src ? (
         // Demo samples are public files; uploaded photos go through the media route.
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt={contentFieldLang(lang) === "ko" ? cover!.altKo : cover!.altEn} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" loading="lazy" decoding="async" />
+        <img
+          src={src}
+          alt={contentFieldLang(lang) === "ko" ? cover!.altKo : cover!.altEn}
+          className="vehicle-card__image"
+          loading="lazy"
+          decoding="async"
+        />
       ) : (
         <MediaSlot label={text.mediaCover} hint={text.photoNone} />
       )}
-      {vehicle.status !== "available" ? (
-        <span className="absolute left-3 top-3 bg-white/95 px-2 py-1 text-xs font-semibold text-ink">{statusLabel(vehicle.status, lang)}</span>
-      ) : null}
+      <span className="vehicle-card__media-shade" aria-hidden />
+      <div className="vehicle-card__badges">
+        {vehicle.status !== "available" ? (
+          <span className="vehicle-card__badge vehicle-card__badge--status">{statusLabel(vehicle.status, lang)}</span>
+        ) : null}
+        {transfer ? <span className="vehicle-card__badge">{transfer}</span> : null}
+      </div>
     </div>
   );
 }
@@ -66,41 +84,46 @@ export function VehicleCard({
   const price = catalogPriceView(vehicle, lang, vehicle.listingCompany ?? listedBy);
   const yearLabel = formatModelYearMonth(vehicle.modelYear, vehicle.modelMonth, lang, text.unknown);
   const seatsLabel =
-    vehicle.seats != null ? `${vehicle.seats}${lang === "ko" ? text.seatsShort : ` ${text.seatsShort}`}` : text.unknown;
+    vehicle.seats != null ? `${vehicle.seats}${lang === "ko" ? text.seatsShort : ` ${text.seatsShort}`}` : null;
   const hpLabel =
     vehicle.horsepowerPs != null
       ? lang === "ko"
         ? `${vehicle.horsepowerPs}마력`
         : `${vehicle.horsepowerPs} PS`
       : null;
-  const meta = [yearLabel, formatKm(vehicle.mileageKm, lang), seatsLabel, hpLabel].filter(Boolean).join(" · ");
-  const transfer = transferLabel(vehicle.transferType, lang);
+  const facts = [yearLabel, formatKm(vehicle.mileageKm, lang), seatsLabel, hpLabel].filter(Boolean) as string[];
+  const transfer = vehicle.transferType !== "unknown" ? transferLabel(vehicle.transferType, lang) : null;
   const seller = (vehicle.listingCompany ?? listedBy)?.trim() || null;
+  const place = [vehicle.location?.trim() || null, seller].filter(Boolean).join(" · ");
   return (
-    <article className="group overflow-hidden border-b border-line pb-5">
-      <Link href={href} className="block">
-        <PhotoFrame vehicle={vehicle} lang={lang} />
-        <div className="space-y-1.5 pt-3">
-          <h2 className="text-[1.05rem] font-semibold leading-snug tracking-tight text-ink">
+    <article className="vehicle-card group">
+      <Link href={href} className="vehicle-card__link">
+        <PhotoFrame vehicle={vehicle} lang={lang} transfer={transfer} />
+        <div className="vehicle-card__body">
+          <p className="vehicle-card__eyebrow">{classLabel(vehicle.vehicleClass, lang)}</p>
+          <h2 className="vehicle-card__title">
             {vehicleTitle(vehicle, lang, { includeTrim: false })}
-            {vehicle.trim ? <span className="mt-1 block text-sm font-medium text-muted">{vehicle.trim}</span> : null}
+            {vehicle.trim ? <span className="vehicle-card__trim">{vehicle.trim}</span> : null}
           </h2>
-          <p className="text-sm text-muted">{meta}</p>
-          <p className="text-sm text-muted">
-            {[vehicle.location?.trim() || text.unknown, seller, vehicle.transferType !== "unknown" ? transfer : null]
-              .filter(Boolean)
-              .join(" · ")}
-          </p>
-          <div className="flex flex-wrap items-end gap-2 pt-1">
-            <p className="text-2xl font-bold tabular-nums tracking-tight text-primary">{price.primary}</p>
-            {vehicle.status !== "available" ? (
-              <span className="mb-0.5 rounded bg-primary-soft px-1.5 py-0.5 text-xs font-semibold text-primary-deep">
-                {statusLabel(vehicle.status, lang)}
-              </span>
-            ) : null}
+          {facts.length ? (
+            <ul className="vehicle-card__facts">
+              {facts.map((fact) => (
+                <li key={fact}>{fact}</li>
+              ))}
+            </ul>
+          ) : null}
+          <div className="vehicle-card__footer">
+            <div>
+              <p className="vehicle-card__price">{price.primary}</p>
+              {price.basis ? <p className="vehicle-card__note">{price.basis}</p> : null}
+              {price.exportLine ? (
+                <p className="vehicle-card__note">
+                  {text.modeExport}: {price.exportLine}
+                </p>
+              ) : null}
+            </div>
+            {place ? <p className="vehicle-card__place">{place}</p> : null}
           </div>
-          {price.basis ? <p className="text-xs text-muted">{price.basis}</p> : null}
-          {price.exportLine ? <p className="text-xs text-muted">{text.modeExport}: {price.exportLine}</p> : null}
         </div>
       </Link>
     </article>
