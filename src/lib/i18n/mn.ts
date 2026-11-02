@@ -400,6 +400,7 @@ export const mn: Messages = {
   "exportSellFaq3A": "Тийм. Зураг үнэлгээнд тусалдаг ч зураггүйгээр эхэлж болно.",
   "exportSellFormTitle": "Экспортын худалдан авах хүсэлт үлдээх",
   "exportSellPhotoNote": "Зураг сонголттой. Байвал урд, зүүн, баруун, хойдыг оруулна уу.",
-  "exportSellCta": "Хүсэлт үлдээх"
+  "exportSellCta": "Хүсэлт үлдээх",
+  "exportSellDestinationHint": "ж: Монгол / Филиппин / UAE",
 
 };

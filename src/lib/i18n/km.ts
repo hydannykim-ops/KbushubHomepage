@@ -400,6 +400,7 @@ export const km: Messages = {
   "exportSellFaq3A": "បាន។ រូបជួយវាយតម្លៃ ប៉ុន្តែចាប់ផ្តើមដោយគ្មានក៏បាន។",
   "exportSellFormTitle": "ទុកសំណើទិញសម្រាប់នាំចេញ",
   "exportSellPhotoNote": "រូបជាជម្រើស។ បើមាន សូមដាក់ខាងមុខ ឆ្វេង ស្តាំ និងខាងក្រោយ។",
-  "exportSellCta": "ទុកសំណើ"
+  "exportSellCta": "ទុកសំណើ",
+  "exportSellDestinationHint": "ឧ. ម៉ុងហ្គោលី / ហ្វីលីពីន / UAE",
 
 };

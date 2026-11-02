@@ -150,10 +150,10 @@ export default async function HomePage({
         </Link>
         <Link
           href={hrefTo(lang, "/export-sell", ctx)}
-          className="border border-sky-700/20 bg-sky-50 p-6 transition hover:border-sky-700/40 hover:bg-sky-50/90"
+          className="border border-line bg-white p-6 transition hover:border-primary/40"
         >
-          <p className="text-xs font-semibold tracking-[0.14em] text-sky-800">{text.navExportSell}</p>
-          <h2 className="mt-2 text-xl font-semibold text-ink">{text.exportSellTitle}</h2>
+          <p className="text-xs font-semibold tracking-[0.14em] text-primary">{text.modeExport}</p>
+          <h2 className="mt-2 text-xl font-semibold text-ink">{text.navExportSell}</h2>
           <p className="mt-2 text-sm leading-6 text-muted">{text.exportSellBody}</p>
         </Link>
       </section>

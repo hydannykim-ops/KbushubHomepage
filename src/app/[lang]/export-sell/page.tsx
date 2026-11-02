@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DataProblem } from "@/components/catalog";
 import { Consent, EnhanceForm, Field, Honeypot, SubmitBanner } from "@/components/forms";
@@ -37,7 +36,7 @@ export default async function ExportSellPage({
           <Field label={text.modelYear} name="modelYear" />
           <Field label={text.mileage} name="mileageKm" />
           <Field label={text.location} name="location" required />
-          <Field label={text.destinationCountry} name="destinationCountry" placeholder={text.countryHint} />
+          <Field label={text.destinationCountry} name="destinationCountry" placeholder={text.exportSellDestinationHint} />
           <label className="grid gap-1 text-sm font-medium">
             {text.shippingMethod}
             <select name="shippingMethod" className="rounded-md border border-line bg-white px-3 py-2 font-normal" defaultValue="">
@@ -86,96 +85,97 @@ export default async function ExportSellPage({
   ] as const;
 
   return (
-    <div>
-      <section className="relative min-h-[52vh] overflow-hidden bg-[#0f172a] text-white lg:min-h-[28rem]">
+    <div className="mx-auto grid max-w-6xl gap-14 px-4 py-10 md:py-14">
+      <section
+        className="relative min-h-[22rem] overflow-hidden border border-line bg-[#0f172a] text-white md:min-h-[26rem]"
+        aria-label={text.navExportSell}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/demo/hero-export.jpg" alt="" className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/82 via-[#0c4a6e]/58 to-sky-900/30" />
-        <div className="relative mx-auto flex min-h-[52vh] max-w-6xl flex-col justify-center px-4 py-14 lg:min-h-[28rem]">
-          <p className="text-xs font-semibold tracking-[0.16em] text-white/80">K-BUS HUB</p>
-          <h1 className="mt-3 max-w-2xl text-3xl font-semibold tracking-tight text-white md:text-4xl">{text.exportSellTitle}</h1>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-primary/30" />
+        <div className="relative flex min-h-[22rem] max-w-2xl flex-col justify-center px-6 py-12 md:min-h-[26rem] md:px-10">
+          <p className="text-xs font-semibold tracking-[0.16em] text-white/80">{text.navExportSell}</p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white md:text-4xl">{text.exportSellTitle}</h1>
           <p className="mt-5 max-w-xl text-base leading-7 text-white/85">{text.exportSellBody}</p>
           <div className="mt-8">
-            <Link
+            <a
               href="#quote"
               className="inline-flex bg-primary px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_rgba(21,94,239,0.35)] transition hover:bg-primary-deep"
             >
               {text.exportSellCta}
-            </Link>
+            </a>
           </div>
         </div>
       </section>
 
-      <div className="mx-auto grid max-w-6xl gap-14 px-4 py-10 md:py-14">
-        <section className="grid items-start gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-          <div>
-            <p className="text-xs font-semibold tracking-[0.16em] text-primary">K-BUS HUB</p>
-            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-ink md:text-3xl">{text.navExportSell}</h2>
-            <p className="mt-4 max-w-xl text-base leading-7 text-muted">{text.exportSellBody}</p>
-            <ul className="mt-6 grid gap-3 text-sm text-ink">
-              <li className="flex gap-2">
-                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                {text.exportSellPromise1}
-              </li>
-              <li className="flex gap-2">
-                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                {text.exportSellPromise2}
-              </li>
-              <li className="flex gap-2">
-                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-accent-warm" />
-                {text.exportSellPromise3}
-              </li>
-            </ul>
-            {site.source !== "demo" && !site.settings.privacyCollectionEnabled ? (
-              <p className="mt-5 text-sm text-muted">{text.liveClosedNote}</p>
-            ) : null}
-          </div>
-          {form}
-        </section>
+      <section className="grid items-start gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+        <div>
+          <p className="text-xs font-semibold tracking-[0.16em] text-primary">K-BUS HUB</p>
+          <h2 className="mt-3 text-2xl font-semibold tracking-tight text-ink md:text-3xl">{text.exportSellFormTitle}</h2>
+          <p className="mt-4 max-w-xl text-base leading-7 text-muted">{text.exportSellPhotoNote}</p>
+          <ul className="mt-6 grid gap-3 text-sm text-ink">
+            <li className="flex gap-2">
+              <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+              {text.exportSellPromise1}
+            </li>
+            <li className="flex gap-2">
+              <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+              {text.exportSellPromise2}
+            </li>
+            <li className="flex gap-2">
+              <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-accent-warm" />
+              {text.exportSellPromise3}
+            </li>
+          </ul>
+          {site.source !== "demo" && !site.settings.privacyCollectionEnabled ? (
+            <p className="mt-5 text-sm text-muted">{text.liveClosedNote}</p>
+          ) : null}
+        </div>
+        {form}
+      </section>
 
-        <section>
-          <h2 className="section-title text-2xl font-semibold tracking-tight text-ink">{text.exportSellWhyTitle}</h2>
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            {reasons.map(([title, body]) => (
-              <article key={title} className="border border-primary/15 bg-primary-soft/50 p-5">
-                <h3 className="text-lg font-semibold text-ink">{title}</h3>
-                <p className="mt-2 text-sm leading-6 text-muted">{body}</p>
-              </article>
+      <section>
+        <h2 className="section-title text-2xl font-semibold tracking-tight text-ink">{text.exportSellWhyTitle}</h2>
+        <div className="mt-6 grid gap-4 md:grid-cols-3">
+          {reasons.map(([title, body]) => (
+            <article key={title} className="border border-primary/15 bg-primary-soft/50 p-5">
+              <h3 className="text-lg font-semibold text-ink">{title}</h3>
+              <p className="mt-2 text-sm leading-6 text-muted">{body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h2 className="section-title text-2xl font-semibold tracking-tight text-ink">{text.exportSellProcessTitle}</h2>
+        <ol className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {steps.map(([title, body], index) => (
+            <li key={title} className="border border-line bg-white p-5">
+              <p className="text-xs font-semibold tracking-[0.14em] text-primary">0{index + 1}</p>
+              <h3 className="mt-2 text-lg font-semibold text-ink">{title}</h3>
+              <p className="mt-2 text-sm leading-6 text-muted">{body}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="grid gap-4 border border-line bg-white p-6 md:grid-cols-[1fr_1fr]">
+        <div>
+          <h2 className="text-xl font-semibold text-ink">{text.exportSellDocsTitle}</h2>
+          <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted">{text.exportSellDocsBody}</p>
+        </div>
+        <div>
+          <h2 className="text-xl font-semibold text-ink">{text.exportSellFaqTitle}</h2>
+          <dl className="mt-4 grid gap-4">
+            {faqs.map(([q, a]) => (
+              <div key={q}>
+                <dt className="text-sm font-semibold text-ink">{q}</dt>
+                <dd className="mt-1 text-sm leading-6 text-muted">{a}</dd>
+              </div>
             ))}
-          </div>
-        </section>
-
-        <section>
-          <h2 className="section-title text-2xl font-semibold tracking-tight text-ink">{text.exportSellProcessTitle}</h2>
-          <ol className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {steps.map(([title, body], index) => (
-              <li key={title} className="border border-line bg-white p-5">
-                <p className="text-xs font-semibold tracking-[0.14em] text-primary">0{index + 1}</p>
-                <h3 className="mt-2 text-lg font-semibold text-ink">{title}</h3>
-                <p className="mt-2 text-sm leading-6 text-muted">{body}</p>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        <section className="grid gap-4 border border-line bg-white p-6 md:grid-cols-[1fr_1fr]">
-          <div>
-            <h2 className="text-xl font-semibold text-ink">{text.exportSellDocsTitle}</h2>
-            <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted">{text.exportSellDocsBody}</p>
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold text-ink">{text.exportSellFaqTitle}</h2>
-            <dl className="mt-4 grid gap-4">
-              {faqs.map(([q, a]) => (
-                <div key={q}>
-                  <dt className="text-sm font-semibold text-ink">{q}</dt>
-                  <dd className="mt-1 text-sm leading-6 text-muted">{a}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        </section>
-      </div>
+          </dl>
+        </div>
+      </section>
     </div>
   );
 }

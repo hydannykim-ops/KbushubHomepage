@@ -400,6 +400,7 @@ export const ko: Messages = {
   "exportSellFaq3A": "가능합니다. 사진이 있으면 상태 파악이 빨라지고, 없어도 먼저 상담을 시작할 수 있습니다.",
   "exportSellFormTitle": "수출 매입 상담 남기기",
   "exportSellPhotoNote": "사진은 선택입니다. 있으면 정면·좌측·우측·후면을 올려 주세요.",
-  "exportSellCta": "상담 남기기"
+  "exportSellCta": "상담 남기기",
+  "exportSellDestinationHint": "예: 몽골 / 필리핀 / UAE",
 
 };

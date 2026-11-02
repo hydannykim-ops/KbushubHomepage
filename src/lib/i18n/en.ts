@@ -400,6 +400,7 @@ export const en: Messages = {
   "exportSellFaq3A": "Yes. Photos help appraisal, but you can start without them.",
   "exportSellFormTitle": "Leave an export purchase request",
   "exportSellPhotoNote": "Photos are optional. If you have them, add front, left, right, and rear.",
-  "exportSellCta": "Leave a request"
+  "exportSellCta": "Leave a request",
+  "exportSellDestinationHint": "e.g. Mongolia / Philippines / UAE",
 
 };

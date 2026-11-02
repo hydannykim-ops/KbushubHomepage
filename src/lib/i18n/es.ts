@@ -400,6 +400,7 @@ export const es: Messages = {
   "exportSellFaq3A": "Sí. Las fotos ayudan, pero puede empezar sin ellas.",
   "exportSellFormTitle": "Dejar solicitud de compra para exportación",
   "exportSellPhotoNote": "Las fotos son opcionales. Si las tiene, suba frente, izquierda, derecha y trasera.",
-  "exportSellCta": "Dejar solicitud"
+  "exportSellCta": "Dejar solicitud",
+  "exportSellDestinationHint": "ej.: Mongolia / Filipinas / EAU",
 
 };

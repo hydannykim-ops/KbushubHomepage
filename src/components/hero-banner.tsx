@@ -22,7 +22,7 @@ const toneClass: Record<NonNullable<HeroSlide["tone"]>, string> = {
   hub: "bg-gradient-to-r from-black/78 via-black/55 to-primary/25",
   sell: "bg-gradient-to-r from-black/80 via-black/55 to-accent-warm/30",
   scrap: "bg-gradient-to-r from-black/82 via-[#0f172a]/65 to-primary-deep/35",
-  export: "bg-gradient-to-r from-black/80 via-[#0c4a6e]/55 to-sky-900/35",
+  export: "bg-gradient-to-r from-black/80 via-black/55 to-primary/30",
 };
 
 export function HeroBanner({

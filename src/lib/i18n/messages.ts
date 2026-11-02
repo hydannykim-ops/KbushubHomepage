@@ -384,4 +384,5 @@ export type Messages = {
   exportSellFormTitle: string;
   exportSellPhotoNote: string;
   exportSellCta: string;
+  exportSellDestinationHint: string;
 };
