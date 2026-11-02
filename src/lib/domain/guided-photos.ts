@@ -41,12 +41,14 @@ export async function readGuidedPhotos(
   form: FormData,
   lang: string,
   maxTotal: number = MAX_VEHICLE_PHOTOS,
+  options?: { requireRequiredSlots?: boolean },
 ): Promise<{ ok: true; shots: GuidedPhotoShot[] } | { ok: false; code: "missing_required" | "invalid_image" }> {
+  const requireRequiredSlots = options?.requireRequiredSlots !== false;
   const shots: GuidedPhotoShot[] = [];
   for (const slot of PHOTO_SLOTS) {
     const value = form.get(slot.field);
     if (!(value instanceof File) || value.size === 0) {
-      if (slot.required) return { ok: false, code: "missing_required" };
+      if (requireRequiredSlots && slot.required) return { ok: false, code: "missing_required" };
       continue;
     }
     const bytes = Buffer.from(await value.arrayBuffer());

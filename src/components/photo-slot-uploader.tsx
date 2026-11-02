@@ -22,10 +22,13 @@ function assignFiles(input: HTMLInputElement | null, files: File[]) {
 export function PhotoSlotUploader({
   lang,
   resetKey = 0,
+  optional = false,
 }: {
   lang: Lang;
   /** Bump to clear previews after a successful submit. */
   resetKey?: number;
+  /** When true, no photo slot is HTML-required (export consult, etc.). */
+  optional?: boolean;
 }) {
   const text = copy(lang);
   const [slots, setSlots] = useState(emptySlots);
@@ -59,8 +62,8 @@ export function PhotoSlotUploader({
   }, []);
 
   const filled = useMemo(() => PHOTO_SLOTS.filter((slot) => slots[slot.id].file).length + extras.length, [slots, extras]);
-  const requiredFilled = PHOTO_SLOTS.filter((slot) => slot.required && slots[slot.id].file).length;
-  const requiredTotal = PHOTO_SLOTS.filter((slot) => slot.required).length;
+  const requiredFilled = optional ? 0 : PHOTO_SLOTS.filter((slot) => slot.required && slots[slot.id].file).length;
+  const requiredTotal = optional ? 0 : PHOTO_SLOTS.filter((slot) => slot.required).length;
 
   function onPick(id: PhotoSlotId, fileList: FileList | null) {
     const file = fileList?.[0] ?? null;
@@ -150,7 +153,7 @@ export function PhotoSlotUploader({
               <div className="flex items-center justify-between gap-2 text-sm font-semibold text-ink">
                 <span>
                   {meta.title}
-                  {slot.required ? <span className="text-primary"> *</span> : null}
+                  {!optional && slot.required ? <span className="text-primary"> *</span> : null}
                 </span>
                 {state.file ? (
                   <span className="rounded bg-primary px-2 py-0.5 text-[11px] font-semibold text-white">{text.photoSelected}</span>
@@ -179,7 +182,7 @@ export function PhotoSlotUploader({
                   name={slot.field}
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
-                  required={slot.required}
+                  required={!optional && slot.required}
                   className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
                   onChange={(event) => onPick(slot.id, event.target.files)}
                 />
