@@ -24,10 +24,6 @@ export type Messages = {
   series: string;
   pickMakerFirst: string;
   pickMakerModel: string;
-  pickClass: string;
-  pickSeries: string;
-  pickModel: string;
-  selecting: string;
   changeSelection: string;
   noModelsInClass: string;
   browseInventory: string;

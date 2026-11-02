@@ -55,38 +55,19 @@ function LockedRow({
 }) {
   return (
     <button type="button" className="picker-locked" onClick={onClick}>
-      <span className="flex min-w-0 items-center gap-2.5">
-        <span className="picker-locked__check" aria-hidden>
-          ✓
-        </span>
-        <span className="min-w-0">
-          <span className="picker-locked__meta">{label}</span>
-          <span className="picker-locked__value">{value}</span>
-        </span>
+      <span className="min-w-0">
+        <span className="picker-locked__meta">{label}</span>
+        <span className="picker-locked__value">{value}</span>
       </span>
       <span className="picker-locked__action">{action}</span>
     </button>
   );
 }
 
-function Stage({
-  title,
-  selecting,
-  stageKey,
-  children,
-}: {
-  title: string;
-  selecting: string;
-  stageKey: string;
-  children: ReactNode;
-}) {
+function Stage({ label, stageKey, children }: { label: string; stageKey: string; children: ReactNode }) {
   return (
     <div className="picker-stage">
-      <div className="picker-stage__head">
-        <p className="picker-stage__title">{title}</p>
-        <span className="picker-stage__badge">{selecting}</span>
-      </div>
-      <div key={stageKey} className="picker-stage__list" role="listbox" aria-label={title}>
+      <div key={stageKey} className="picker-stage__list" role="listbox" aria-label={label}>
         {children}
       </div>
     </div>
@@ -149,27 +130,6 @@ export function MakerModelPicker({
     setStep("done");
   }
 
-  const stepStates = [
-    {
-      key: "maker",
-      label: text.maker,
-      state: step === "maker" ? "current" : maker ? "done" : "todo",
-    },
-    {
-      key: "series",
-      label: text.series,
-      state: step === "series" ? "current" : series && step !== "maker" ? "done" : "todo",
-    },
-    {
-      key: "model",
-      label: text.model,
-      state: step === "model" ? "current" : model ? "done" : "todo",
-    },
-  ] as const;
-
-  const activePrompt =
-    step === "maker" ? text.pickMakerFirst : step === "series" ? text.pickSeries : step === "model" ? text.pickModel : "";
-
   return (
     <div
       className="grid gap-3"
@@ -187,15 +147,6 @@ export function MakerModelPicker({
           {required ? " *" : ""}
         </p>
       ) : null}
-
-      <div className="picker-rail" style={{ gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }} aria-hidden>
-        {stepStates.map((entry, index) => (
-          <div key={entry.key} className="picker-rail__step" data-state={entry.state}>
-            <span className="picker-rail__dot">{entry.state === "done" ? "✓" : index + 1}</span>
-            <span className="picker-rail__label">{entry.label}</span>
-          </div>
-        ))}
-      </div>
 
       {maker && step !== "maker" ? (
         <LockedRow
@@ -240,7 +191,7 @@ export function MakerModelPicker({
       ) : null}
 
       {step === "maker" ? (
-        <Stage title={activePrompt} selecting={text.selecting} stageKey="maker">
+        <Stage label={text.maker} stageKey="maker">
           {allowEmpty ? (
             <button
               type="button"
@@ -277,7 +228,7 @@ export function MakerModelPicker({
         seriesList.length === 0 ? (
           <p className="text-sm text-muted">{text.noModelsInClass}</p>
         ) : (
-          <Stage title={activePrompt} selecting={text.selecting} stageKey="series">
+          <Stage label={text.series} stageKey="series">
             {allowEmpty ? (
               <button
                 type="button"
@@ -306,7 +257,7 @@ export function MakerModelPicker({
       ) : null}
 
       {step === "model" && maker && series ? (
-        <Stage title={activePrompt} selecting={text.selecting} stageKey="model">
+        <Stage label={text.model} stageKey="model">
           {variants.map((entry) => (
             <button
               key={entry}

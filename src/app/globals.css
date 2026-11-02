@@ -549,71 +549,7 @@ button {
   font-weight: 700;
 }
 
-/* Drill-down search pickers — soft panels + clear step progression */
-.picker-rail {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.25rem;
-  margin-bottom: 0.85rem;
-}
-
-.picker-rail__step {
-  display: grid;
-  justify-items: center;
-  gap: 0.35rem;
-  min-width: 0;
-}
-
-.picker-rail__dot {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  place-items: center;
-  width: 1.35rem;
-  height: 1.35rem;
-  border-radius: 999px;
-  border: 1.5px solid color-mix(in srgb, var(--line) 90%, white);
-  background: #fff;
-  color: var(--muted);
-  font-size: 0.65rem;
-  font-weight: 700;
-  transition:
-    background 220ms ease,
-    border-color 220ms ease,
-    color 220ms ease,
-    box-shadow 220ms ease;
-}
-
-.picker-rail__step[data-state="done"] .picker-rail__dot {
-  border-color: color-mix(in srgb, var(--primary) 45%, var(--line));
-  background: color-mix(in srgb, var(--primary-soft) 85%, white);
-  color: var(--primary-deep);
-}
-
-.picker-rail__step[data-state="current"] .picker-rail__dot {
-  border-color: var(--primary);
-  background: var(--primary);
-  color: #fff;
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 16%, transparent);
-}
-
-.picker-rail__label {
-  max-width: 100%;
-  overflow: hidden;
-  color: var(--muted);
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.picker-rail__step[data-state="done"] .picker-rail__label,
-.picker-rail__step[data-state="current"] .picker-rail__label {
-  color: var(--ink);
-}
-
+/* Drill-down search pickers — soft rounded panels */
 .picker-locked {
   display: flex;
   width: 100%;
@@ -635,20 +571,6 @@ button {
 .picker-locked:hover {
   border-color: color-mix(in srgb, var(--primary) 28%, var(--line));
   box-shadow: 0 8px 18px rgba(15, 28, 47, 0.05);
-}
-
-.picker-locked__check {
-  display: inline-grid;
-  place-items: center;
-  width: 1.15rem;
-  height: 1.15rem;
-  flex-shrink: 0;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--primary) 12%, white);
-  color: var(--primary-deep);
-  font-size: 0.7rem;
-  font-weight: 700;
-  line-height: 1;
 }
 
 .picker-locked__meta {
@@ -682,34 +604,6 @@ button {
   border-radius: 1.05rem;
   background: #fff;
   box-shadow: 0 10px 28px rgba(15, 28, 47, 0.04);
-}
-
-.picker-stage__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--line) 80%, white);
-  background: linear-gradient(180deg, #f7f9fc, #fff);
-  padding: 0.7rem 0.85rem;
-}
-
-.picker-stage__title {
-  margin: 0;
-  color: var(--ink);
-  font-size: 0.82rem;
-  font-weight: 700;
-}
-
-.picker-stage__badge {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--primary-soft) 90%, white);
-  padding: 0.18rem 0.55rem;
-  color: var(--primary-deep);
-  font-size: 0.65rem;
-  font-weight: 700;
 }
 
 .picker-stage__list {
@@ -782,8 +676,8 @@ button {
     animation: none;
   }
 
-  .picker-option__chevron,
-  .picker-option {
+  .picker-option,
+  .picker-option__chevron {
     transition: none;
   }
 }

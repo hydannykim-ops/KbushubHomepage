@@ -45,9 +45,6 @@ function LockedRow({
   const inner = (
     <>
       <span className="flex min-w-0 items-center gap-2.5">
-        <span className="picker-locked__check" aria-hidden>
-          ✓
-        </span>
         {leading}
         <span className="min-w-0">
           <span className="picker-locked__meta">{label}</span>
@@ -73,24 +70,10 @@ function LockedRow({
   );
 }
 
-function Stage({
-  title,
-  selecting,
-  stageKey,
-  children,
-}: {
-  title: string;
-  selecting: string;
-  stageKey: string;
-  children: ReactNode;
-}) {
+function Stage({ label, stageKey, children }: { label: string; stageKey: string; children: ReactNode }) {
   return (
     <div className="picker-stage">
-      <div className="picker-stage__head">
-        <p className="picker-stage__title">{title}</p>
-        <span className="picker-stage__badge">{selecting}</span>
-      </div>
-      <div key={stageKey} className="picker-stage__list" role="group" aria-label={title}>
+      <div key={stageKey} className="picker-stage__list" role="group" aria-label={label}>
         {children}
       </div>
     </div>
@@ -150,35 +133,6 @@ export function BrandSidebar({
   const clearMakerHref = hrefFor(lang, ctx, query, { maker: undefined, model: undefined });
   const clearSeriesHref = hrefFor(lang, ctx, query, { maker: selectedMaker, model: undefined });
 
-  const stepStates = [
-    { key: "class", label: text.classLabel, state: pickingClass ? "current" : classPicked ? "done" : "todo" },
-    {
-      key: "maker",
-      label: text.maker,
-      state: pickingMaker ? "current" : selectedMaker ? "done" : "todo",
-    },
-    {
-      key: "series",
-      label: text.series,
-      state: pickingSeries ? "current" : lockedSeries && (done || pickingVariant) ? "done" : "todo",
-    },
-    {
-      key: "model",
-      label: text.model,
-      state: pickingVariant ? "current" : selectedModel ? "done" : "todo",
-    },
-  ] as const;
-
-  const activePrompt = pickingClass
-    ? text.pickClass
-    : pickingMaker
-      ? text.pickMakerFirst
-      : pickingSeries
-        ? text.pickSeries
-        : pickingVariant
-          ? text.pickModel
-          : "";
-
   return (
     <aside
       className="border-b border-[#d8dde6]/80 bg-[#eef2f7]/70 lg:border-b-0 lg:border-r lg:border-[#d8dde6]/80"
@@ -199,15 +153,6 @@ export function BrandSidebar({
               {text.reset}
             </Link>
           )}
-        </div>
-
-        <div className="picker-rail" aria-hidden>
-          {stepStates.map((step, index) => (
-            <div key={step.key} className="picker-rail__step" data-state={step.state}>
-              <span className="picker-rail__dot">{step.state === "done" ? "✓" : index + 1}</span>
-              <span className="picker-rail__label">{step.label}</span>
-            </div>
-          ))}
         </div>
 
         <nav className="grid gap-2.5" aria-label={text.brandModel}>
@@ -265,7 +210,7 @@ export function BrandSidebar({
           ) : null}
 
           {pickingClass ? (
-            <Stage title={activePrompt} selecting={text.selecting} stageKey="class">
+            <Stage label={text.classLabel} stageKey="class">
               {(["", "county", "medium", "large"] as const).map((value) => {
                 const href = hrefFor(lang, ctx, query, {
                   vehicleClass: value || undefined,
@@ -293,7 +238,7 @@ export function BrandSidebar({
           ) : null}
 
           {pickingMaker ? (
-            <Stage title={activePrompt} selecting={text.selecting} stageKey="maker">
+            <Stage label={text.maker} stageKey="maker">
               <Link
                 href={clearMakerHref}
                 className="picker-option"
@@ -334,7 +279,7 @@ export function BrandSidebar({
           ) : null}
 
           {pickingSeries ? (
-            <Stage title={activePrompt} selecting={text.selecting} stageKey="series">
+            <Stage label={text.series} stageKey="series">
               <Link href={clearSeriesHref} className="picker-option" data-active="true" aria-current="page">
                 <span>{text.all}</span>
               </Link>
@@ -359,7 +304,7 @@ export function BrandSidebar({
           ) : null}
 
           {pickingVariant ? (
-            <Stage title={activePrompt} selecting={text.selecting} stageKey="model">
+            <Stage label={text.model} stageKey="model">
               {variants.map((model) => (
                 <Link
                   key={model}
