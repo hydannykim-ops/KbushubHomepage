@@ -103,7 +103,7 @@ export default async function ScrapQuotePage({
         <h2 className="section-title text-2xl font-semibold tracking-tight text-ink">{text.scrapWhyTitle}</h2>
         <div className="mt-5 grid gap-3">
           {reasons.map(([title, body]) => (
-            <article key={title} className="border border-primary/15 bg-primary-soft/50 px-4 py-4">
+            <article key={title} className="rounded-2xl border border-primary/15 bg-primary-soft/50 px-4 py-4">
               <h3 className="text-base font-semibold text-ink">{title}</h3>
               <p className="mt-1.5 text-sm leading-6 text-muted">{body}</p>
             </article>
@@ -113,7 +113,7 @@ export default async function ScrapQuotePage({
 
       <section>
         <h2 className="section-title text-2xl font-semibold tracking-tight text-ink">{text.scrapProcessTitle}</h2>
-        <ol className="mt-5 grid gap-0 border border-line bg-white">
+        <ol className="mt-5 grid gap-0 overflow-hidden rounded-2xl border border-line bg-white">
           {steps.map(([title, body], index) => (
             <li key={title} className="grid gap-1 border-b border-line px-4 py-4 last:border-b-0 sm:grid-cols-[3rem_1fr] sm:gap-3">
               <p className="text-xs font-semibold tracking-[0.14em] text-primary">0{index + 1}</p>
@@ -126,7 +126,7 @@ export default async function ScrapQuotePage({
         </ol>
       </section>
 
-      <section className="grid gap-8 border border-line bg-white p-5 md:p-6">
+      <section className="grid gap-8 rounded-2xl border border-line bg-white p-5 md:p-6">
         <div>
           <h2 className="text-xl font-semibold text-ink">{text.scrapDocsTitle}</h2>
           <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted">{text.scrapDocsBody}</p>
