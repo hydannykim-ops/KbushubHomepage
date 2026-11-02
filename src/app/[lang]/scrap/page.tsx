@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { DataProblem } from "@/components/catalog";
 import { Consent, EnhanceForm, Field, Honeypot, SubmitBanner } from "@/components/forms";
+import { StickyQuoteLayout } from "@/components/sticky-quote-layout";
 import { scrapRegionsKo } from "@/lib/domain/scrap-regions";
 import { copy } from "@/lib/i18n";
 import { parseLang, requestContext } from "@/lib/request-context";
@@ -71,41 +72,40 @@ export default async function ScrapQuotePage({
     [text.scrapFaq3Q, text.scrapFaq3A],
   ] as const;
 
-  return (
-    <div className="mx-auto grid max-w-6xl gap-14 px-4 py-10 md:py-14">
-      <section className="grid items-start gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-        <div>
-          <p className="text-xs font-semibold tracking-[0.16em] text-primary">K-BUS HUB</p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink md:text-4xl">{text.scrapTitle}</h1>
-          <p className="mt-4 max-w-xl text-base leading-7 text-muted">{text.scrapBody}</p>
-          <ul className="mt-6 grid gap-3 text-sm text-ink">
-            <li className="flex gap-2">
-              <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-              {text.scrapPromise1}
-            </li>
-            <li className="flex gap-2">
-              <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-              {text.scrapPromise2}
-            </li>
-            <li className="flex gap-2">
-              <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-accent-warm" />
-              {text.scrapPromise3}
-            </li>
-          </ul>
-          {site.source !== "demo" && !site.settings.privacyCollectionEnabled ? (
-            <p className="mt-5 text-sm text-muted">{text.liveClosedNote}</p>
-          ) : null}
-        </div>
-        <div id="quote">{form}</div>
-      </section>
+  const intro = (
+    <div>
+      <p className="text-xs font-semibold tracking-[0.16em] text-primary">K-BUS HUB</p>
+      <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink md:text-4xl">{text.scrapTitle}</h1>
+      <p className="mt-4 max-w-xl text-base leading-7 text-muted">{text.scrapBody}</p>
+      <ul className="mt-5 grid gap-2.5 text-sm text-ink">
+        <li className="flex gap-2">
+          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+          {text.scrapPromise1}
+        </li>
+        <li className="flex gap-2">
+          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+          {text.scrapPromise2}
+        </li>
+        <li className="flex gap-2">
+          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent-warm" />
+          {text.scrapPromise3}
+        </li>
+      </ul>
+      {site.source !== "demo" && !site.settings.privacyCollectionEnabled ? (
+        <p className="mt-5 text-sm text-muted">{text.liveClosedNote}</p>
+      ) : null}
+    </div>
+  );
 
+  return (
+    <StickyQuoteLayout intro={intro} form={form}>
       <section>
         <h2 className="section-title text-2xl font-semibold tracking-tight text-ink">{text.scrapWhyTitle}</h2>
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
+        <div className="mt-5 grid gap-3">
           {reasons.map(([title, body]) => (
-            <article key={title} className="border border-primary/15 bg-primary-soft/50 p-5">
-              <h3 className="text-lg font-semibold text-ink">{title}</h3>
-              <p className="mt-2 text-sm leading-6 text-muted">{body}</p>
+            <article key={title} className="border border-primary/15 bg-primary-soft/50 px-4 py-4">
+              <h3 className="text-base font-semibold text-ink">{title}</h3>
+              <p className="mt-1.5 text-sm leading-6 text-muted">{body}</p>
             </article>
           ))}
         </div>
@@ -113,23 +113,25 @@ export default async function ScrapQuotePage({
 
       <section>
         <h2 className="section-title text-2xl font-semibold tracking-tight text-ink">{text.scrapProcessTitle}</h2>
-        <ol className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <ol className="mt-5 grid gap-0 border border-line bg-white">
           {steps.map(([title, body], index) => (
-            <li key={title} className="border border-line bg-white p-5">
+            <li key={title} className="grid gap-1 border-b border-line px-4 py-4 last:border-b-0 sm:grid-cols-[3rem_1fr] sm:gap-3">
               <p className="text-xs font-semibold tracking-[0.14em] text-primary">0{index + 1}</p>
-              <h3 className="mt-2 text-lg font-semibold text-ink">{title}</h3>
-              <p className="mt-2 text-sm leading-6 text-muted">{body}</p>
+              <div>
+                <h3 className="text-base font-semibold text-ink">{title}</h3>
+                <p className="mt-1 text-sm leading-6 text-muted">{body}</p>
+              </div>
             </li>
           ))}
         </ol>
       </section>
 
-      <section className="grid gap-4 border border-line bg-white p-6 md:grid-cols-[1fr_1fr]">
+      <section className="grid gap-8 border border-line bg-white p-5 md:p-6">
         <div>
           <h2 className="text-xl font-semibold text-ink">{text.scrapDocsTitle}</h2>
           <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted">{text.scrapDocsBody}</p>
         </div>
-        <div>
+        <div className="border-t border-line pt-6">
           <h2 className="text-xl font-semibold text-ink">{text.scrapFaqTitle}</h2>
           <dl className="mt-4 grid gap-4">
             {faqs.map(([q, a]) => (
@@ -141,6 +143,6 @@ export default async function ScrapQuotePage({
           </dl>
         </div>
       </section>
-    </div>
+    </StickyQuoteLayout>
   );
 }
