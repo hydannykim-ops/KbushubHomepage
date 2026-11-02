@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { MakerMark } from "@/components/maker-mark";
 import {
   makerLabel,
@@ -27,15 +27,74 @@ function hrefFor(
   return qs ? `/${lang}/vehicles?${qs}` : `/${lang}/vehicles`;
 }
 
-function lockedClass() {
-  return "flex w-full items-center justify-between gap-3 rounded-md bg-[#e4e8ef]/80 px-2 py-2.5 text-left text-sm font-semibold text-ink";
+function LockedRow({
+  href,
+  label,
+  value,
+  action,
+  leading,
+  onClick,
+}: {
+  href?: string;
+  label: string;
+  value: string;
+  action: string;
+  leading?: ReactNode;
+  onClick?: () => void;
+}) {
+  const inner = (
+    <>
+      <span className="flex min-w-0 items-center gap-2.5">
+        <span className="picker-locked__check" aria-hidden>
+          ✓
+        </span>
+        {leading}
+        <span className="min-w-0">
+          <span className="picker-locked__meta">{label}</span>
+          <span className="picker-locked__value">{value}</span>
+        </span>
+      </span>
+      <span className="picker-locked__action">{action}</span>
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className="picker-locked" onClick={onClick}>
+        {inner}
+      </Link>
+    );
+  }
+
+  return (
+    <button type="button" className="picker-locked" onClick={onClick}>
+      {inner}
+    </button>
+  );
 }
 
-function optionClass(active: boolean) {
-  return [
-    "flex w-full items-center justify-between gap-3 rounded-md px-2 py-2.5 text-left text-sm transition-colors",
-    active ? "bg-[#e4e8ef]/80 font-semibold text-ink" : "text-ink hover:bg-[#e4e8ef]/50",
-  ].join(" ");
+function Stage({
+  title,
+  selecting,
+  stageKey,
+  children,
+}: {
+  title: string;
+  selecting: string;
+  stageKey: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="picker-stage">
+      <div className="picker-stage__head">
+        <p className="picker-stage__title">{title}</p>
+        <span className="picker-stage__badge">{selecting}</span>
+      </div>
+      <div key={stageKey} className="picker-stage__list" role="group" aria-label={title}>
+        {children}
+      </div>
+    </div>
+  );
 }
 
 export function BrandSidebar({
@@ -91,8 +150,40 @@ export function BrandSidebar({
   const clearMakerHref = hrefFor(lang, ctx, query, { maker: undefined, model: undefined });
   const clearSeriesHref = hrefFor(lang, ctx, query, { maker: selectedMaker, model: undefined });
 
+  const stepStates = [
+    { key: "class", label: text.classLabel, state: pickingClass ? "current" : classPicked ? "done" : "todo" },
+    {
+      key: "maker",
+      label: text.maker,
+      state: pickingMaker ? "current" : selectedMaker ? "done" : "todo",
+    },
+    {
+      key: "series",
+      label: text.series,
+      state: pickingSeries ? "current" : lockedSeries && (done || pickingVariant) ? "done" : "todo",
+    },
+    {
+      key: "model",
+      label: text.model,
+      state: pickingVariant ? "current" : selectedModel ? "done" : "todo",
+    },
+  ] as const;
+
+  const activePrompt = pickingClass
+    ? text.pickClass
+    : pickingMaker
+      ? text.pickMakerFirst
+      : pickingSeries
+        ? text.pickSeries
+        : pickingVariant
+          ? text.pickModel
+          : "";
+
   return (
-    <aside className="border-b border-[#d8dde6]/80 lg:border-b-0 lg:border-r lg:border-[#d8dde6]/80" data-brand-sidebar>
+    <aside
+      className="border-b border-[#d8dde6]/80 bg-[#eef2f7]/70 lg:border-b-0 lg:border-r lg:border-[#d8dde6]/80"
+      data-brand-sidebar
+    >
       <div className="max-h-64 overflow-y-auto px-3 py-4 lg:sticky lg:top-16 lg:max-h-[calc(100vh-4rem)] md:px-4">
         <div className="mb-3 flex items-center justify-between gap-2 px-1">
           <h2 className="text-sm font-semibold text-ink">{text.brandModel}</h2>
@@ -110,73 +201,71 @@ export function BrandSidebar({
           )}
         </div>
 
-        <nav className="grid gap-1" aria-label={text.brandModel}>
+        <div className="picker-rail" aria-hidden>
+          {stepStates.map((step, index) => (
+            <div key={step.key} className="picker-rail__step" data-state={step.state}>
+              <span className="picker-rail__dot">{step.state === "done" ? "✓" : index + 1}</span>
+              <span className="picker-rail__label">{step.label}</span>
+            </div>
+          ))}
+        </div>
+
+        <nav className="grid gap-2.5" aria-label={text.brandModel}>
           {classPicked ? (
-            <Link
+            <LockedRow
               href={clearAllHref}
-              className={lockedClass()}
+              label={text.classLabel}
+              value={classLabelMap[vehicleClass]}
+              action={text.changeSelection}
               onClick={() => {
                 setClassPicked(false);
                 setDraftSeries("");
               }}
-            >
-              <span className="min-w-0">
-                <span className="block text-[11px] font-medium text-muted">{text.classLabel}</span>
-                <span className="block truncate">{classLabelMap[vehicleClass]}</span>
-              </span>
-              <span className="shrink-0 text-xs font-medium text-muted">{text.reset}</span>
-            </Link>
+            />
           ) : null}
 
           {selectedMaker ? (
-            <Link
+            <LockedRow
               href={clearMakerHref}
-              className={lockedClass()}
+              label={text.maker}
+              value={makerLabel(selectedMaker, lang)}
+              action={text.changeSelection}
+              leading={<MakerMark maker={selectedMaker} active />}
               onClick={() => setDraftSeries("")}
-            >
-              <span className="flex min-w-0 items-center gap-2.5">
-                <MakerMark maker={selectedMaker} active />
-                <span className="min-w-0">
-                  <span className="block text-[11px] font-medium text-muted">{text.maker}</span>
-                  <span className="block truncate">{makerLabel(selectedMaker, lang)}</span>
-                </span>
-              </span>
-              <span className="shrink-0 text-xs font-medium text-muted">{text.reset}</span>
-            </Link>
+            />
           ) : null}
 
           {lockedSeries && (done || pickingVariant) ? (
             done ? (
-              <Link href={clearSeriesHref} className={lockedClass()} onClick={() => setDraftSeries("")}>
-                <span className="min-w-0">
-                  <span className="block text-[11px] font-medium text-muted">{text.series}</span>
-                  <span className="block truncate">{seriesLabel(lockedSeries, lang)}</span>
-                </span>
-                <span className="shrink-0 text-xs font-medium text-muted">{text.reset}</span>
-              </Link>
+              <LockedRow
+                href={clearSeriesHref}
+                label={text.series}
+                value={seriesLabel(lockedSeries, lang)}
+                action={text.changeSelection}
+                onClick={() => setDraftSeries("")}
+              />
             ) : (
-              <button type="button" className={lockedClass()} onClick={() => setDraftSeries("")}>
-                <span className="min-w-0">
-                  <span className="block text-[11px] font-medium text-muted">{text.series}</span>
-                  <span className="block truncate">{seriesLabel(lockedSeries, lang)}</span>
-                </span>
-                <span className="shrink-0 text-xs font-medium text-muted">{text.reset}</span>
-              </button>
+              <LockedRow
+                label={text.series}
+                value={seriesLabel(lockedSeries, lang)}
+                action={text.changeSelection}
+                onClick={() => setDraftSeries("")}
+              />
             )
           ) : null}
 
           {done && selectedModel ? (
-            <Link href={clearSeriesHref} className={lockedClass()} onClick={() => setDraftSeries("")}>
-              <span className="min-w-0">
-                <span className="block text-[11px] font-medium text-muted">{text.model}</span>
-                <span className="block truncate">{modelLabel(selectedModel, lang)}</span>
-              </span>
-              <span className="shrink-0 text-xs font-medium text-muted">{text.reset}</span>
-            </Link>
+            <LockedRow
+              href={clearSeriesHref}
+              label={text.model}
+              value={modelLabel(selectedModel, lang)}
+              action={text.changeSelection}
+              onClick={() => setDraftSeries("")}
+            />
           ) : null}
 
           {pickingClass ? (
-            <div className="grid gap-0.5" role="group" aria-label={text.classLabel}>
+            <Stage title={activePrompt} selecting={text.selecting} stageKey="class">
               {(["", "county", "medium", "large"] as const).map((value) => {
                 const href = hrefFor(lang, ctx, query, {
                   vehicleClass: value || undefined,
@@ -187,69 +276,66 @@ export function BrandSidebar({
                   <Link
                     key={value || "all"}
                     href={href}
-                    className={optionClass(false)}
+                    className="picker-option"
                     onClick={() => {
                       setClassPicked(true);
                       setDraftSeries("");
                     }}
                   >
                     <span>{classLabelMap[value]}</span>
-                    <span aria-hidden className="text-[10px] text-muted">
+                    <span aria-hidden className="picker-option__chevron">
                       ›
                     </span>
                   </Link>
                 );
               })}
-            </div>
+            </Stage>
           ) : null}
 
           {pickingMaker ? (
-            <>
+            <Stage title={activePrompt} selecting={text.selecting} stageKey="maker">
               <Link
                 href={clearMakerHref}
-                className={optionClass(true)}
+                className="picker-option"
+                data-active="true"
                 aria-current="page"
                 onClick={() => setDraftSeries("")}
               >
                 <span className="flex items-center gap-2.5">
                   <span
-                    className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#d5dae3] text-[11px] font-bold text-ink"
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#e4e8ef] text-[11px] font-bold text-ink"
                     aria-hidden
                   >
                     All
                   </span>
                   {text.all}
                 </span>
-                <span className="tabular-nums text-[#2f6fed]">{total}</span>
+                <span className="picker-option__count">{total}</span>
               </Link>
               {makers.map((maker) => (
                 <Link
                   key={maker}
                   href={hrefFor(lang, ctx, query, { maker, model: undefined })}
-                  className={optionClass(false)}
+                  className="picker-option"
                 >
                   <span className="flex min-w-0 items-center gap-2.5">
                     <MakerMark maker={maker} active={false} />
                     <span className="truncate">{makerLabel(maker, lang)}</span>
                   </span>
                   <span className="flex items-center gap-2">
-                    <span className="tabular-nums text-[#2f6fed]">{counts[maker] ?? 0}</span>
-                    <span aria-hidden className="text-[10px] text-muted">
+                    <span className="picker-option__count">{counts[maker] ?? 0}</span>
+                    <span aria-hidden className="picker-option__chevron">
                       ›
                     </span>
                   </span>
                 </Link>
               ))}
-            </>
+            </Stage>
           ) : null}
 
           {pickingSeries ? (
-            <div className="grid gap-0.5" role="group" aria-label={`${makerLabel(selectedMaker, lang)} ${text.series}`}>
-              <Link
-                href={clearSeriesHref}
-                className={optionClass(true)}
-                aria-current="page"
-              >
+            <Stage title={activePrompt} selecting={text.selecting} stageKey="series">
+              <Link href={clearSeriesHref} className="picker-option" data-active="true" aria-current="page">
                 <span>{text.all}</span>
               </Link>
               {seriesList.map((series) => (
@@ -257,33 +343,36 @@ export function BrandSidebar({
                   key={series}
                   type="button"
                   data-series={series}
-                  className={optionClass(false)}
+                  className="picker-option"
                   onClick={(event) => {
                     event.preventDefault();
                     setDraftSeries(series);
                   }}
                 >
                   <span>{seriesLabel(series, lang)}</span>
-                  <span aria-hidden className="text-[10px] text-muted">
+                  <span aria-hidden className="picker-option__chevron">
                     ›
                   </span>
                 </button>
               ))}
-            </div>
+            </Stage>
           ) : null}
 
           {pickingVariant ? (
-            <div className="grid gap-0.5" role="group" aria-label={`${seriesLabel(lockedSeries, lang)} ${text.model}`}>
+            <Stage title={activePrompt} selecting={text.selecting} stageKey="model">
               {variants.map((model) => (
                 <Link
                   key={model}
                   href={hrefFor(lang, ctx, query, { maker: selectedMaker, model })}
-                  className={optionClass(false)}
+                  className="picker-option"
                 >
                   <span>{modelLabel(model, lang)}</span>
+                  <span aria-hidden className="picker-option__chevron">
+                    ›
+                  </span>
                 </Link>
               ))}
-            </div>
+            </Stage>
           ) : null}
         </nav>
       </div>

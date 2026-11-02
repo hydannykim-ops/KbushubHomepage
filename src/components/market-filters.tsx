@@ -39,8 +39,8 @@ function chipClass(active: boolean, open: boolean) {
   return [
     "inline-flex h-9 shrink-0 items-center gap-1 rounded-full px-3.5 text-sm transition-colors",
     active || open
-      ? "bg-ink text-white"
-      : "bg-transparent text-ink ring-1 ring-[#cfd5df] hover:bg-[#e8ebf0]",
+      ? "bg-ink text-white shadow-[0_6px_16px_rgba(14,28,47,0.12)]"
+      : "bg-white/80 text-ink ring-1 ring-[#d5dae3] hover:bg-white hover:ring-[#c2c9d4]",
   ].join(" ");
 }
 
@@ -163,7 +163,7 @@ export function MarketFilterBar({
           role="dialog"
           aria-modal="false"
           aria-labelledby={`${baseId}-${openKey}`}
-          className="absolute left-0 top-[calc(100%+0.5rem)] z-30 min-w-[16rem] max-w-[min(100%,24rem)] border border-line bg-white p-4 shadow-[0_12px_32px_rgba(16,32,51,0.14)]"
+          className="absolute left-0 top-[calc(100%+0.5rem)] z-30 min-w-[16rem] max-w-[min(100%,24rem)] rounded-2xl border border-[#e1e6ee] bg-white p-4 shadow-[0_16px_36px_rgba(16,32,51,0.12)]"
         >
           {openKey === "year" ? (
             <div className="max-w-md">

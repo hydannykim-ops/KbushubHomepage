@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { MakerMark } from "@/components/maker-mark";
 import {
   classForModel,
@@ -42,23 +42,55 @@ function resolveInitialStep(maker: string, model: string): Step {
   return "done";
 }
 
-function optionClass(active: boolean, market: boolean) {
-  if (market) {
-    return [
-      "flex min-h-11 w-full cursor-pointer items-center justify-between gap-3 px-3 py-2.5 text-left text-sm transition-colors",
-      active ? "bg-ink font-semibold text-white" : "bg-transparent text-ink hover:bg-[#e8ebf0]",
-    ].join(" ");
-  }
-  return [
-    "flex min-h-11 w-full cursor-pointer items-center justify-between gap-3 border px-3.5 py-2.5 text-left text-sm font-medium transition-colors",
-    active ? "border-primary bg-primary text-white" : "border-line bg-white text-foreground hover:border-primary",
-  ].join(" ");
+function LockedRow({
+  label,
+  value,
+  action,
+  onClick,
+}: {
+  label: string;
+  value: string;
+  action: string;
+  onClick: () => void;
+}) {
+  return (
+    <button type="button" className="picker-locked" onClick={onClick}>
+      <span className="flex min-w-0 items-center gap-2.5">
+        <span className="picker-locked__check" aria-hidden>
+          ✓
+        </span>
+        <span className="min-w-0">
+          <span className="picker-locked__meta">{label}</span>
+          <span className="picker-locked__value">{value}</span>
+        </span>
+      </span>
+      <span className="picker-locked__action">{action}</span>
+    </button>
+  );
 }
 
-function lockedRowClass(market: boolean) {
-  return market
-    ? "flex w-full items-center justify-between gap-3 border-b border-[#d8dde6] px-1 py-2.5 text-left text-sm"
-    : "flex w-full items-center justify-between gap-3 border border-line bg-[#f8fafc] px-3.5 py-2.5 text-left text-sm";
+function Stage({
+  title,
+  selecting,
+  stageKey,
+  children,
+}: {
+  title: string;
+  selecting: string;
+  stageKey: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="picker-stage">
+      <div className="picker-stage__head">
+        <p className="picker-stage__title">{title}</p>
+        <span className="picker-stage__badge">{selecting}</span>
+      </div>
+      <div key={stageKey} className="picker-stage__list" role="listbox" aria-label={title}>
+        {children}
+      </div>
+    </div>
+  );
 }
 
 export function MakerModelPicker({
@@ -117,8 +149,35 @@ export function MakerModelPicker({
     setStep("done");
   }
 
+  const stepStates = [
+    {
+      key: "maker",
+      label: text.maker,
+      state: step === "maker" ? "current" : maker ? "done" : "todo",
+    },
+    {
+      key: "series",
+      label: text.series,
+      state: step === "series" ? "current" : series && step !== "maker" ? "done" : "todo",
+    },
+    {
+      key: "model",
+      label: text.model,
+      state: step === "model" ? "current" : model ? "done" : "todo",
+    },
+  ] as const;
+
+  const activePrompt =
+    step === "maker" ? text.pickMakerFirst : step === "series" ? text.pickSeries : step === "model" ? text.pickModel : "";
+
   return (
-    <div className="grid gap-3" data-maker-model-picker data-vehicle-class={vehicleClass || "all"} data-layout={layout} data-step={step}>
+    <div
+      className="grid gap-3"
+      data-maker-model-picker
+      data-vehicle-class={vehicleClass || "all"}
+      data-layout={layout}
+      data-step={step}
+    >
       <input type="hidden" name={makerName} value={maker} required={required && !allowEmpty} />
       <input type="hidden" name={modelName} value={model} required={required && !allowEmpty} />
 
@@ -129,72 +188,67 @@ export function MakerModelPicker({
         </p>
       ) : null}
 
+      <div className="picker-rail" style={{ gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }} aria-hidden>
+        {stepStates.map((entry, index) => (
+          <div key={entry.key} className="picker-rail__step" data-state={entry.state}>
+            <span className="picker-rail__dot">{entry.state === "done" ? "✓" : index + 1}</span>
+            <span className="picker-rail__label">{entry.label}</span>
+          </div>
+        ))}
+      </div>
+
       {maker && step !== "maker" ? (
-        <button
-          type="button"
-          className={lockedRowClass(market)}
-          onClick={() => {
-            setStep("maker");
-          }}
-        >
-          <span>
-            <span className="text-xs font-semibold text-muted">{text.maker}</span>
-            <span className="mt-0.5 block font-semibold text-ink">{makerLabel(maker, lang)}</span>
-          </span>
-          <span className="text-xs font-medium text-muted">{text.reset}</span>
-        </button>
+        <LockedRow
+          label={text.maker}
+          value={makerLabel(maker, lang)}
+          action={text.changeSelection}
+          onClick={() => setStep("maker")}
+        />
       ) : null}
 
       {series && step !== "maker" && step !== "series" ? (
-        <button
-          type="button"
-          className={lockedRowClass(market)}
+        <LockedRow
+          label={text.series}
+          value={seriesLabel(series, lang)}
+          action={text.changeSelection}
           onClick={() => {
             setModel("");
             setStep("series");
           }}
-        >
-          <span>
-            <span className="text-xs font-semibold text-muted">{text.series}</span>
-            <span className="mt-0.5 block font-semibold text-ink">{seriesLabel(series, lang)}</span>
-          </span>
-          <span className="text-xs font-medium text-muted">{text.reset}</span>
-        </button>
+        />
       ) : null}
 
       {step === "done" && model ? (
-        <button
-          type="button"
-          className={lockedRowClass(market)}
+        <LockedRow
+          label={text.model}
+          value={modelLabel(model, lang)}
+          action={text.changeSelection}
           onClick={() => {
             setModel("");
             setStep("model");
           }}
-        >
-          <span>
-            <span className="text-xs font-semibold text-muted">{text.model}</span>
-            <span className="mt-0.5 block font-semibold text-ink">{modelLabel(model, lang)}</span>
-          </span>
-          <span className="text-xs font-medium text-muted">{text.reset}</span>
-        </button>
+        />
       ) : null}
 
       {allowEmpty && step === "done" && !maker && !model ? (
-        <button type="button" className={lockedRowClass(market)} onClick={() => setStep("maker")}>
-          <span>
-            <span className="text-xs font-semibold text-muted">
-              {text.maker} · {text.model}
-            </span>
-            <span className="mt-0.5 block font-semibold text-ink">{skipLabel}</span>
-          </span>
-          <span className="text-xs font-medium text-muted">{text.reset}</span>
-        </button>
+        <LockedRow
+          label={`${text.maker} · ${text.model}`}
+          value={skipLabel}
+          action={text.changeSelection}
+          onClick={() => setStep("maker")}
+        />
       ) : null}
 
       {step === "maker" ? (
-        <div className={market ? "grid gap-0.5" : "grid gap-2"} role="listbox" aria-label={text.maker}>
+        <Stage title={activePrompt} selecting={text.selecting} stageKey="maker">
           {allowEmpty ? (
-            <button type="button" className={optionClass(maker === "", market)} aria-pressed={maker === ""} onClick={() => pickMaker("")}>
+            <button
+              type="button"
+              className="picker-option"
+              data-active={maker === "" ? "true" : "false"}
+              aria-pressed={maker === ""}
+              onClick={() => pickMaker("")}
+            >
               {skipLabel}
             </button>
           ) : null}
@@ -202,7 +256,8 @@ export function MakerModelPicker({
             <button
               key={item}
               type="button"
-              className={optionClass(maker === item, market)}
+              className="picker-option"
+              data-active={maker === item ? "true" : "false"}
               aria-pressed={maker === item}
               onClick={() => pickMaker(item)}
             >
@@ -210,23 +265,24 @@ export function MakerModelPicker({
                 <MakerMark maker={item} active={maker === item} />
                 <span className="truncate">{makerLabel(item, lang)}</span>
               </span>
-              <span aria-hidden className="text-[10px] opacity-50">
+              <span aria-hidden className="picker-option__chevron">
                 ›
               </span>
             </button>
           ))}
-        </div>
+        </Stage>
       ) : null}
 
       {step === "series" && maker ? (
         seriesList.length === 0 ? (
           <p className="text-sm text-muted">{text.noModelsInClass}</p>
         ) : (
-          <div className={market ? "grid gap-0.5" : "grid gap-2"} role="listbox" aria-label={`${makerLabel(maker, lang)} ${text.series}`}>
+          <Stage title={activePrompt} selecting={text.selecting} stageKey="series">
             {allowEmpty ? (
               <button
                 type="button"
-                className={optionClass(series === "" && model === "", market)}
+                className="picker-option"
+                data-active={series === "" && model === "" ? "true" : "false"}
                 aria-pressed={series === "" && model === ""}
                 onClick={() => {
                   setSeries("");
@@ -238,31 +294,35 @@ export function MakerModelPicker({
               </button>
             ) : null}
             {seriesList.map((entry) => (
-              <button key={entry} type="button" className={optionClass(false, market)} onClick={() => pickSeries(entry)}>
+              <button key={entry} type="button" className="picker-option" onClick={() => pickSeries(entry)}>
                 <span>{seriesLabel(entry, lang)}</span>
-                <span aria-hidden className="text-[10px] opacity-50">
+                <span aria-hidden className="picker-option__chevron">
                   ›
                 </span>
               </button>
             ))}
-          </div>
+          </Stage>
         )
       ) : null}
 
       {step === "model" && maker && series ? (
-        <div className={market ? "grid gap-0.5" : "grid gap-2"} role="listbox" aria-label={`${seriesLabel(series, lang)} ${text.model}`}>
+        <Stage title={activePrompt} selecting={text.selecting} stageKey="model">
           {variants.map((entry) => (
             <button
               key={entry}
               type="button"
-              className={optionClass(model === entry, market)}
+              className="picker-option"
+              data-active={model === entry ? "true" : "false"}
               aria-pressed={model === entry}
               onClick={() => pickModel(entry)}
             >
               <span>{modelLabel(entry, lang)}</span>
+              <span aria-hidden className="picker-option__chevron">
+                ›
+              </span>
             </button>
           ))}
-        </div>
+        </Stage>
       ) : null}
 
       {required && !market && !model ? <p className="text-xs text-muted">{text.pickMakerModel}</p> : null}
