@@ -1,10 +1,21 @@
+import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { DataProblem } from "@/components/catalog";
 import { Consent, EnhanceForm, Field, Honeypot, SubmitBanner } from "@/components/forms";
 import { MakerModelPicker } from "@/components/maker-model-picker";
+import { StickyQuoteLayout } from "@/components/sticky-quote-layout";
 import { copy } from "@/lib/i18n";
-import { parseLang } from "@/lib/request-context";
+import { parseLang, requestContext } from "@/lib/request-context";
 import { loadSite } from "@/lib/site-load";
+
+function FormSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="grid gap-3 border-t border-line pt-4 first:border-t-0 first:pt-0">
+      <h2 className="text-sm font-semibold tracking-tight text-ink">{title}</h2>
+      {children}
+    </section>
+  );
+}
 
 export default async function WantedPage({
   params,
@@ -18,43 +29,145 @@ export default async function WantedPage({
   const raw = await searchParams;
   const sp = new URLSearchParams();
   for (const [key, value] of Object.entries(raw)) if (typeof value === "string") sp.set(key, value);
+  await requestContext(lang, sp);
   const site = await loadSite();
   if (!site.ok) return <DataProblem lang={lang} code={site.code} />;
   const text = copy(lang);
-  return (
-    <div className="mx-auto max-w-xl px-4 py-8">
-      <h1 className="text-3xl font-bold">{text.wantedTitle}</h1>
-      <p className="mt-2 text-sm text-muted">{text.wantedBody}</p>
-      {site.source !== "demo" && !site.settings.privacyCollectionEnabled ? (
-        <p className="mt-2 text-sm text-muted">{text.liveClosedNote}</p>
-      ) : null}
-      <div className="mt-6">
-        <SubmitBanner lang={lang} submitted={sp.get("submitted") ?? undefined} error={sp.get("error") ?? undefined} />
-        <EnhanceForm action="/api/requests/wanted" lang={lang}>
-          <input type="hidden" name="lang" value={lang} />
+
+  const form = (
+    <div className="rounded-2xl border border-line bg-white p-5 shadow-[0_12px_36px_rgba(15,28,47,0.06)]">
+      <SubmitBanner lang={lang} submitted={sp.get("submitted") ?? undefined} error={sp.get("error") ?? undefined} />
+      <EnhanceForm action="/api/requests/wanted" lang={lang}>
+        <input type="hidden" name="lang" value={lang} />
+        <FormSection title={text.wantedSectionVehicle}>
           <MakerModelPicker lang={lang} allowEmpty emptyLabel={text.noPreference} defaultModel={sp.get("model") ?? ""} />
-          <Field label={text.budget} name="budgetAmount" type="number" />
-          <label className="grid gap-1 text-sm font-medium">
-            {text.currency}
-            <select name="budgetCurrency" className="rounded-md border border-line px-3 py-2 font-normal" defaultValue="USD">
-              {["KRW", "USD", "EUR", "JPY", "CNY", "AED"].map((currency) => (
-                <option key={currency}>{currency}</option>
-              ))}
-            </select>
-          </label>
-          <Field label={text.wantedYearLabel} name="modelYear" inputMode="numeric" placeholder="2020" hint={text.wantedYearHint} />
-          <Field label={text.wantedSeatsLabel} name="seats" inputMode="numeric" placeholder="28" hint={text.wantedSeatsHint} />
+        </FormSection>
+        <FormSection title={text.wantedSectionBudget}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label={text.budget} name="budgetAmount" type="number" />
+            <label className="grid gap-1 text-sm font-medium">
+              {text.currency}
+              <select name="budgetCurrency" className="rounded-md border border-line bg-white px-3 py-2 font-normal" defaultValue="USD">
+                {["KRW", "USD", "EUR", "JPY", "CNY", "AED"].map((currency) => (
+                  <option key={currency}>{currency}</option>
+                ))}
+              </select>
+            </label>
+          </div>
           <Field label={text.quantity} name="quantity" required defaultValue="1" />
-          <Field label={text.destinationCountry} name="destinationCountry" required />
-          <Field label={text.desiredTime} name="desiredTime" />
-          <Field label={text.name} name="name" required />
-          <Field label={text.email} name="email" type="email" />
-          <Field label={text.contact} name="phone" />
-          <Field label={text.message} name="message" as="textarea" />
-          <Consent lang={lang} />
-          <Honeypot lang={lang} />
-        </EnhanceForm>
-      </div>
+        </FormSection>
+        <FormSection title={text.wantedSectionSpec}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label={text.wantedYearLabel} name="modelYear" inputMode="numeric" placeholder="2020" hint={text.wantedYearHint} />
+            <Field label={text.wantedSeatsLabel} name="seats" inputMode="numeric" placeholder="28" hint={text.wantedSeatsHint} />
+          </div>
+        </FormSection>
+        <FormSection title={text.wantedSectionRoute}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label={text.destinationCountry} name="destinationCountry" required />
+            <Field label={text.desiredTime} name="desiredTime" />
+          </div>
+        </FormSection>
+        <FormSection title={text.wantedSectionContact}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label={text.name} name="name" required />
+            <Field label={text.contact} name="phone" />
+            <div className="sm:col-span-2">
+              <Field label={text.email} name="email" type="email" />
+            </div>
+            <div className="sm:col-span-2">
+              <Field label={text.message} name="message" as="textarea" />
+            </div>
+          </div>
+        </FormSection>
+        <Consent lang={lang} />
+        <Honeypot lang={lang} />
+      </EnhanceForm>
     </div>
+  );
+
+  const reasons = [
+    [text.wantedReason1Title, text.wantedReason1Body],
+    [text.wantedReason2Title, text.wantedReason2Body],
+    [text.wantedReason3Title, text.wantedReason3Body],
+  ] as const;
+  const steps = [
+    [text.wantedStep1Title, text.wantedStep1Body],
+    [text.wantedStep2Title, text.wantedStep2Body],
+    [text.wantedStep3Title, text.wantedStep3Body],
+    [text.wantedStep4Title, text.wantedStep4Body],
+  ] as const;
+  const faqs = [
+    [text.wantedFaq1Q, text.wantedFaq1A],
+    [text.wantedFaq2Q, text.wantedFaq2A],
+    [text.wantedFaq3Q, text.wantedFaq3A],
+  ] as const;
+
+  const intro = (
+    <div>
+      <p className="text-xs font-semibold tracking-[0.16em] text-primary">K-BUS HUB</p>
+      <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink md:text-4xl">{text.wantedTitle}</h1>
+      <p className="mt-4 max-w-xl text-base leading-7 text-muted">{text.wantedBody}</p>
+      <ul className="mt-5 grid gap-2.5 text-sm text-ink">
+        <li className="flex gap-2">
+          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+          {text.wantedPromise1}
+        </li>
+        <li className="flex gap-2">
+          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+          {text.wantedPromise2}
+        </li>
+        <li className="flex gap-2">
+          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent-warm" />
+          {text.wantedPromise3}
+        </li>
+      </ul>
+      {site.source !== "demo" && !site.settings.privacyCollectionEnabled ? (
+        <p className="mt-5 text-sm text-muted">{text.liveClosedNote}</p>
+      ) : null}
+    </div>
+  );
+
+  return (
+    <StickyQuoteLayout intro={intro} form={form}>
+      <section>
+        <h2 className="section-title text-2xl font-semibold tracking-tight text-ink">{text.wantedWhyTitle}</h2>
+        <div className="mt-5 grid gap-3">
+          {reasons.map(([title, body]) => (
+            <article key={title} className="rounded-2xl border border-primary/15 bg-primary-soft/50 px-4 py-4">
+              <h3 className="text-base font-semibold text-ink">{title}</h3>
+              <p className="mt-1.5 text-sm leading-6 text-muted">{body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h2 className="section-title text-2xl font-semibold tracking-tight text-ink">{text.wantedProcessTitle}</h2>
+        <ol className="mt-5 grid gap-0 overflow-hidden rounded-2xl border border-line bg-white">
+          {steps.map(([title, body], index) => (
+            <li key={title} className="grid gap-1 border-b border-line px-4 py-4 last:border-b-0 sm:grid-cols-[3rem_1fr] sm:gap-3">
+              <p className="text-xs font-semibold tracking-[0.14em] text-primary">0{index + 1}</p>
+              <div>
+                <h3 className="text-base font-semibold text-ink">{title}</h3>
+                <p className="mt-1 text-sm leading-6 text-muted">{body}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="rounded-2xl border border-line bg-white p-5 md:p-6">
+        <h2 className="text-xl font-semibold text-ink">{text.wantedFaqTitle}</h2>
+        <dl className="mt-4 grid gap-4">
+          {faqs.map(([q, a]) => (
+            <div key={q}>
+              <dt className="text-sm font-semibold text-ink">{q}</dt>
+              <dd className="mt-1 text-sm leading-6 text-muted">{a}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+    </StickyQuoteLayout>
   );
 }
