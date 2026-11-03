@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminDeleteButton } from "@/components/admin/delete-button";
 import { PatchForm } from "@/components/admin/patch-form";
 import { getRepository } from "@/lib/data/repository";
 import type { RequestStatus, RequestType } from "@/lib/domain/types";
@@ -124,7 +125,7 @@ export default async function RequestsPage({
                 ))}
               </ul>
             ) : null}
-            <div className="mt-3">
+            <div className="mt-3 grid gap-2">
               <PatchForm action={`/api/admin/requests/${request.id}`}>
                 <select name="status" defaultValue={request.status} className="rounded-md border border-line px-2 py-2">
                   <option value="new">신규</option>
@@ -133,6 +134,11 @@ export default async function RequestsPage({
                 </select>
                 <textarea name="staffMemo" defaultValue={request.staffMemo ?? ""} rows={2} className="rounded-md border border-line px-2 py-2" />
               </PatchForm>
+              <AdminDeleteButton
+                action={`/api/admin/requests/${request.id}`}
+                confirmMessage={`${typeLabel[request.type]} 접수(${request.name})를 삭제할까요?`}
+                className="justify-self-start rounded-md border border-[#f1c4c8] px-3 py-2 text-sm font-semibold text-[#9f1239] hover:bg-[#fff1f2] disabled:opacity-60"
+              />
             </div>
           </article>
         ))

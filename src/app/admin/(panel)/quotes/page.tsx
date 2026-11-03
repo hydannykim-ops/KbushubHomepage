@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminDeleteButton } from "@/components/admin/delete-button";
 import { getRepository } from "@/lib/data/repository";
 import { formatMoney, quoteLineKeys, summarizeQuote } from "@/lib/domain/money";
 import type { QuoteLineKey } from "@/lib/domain/types";
@@ -34,9 +35,15 @@ export default async function QuotesPage() {
                   <p className="font-semibold">
                     {quote.vehicleStockNo ?? "-"} · v{quote.version} · {quote.createdAt.slice(0, 16).replace("T", " ")}
                   </p>
-                  <Link href={`/admin/inquiries/${quote.inquiryId}`} className="text-primary">
-                    문의 열기
-                  </Link>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Link href={`/admin/inquiries/${quote.inquiryId}`} className="rounded-md border border-line px-2 py-1 text-xs font-semibold">
+                      문의 열기
+                    </Link>
+                    <AdminDeleteButton
+                      action={`/api/admin/quotes/${quote.id}`}
+                      confirmMessage={`견적 v${quote.version}을 삭제할까요?`}
+                    />
+                  </div>
                 </div>
                 <p className="mt-2">
                   {summary.confirmed && summary.total != null

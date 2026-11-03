@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/session";
-import { adminVehicleToInput } from "@/lib/domain/admin-vehicle-input";
 import { getRepository } from "@/lib/data/repository";
 import { DataAccessError } from "@/lib/data/errors";
 import { StoreError } from "@/lib/demo/store";
@@ -19,12 +18,10 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!status || !statuses.has(status as SaleStatus)) {
     return NextResponse.json({ ok: false, code: "invalid_status" }, { status: 400 });
   }
-  const repo = getRepository();
-  const vehicle = await repo.getAdminVehicle(id);
-  if (!vehicle) return NextResponse.json({ ok: false, code: "not_found" }, { status: 404 });
   try {
-    const updated = await repo.updateVehicle(id, adminVehicleToInput(vehicle, status as SaleStatus));
-    return NextResponse.json({ ok: true, id: updated.id, status: updated.status });
+    const count = await getRepository().setVehicleStatuses([id], status as SaleStatus);
+    if (!count) return NextResponse.json({ ok: false, code: "not_found" }, { status: 404 });
+    return NextResponse.json({ ok: true, id, status });
   } catch (error) {
     if (error instanceof StoreError) return NextResponse.json({ ok: false, code: error.code }, { status: 400 });
     if (error instanceof DataAccessError) return NextResponse.json({ ok: false, code: error.code }, { status: 503 });

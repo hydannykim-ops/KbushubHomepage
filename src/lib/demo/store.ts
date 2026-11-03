@@ -244,6 +244,34 @@ export function createDemoStore(dir: string) {
         return clone(next);
       });
     },
+    async setVehicleStatuses(ids: string[], status: AdminVehicle["status"]): Promise<number> {
+      return update((state) => {
+        const wanted = new Set(ids);
+        let count = 0;
+        for (const vehicle of state.vehicles) {
+          if (!wanted.has(vehicle.id)) continue;
+          vehicle.status = status;
+          vehicle.updatedAt = nowIso();
+          count += 1;
+        }
+        return count;
+      });
+    },
+    async deleteVehicle(id: string): Promise<void> {
+      return update((state) => {
+        const index = state.vehicles.findIndex((vehicle) => vehicle.id === id);
+        if (index < 0) throw new StoreError("not_found");
+        state.vehicles.splice(index, 1);
+      });
+    },
+    async deleteVehicles(ids: string[]): Promise<number> {
+      return update((state) => {
+        const wanted = new Set(ids);
+        const before = state.vehicles.length;
+        state.vehicles = state.vehicles.filter((vehicle) => !wanted.has(vehicle.id));
+        return before - state.vehicles.length;
+      });
+    },
     async addPhoto(
       vehicleId: string,
       file: { bytes: Buffer; contentType: ImageType; category: PhotoCategory; altKo: string; altEn: string },
@@ -509,6 +537,16 @@ export function createDemoStore(dir: string) {
         return clone(inquiry);
       });
     },
+    async deleteInquiry(id: string): Promise<void> {
+      return update((state) => {
+        const index = state.inquiries.findIndex((item) => item.id === id);
+        if (index < 0) throw new StoreError("not_found");
+        state.inquiries.splice(index, 1);
+        state.inquiryMessages = state.inquiryMessages.filter((item) => item.inquiryId !== id);
+        state.history = state.history.filter((item) => item.inquiryId !== id);
+        state.quotes = state.quotes.filter((item) => item.inquiryId !== id);
+      });
+    },
     async listQuotes(): Promise<Quote[]> {
       return clone((await read()).quotes).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     },
@@ -542,6 +580,13 @@ export function createDemoStore(dir: string) {
           inquiry.updatedAt = nowIso();
         }
         return clone(quote);
+      });
+    },
+    async deleteQuote(id: string): Promise<void> {
+      return update((state) => {
+        const index = state.quotes.findIndex((item) => item.id === id);
+        if (index < 0) throw new StoreError("not_found");
+        state.quotes.splice(index, 1);
       });
     },
     async listAgents(): Promise<Agent[]> {
@@ -720,6 +765,13 @@ export function createDemoStore(dir: string) {
         request.staffMemo = patch.staffMemo;
         request.updatedAt = nowIso();
         return clone(request);
+      });
+    },
+    async deleteRequest(id: string): Promise<void> {
+      return update((state) => {
+        const index = state.requests.findIndex((item) => item.id === id);
+        if (index < 0) throw new StoreError("not_found");
+        state.requests.splice(index, 1);
       });
     },
     async getMember(id: string): Promise<Member | null> {

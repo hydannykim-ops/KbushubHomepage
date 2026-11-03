@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AdminDeleteButton } from "@/components/admin/delete-button";
 import { VehicleForm } from "@/components/admin/editors";
+import { VehicleStatusButton } from "@/components/admin/vehicle-status-button";
 import { getRepository } from "@/lib/data/repository";
 import { internalProfit, formatMoney } from "@/lib/domain/money";
-import { photoCategoryList, photoLabel } from "@/lib/labels";
+import { photoCategoryList, photoLabel, statusLabel } from "@/lib/labels";
 
 export default async function EditVehiclePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -16,10 +18,32 @@ export default async function EditVehiclePage({ params }: { params: Promise<{ id
   return (
     <div className="grid gap-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-bold">{vehicle.stockNo}</h1>
-        <Link href="/admin/vehicles" className="text-sm font-semibold text-muted hover:text-ink">
-          목록으로
-        </Link>
+        <div>
+          <h1 className="text-2xl font-bold">{vehicle.stockNo}</h1>
+          <p className="mt-1 text-sm text-muted">
+            {vehicle.maker} {vehicle.model} · {statusLabel(vehicle.status, "ko")}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href="/admin/vehicles" className="rounded-md border border-line px-3 py-2 text-sm font-semibold">
+            목록
+          </Link>
+          {vehicle.status !== "available" ? (
+            <VehicleStatusButton
+              vehicleId={vehicle.id}
+              status="available"
+              label="판매 중으로"
+              className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white disabled:opacity-60"
+            />
+          ) : null}
+          {vehicle.status !== "hidden" ? <VehicleStatusButton vehicleId={vehicle.id} status="hidden" label="비공개" /> : null}
+          <AdminDeleteButton
+            action={`/api/admin/vehicles/${vehicle.id}`}
+            confirmMessage={`${vehicle.stockNo} 매물을 삭제할까요? 사진도 함께 삭제되며 되돌릴 수 없습니다.`}
+            redirectTo="/admin/vehicles"
+            className="rounded-md border border-[#f1c4c8] px-3 py-2 text-sm font-semibold text-[#9f1239] hover:bg-[#fff1f2] disabled:opacity-60"
+          />
+        </div>
       </div>
       {vehicle.listingSource === "dealer" ? (
         <p className="text-sm">

@@ -522,6 +522,36 @@ export function createSupabaseRepository() {
       if (!vehicle) throw new StoreError("not_found");
       return vehicle;
     },
+    async setVehicleStatuses(ids: string[], status: AdminVehicle["status"]): Promise<number> {
+      const wanted = [...new Set(ids.map((id) => id.trim()).filter(Boolean))];
+      if (!wanted.length) return 0;
+      const service = createServiceClient();
+      const updated = await service
+        .from("vehicles")
+        .update({ status, updated_at: new Date().toISOString() })
+        .in("id", wanted)
+        .select("id");
+      if (updated.error) fail(updated.error, "vehicle_bulk_status");
+      return updated.data?.length ?? 0;
+    },
+    async deleteVehicle(id: string): Promise<void> {
+      await this.deleteVehicles([id]);
+    },
+    async deleteVehicles(ids: string[]): Promise<number> {
+      const wanted = [...new Set(ids.map((id) => id.trim()).filter(Boolean))];
+      if (!wanted.length) return 0;
+      const service = createServiceClient();
+      const photos = await service.from("vehicle_photos").select("storage_path").in("vehicle_id", wanted);
+      if (photos.error) fail(photos.error, "vehicle_delete_photos");
+      const paths = (photos.data ?? []).map((row) => row.storage_path).filter((path): path is string => Boolean(path));
+      if (paths.length) {
+        const removed = await service.storage.from("vehicle-photos").remove(paths);
+        if (removed.error) fail(removed.error, "vehicle_delete_storage");
+      }
+      const deleted = await service.from("vehicles").delete().in("id", wanted).select("id");
+      if (deleted.error) fail(deleted.error, "vehicle_delete");
+      return deleted.data?.length ?? 0;
+    },
     async addPhoto(vehicleId: string, file: { bytes: Buffer; contentType: ImageType; category: PhotoCategory; altKo: string; altEn: string }) {
       const service = createServiceClient();
       const existing = await service.from("vehicle_photos").select("id, is_cover").eq("vehicle_id", vehicleId);
@@ -845,6 +875,12 @@ export function createSupabaseRepository() {
       if (updated.error) fail(updated.error, "inquiry_update");
       return mapInquiry(updated.data as Record<string, unknown>);
     },
+    async deleteInquiry(id: string): Promise<void> {
+      const service = createServiceClient();
+      const deleted = await service.from("inquiries").delete().eq("id", id).select("id");
+      if (deleted.error) fail(deleted.error, "inquiry_delete");
+      if (!deleted.data?.length) throw new StoreError("not_found");
+    },
     async listQuotes() {
       const service = createServiceClient();
       const result = await service.from("quotes").select("*").order("created_at", { ascending: false });
@@ -884,6 +920,12 @@ export function createSupabaseRepository() {
         if (advanced.error) fail(advanced.error, "quote_inquiry_status");
       }
       return mapQuote(inserted.data as Record<string, unknown>);
+    },
+    async deleteQuote(id: string): Promise<void> {
+      const service = createServiceClient();
+      const deleted = await service.from("quotes").delete().eq("id", id).select("id");
+      if (deleted.error) fail(deleted.error, "quote_delete");
+      if (!deleted.data?.length) throw new StoreError("not_found");
     },
     async listAgents() {
       const service = createServiceClient();
@@ -1070,6 +1112,19 @@ export function createSupabaseRepository() {
         .single();
       if (updated.error) fail(updated.error, "request_update");
       return mapRequest(updated.data as Record<string, unknown>, []);
+    },
+    async deleteRequest(id: string): Promise<void> {
+      const service = createServiceClient();
+      const files = await service.from("sell_request_files").select("storage_path").eq("request_id", id);
+      if (files.error) fail(files.error, "request_delete_files");
+      const paths = (files.data ?? []).map((row) => row.storage_path).filter((path): path is string => Boolean(path));
+      if (paths.length) {
+        const removed = await service.storage.from("private-files").remove(paths);
+        if (removed.error) fail(removed.error, "request_delete_storage");
+      }
+      const deleted = await service.from("vehicle_requests").delete().eq("id", id).select("id");
+      if (deleted.error) fail(deleted.error, "request_delete");
+      if (!deleted.data?.length) throw new StoreError("not_found");
     },
     async getMember(id: string): Promise<Member | null> {
       const service = createServiceClient();

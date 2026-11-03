@@ -31,3 +31,17 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     throw error;
   }
 }
+
+export async function DELETE(_request: Request, context: { params: Promise<{ id: string }> }) {
+  const admin = await requireAdmin();
+  if (!admin) return NextResponse.json({ ok: false }, { status: 401 });
+  const { id } = await context.params;
+  try {
+    await getRepository().deleteVehicle(id);
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    if (error instanceof StoreError) return NextResponse.json({ ok: false, code: error.code }, { status: 400 });
+    if (error instanceof DataAccessError) return NextResponse.json({ ok: false, code: error.code }, { status: 503 });
+    throw error;
+  }
+}

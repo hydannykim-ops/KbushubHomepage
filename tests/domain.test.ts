@@ -728,6 +728,36 @@ test("inquiry chat lets buyer and listing owner reply on the same thread", async
   assert.equal(inquiryViewerRole(inquiry, { memberId: null, email: null, admin: true }, dealer.id), "staff");
 });
 
+test("admin can delete vehicles inquiries quotes and requests", async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), "kbus-admin-delete-"));
+  const store = createDemoStore(dir);
+  const before = await store.listAdminVehicles();
+  const target = before[0];
+  assert.ok(target);
+  await store.setVehicleStatuses([target.id], "hidden");
+  assert.equal((await store.getAdminVehicle(target.id))?.status, "hidden");
+  const deletedCount = await store.deleteVehicles([target.id]);
+  assert.equal(deletedCount, 1);
+  assert.equal(await store.getAdminVehicle(target.id), null);
+
+  const inquiries = await store.listInquiries();
+  assert.ok(inquiries[0]);
+  await store.deleteInquiry(inquiries[0].id);
+  assert.equal(await store.getInquiry(inquiries[0].id), null);
+
+  const quotes = await store.listQuotes();
+  if (quotes[0]) {
+    await store.deleteQuote(quotes[0].id);
+    assert.equal((await store.listQuotes()).some((item) => item.id === quotes[0].id), false);
+  }
+
+  const requests = await store.listRequests();
+  if (requests[0]) {
+    await store.deleteRequest(requests[0].id);
+    assert.equal((await store.listRequests()).some((item) => item.id === requests[0].id), false);
+  }
+});
+
 test("parseScrap accepts plate region and stores scrap requests", async () => {
   const invalid = parseScrap({ plateNo: "12", model: "카운티", location: "서울", name: "홍길동", phone: "01012345678", consent: "on" }, "ko");
   assert.equal(invalid.ok, false);

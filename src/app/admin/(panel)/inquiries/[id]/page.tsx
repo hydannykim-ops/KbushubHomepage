@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AdminDeleteButton } from "@/components/admin/delete-button";
 import { InquiryEditor } from "@/components/admin/editors";
 import { InquiryChat } from "@/components/inquiry-chat";
 import { getRepository } from "@/lib/data/repository";
@@ -23,9 +24,17 @@ export default async function InquiryDetailPage({ params }: { params: Promise<{ 
       <section className="rounded-lg border border-line bg-white p-4 text-sm">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <h1 className="text-xl font-bold">{inquiry.name}</h1>
-          <Link href="/admin/inquiries" className="text-xs font-semibold text-muted hover:text-ink">
-            목록
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link href="/admin/inquiries" className="text-xs font-semibold text-muted hover:text-ink">
+              목록
+            </Link>
+            <AdminDeleteButton
+              action={`/api/admin/inquiries/${inquiry.id}`}
+              confirmMessage={`${inquiry.name} 문의를 삭제할까요? 채팅·견적 이력도 함께 삭제됩니다.`}
+              redirectTo="/admin/inquiries"
+              className="rounded-md border border-[#f1c4c8] px-2 py-1 text-xs font-semibold text-[#9f1239] hover:bg-[#fff1f2] disabled:opacity-60"
+            />
+          </div>
         </div>
         <p className="mt-2">이메일 {inquiry.email ?? "-"}</p>
         <p>전화 {inquiry.phone ?? "-"}</p>

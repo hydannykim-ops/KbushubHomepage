@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { InquiryQuickActions } from "@/components/admin/inquiry-quick-actions";
 import { getRepository } from "@/lib/data/repository";
 import type { InquiryStatus } from "@/lib/domain/types";
 import { inquiryStatusLabel } from "@/lib/labels";
@@ -27,7 +28,10 @@ export default async function InquiriesPage({
   return (
     <div className="grid gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <h1 className="text-2xl font-bold">문의 관리</h1>
+        <div>
+          <h1 className="text-2xl font-bold">문의 관리</h1>
+          <p className="mt-1 text-sm text-muted">목록에서 상태 변경·삭제가 가능합니다. 담당 지정·답변 메모는 상세에서 합니다.</p>
+        </div>
         <form className="flex flex-wrap gap-2" action="/admin/inquiries" method="get">
           {status ? <input type="hidden" name="status" value={status} /> : null}
           <input
@@ -65,7 +69,7 @@ export default async function InquiriesPage({
               <th className="px-3 py-2">매물</th>
               <th className="px-3 py-2">구분</th>
               <th className="px-3 py-2">상태</th>
-              <th className="px-3 py-2">최초 코드</th>
+              <th className="px-3 py-2">관리</th>
             </tr>
           </thead>
           <tbody>
@@ -94,7 +98,21 @@ export default async function InquiriesPage({
                   </td>
                   <td className="px-3 py-2">{inquiry.tradeMode}</td>
                   <td className="px-3 py-2">{inquiryStatusLabel(inquiry.status, "ko")}</td>
-                  <td className="px-3 py-2">{inquiry.firstReferralCode ?? "-"}</td>
+                  <td className="px-3 py-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link href={`/admin/inquiries/${inquiry.id}`} className="rounded-md border border-line px-2 py-1 text-xs font-semibold">
+                        상세
+                      </Link>
+                      <InquiryQuickActions
+                        inquiryId={inquiry.id}
+                        status={inquiry.status}
+                        name={inquiry.name}
+                        staffMemo={inquiry.staffMemo}
+                        closeReason={inquiry.closeReason}
+                        assignedAgentId={inquiry.assignedAgentId}
+                      />
+                    </div>
+                  </td>
                 </tr>
               ))
             ) : (

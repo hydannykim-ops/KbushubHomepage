@@ -19,3 +19,15 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     throw error;
   }
 }
+
+export async function DELETE(_request: Request, context: { params: Promise<{ id: string }> }) {
+  const admin = await requireAdmin();
+  if (!admin) return NextResponse.json({ ok: false }, { status: 401 });
+  try {
+    await getRepository().deleteInquiry((await context.params).id);
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    if (error instanceof StoreError) return NextResponse.json({ ok: false, code: error.code }, { status: 400 });
+    throw error;
+  }
+}
