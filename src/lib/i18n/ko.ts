@@ -8,6 +8,7 @@ export const ko: Messages = {
   "navBuses": "중형·대형버스",
   "navSell": "내 차 팔기",
   "navExportSell": "내 차 수출하기",
+  "navWanted": "원하는 차량",
   "navGuide": "구매·수출 안내",
   "navPartner": "파트너 가입",
   "navScrap": "폐차 견적 문의",

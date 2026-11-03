@@ -8,6 +8,7 @@ export const mn: Messages = {
   "navBuses": "Дунд болон том",
   "navSell": "Миний автобусыг зарах",
   "navExportSell": "Автобусаа экспортлох",
+  "navWanted": "Хүсэлт илгээх",
   "navGuide": "Худалдан авалт ба экспорт",
   "navPartner": "Түнш бүртгэл",
   "navScrap": "Хаягдал үнийн санал",

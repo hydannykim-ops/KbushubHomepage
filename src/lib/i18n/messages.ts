@@ -6,6 +6,7 @@ export type Messages = {
   navBuses: string;
   navSell: string;
   navExportSell: string;
+  navWanted: string;
   navGuide: string;
   navPartner: string;
   navScrap: string;

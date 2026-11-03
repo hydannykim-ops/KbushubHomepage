@@ -137,10 +137,11 @@ export function Header({
   }
 
   const links = [
-    [text.navVehicles, href("/vehicles")],
-    [text.navSell, href("/sell")],
-    [text.navExportSell, href("/export-sell")],
-    [text.navScrap, href("/scrap")],
+    [text.navVehicles, href("/vehicles"), "/vehicles"],
+    [text.navWanted, href("/wanted"), "/wanted"],
+    [text.navSell, href("/sell"), "/sell"],
+    [text.navExportSell, href("/export-sell"), "/export-sell"],
+    [text.navScrap, href("/scrap"), "/scrap"],
   ] as const;
 
   const accountLinks = signedIn
@@ -158,12 +159,21 @@ export function Header({
             <BrandLogo size="lg" priority />
             <BrandWordmark size="lg" />
           </Link>
-          <nav className="hidden items-center gap-5 text-sm font-medium md:flex" aria-label="main">
-            {links.map(([label, hrefValue]) => (
-              <Link key={label} href={hrefValue} prefetch className="hover:text-primary">
-                {label}
-              </Link>
-            ))}
+          <nav className="hidden items-center gap-4 text-sm font-medium lg:gap-5 md:flex" aria-label="main">
+            {links.map(([label, hrefValue, match]) => {
+              const active = pathname === `/${lang}${match}` || pathname.startsWith(`/${lang}${match}/`);
+              return (
+                <Link
+                  key={label}
+                  href={hrefValue}
+                  prefetch
+                  className={active ? "font-semibold text-primary" : "text-foreground hover:text-primary"}
+                  aria-current={active ? "page" : undefined}
+                >
+                  {label}
+                </Link>
+              );
+            })}
           </nav>
         </div>
         <div className="hidden shrink-0 items-center gap-3 md:flex">
@@ -180,11 +190,14 @@ export function Header({
           <summary className="cursor-pointer border border-line px-3 py-2 text-sm">{text.menu}</summary>
           <div className="absolute inset-x-0 top-full z-50 border-b border-line bg-white px-4 py-4">
             <nav className="grid gap-3 text-sm" aria-label="main mobile">
-              {links.map(([label, hrefValue]) => (
-                <Link key={label} href={hrefValue}>
-                  {label}
-                </Link>
-              ))}
+              {links.map(([label, hrefValue, match]) => {
+                const active = pathname === `/${lang}${match}` || pathname.startsWith(`/${lang}${match}/`);
+                return (
+                  <Link key={label} href={hrefValue} className={active ? "font-semibold text-primary" : undefined} aria-current={active ? "page" : undefined}>
+                    {label}
+                  </Link>
+                );
+              })}
               {accountLinks.map(([label, hrefValue]) => (
                 <Link key={`mobile-${label}`} href={hrefValue} prefetch className="font-semibold">
                   {label}
@@ -231,6 +244,7 @@ export function Footer({
         </div>
         <div className="grid content-start gap-2">
           <Link href={href("/vehicles")}>{text.navVehicles}</Link>
+          <Link href={href("/wanted")}>{text.navWanted}</Link>
           <Link href={href("/sell")}>{text.navSell}</Link>
           <Link href={href("/export-sell")}>{text.navExportSell}</Link>
           <Link href={href("/scrap")}>{text.navScrap}</Link>

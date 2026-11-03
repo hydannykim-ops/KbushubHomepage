@@ -8,6 +8,7 @@ export const en: Messages = {
   "navBuses": "Medium and large",
   "navSell": "Sell my bus",
   "navExportSell": "Export my bus",
+  "navWanted": "Request a vehicle",
   "navGuide": "Buying and export",
   "navPartner": "Partner signup",
   "navScrap": "Scrap quote",

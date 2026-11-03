@@ -8,6 +8,7 @@ export const km: Messages = {
   "navBuses": "មធ្យម និងធំ",
   "navSell": "លក់ឡានរបស់ខ្ញុំ",
   "navExportSell": "នាំចេញឡានរបស់ខ្ញុំ",
+  "navWanted": "ស្នើយានយន្ត",
   "navGuide": "ការទិញ និងនាំចេញ",
   "navPartner": "ចុះឈ្មោះដៃគូ",
   "navScrap": "សម្រង់ថ្លៃកម្ទេច",

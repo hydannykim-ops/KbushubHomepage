@@ -51,7 +51,82 @@ body {
   width: 2.25rem;
   height: 3px;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary) 20%, white));
+  background: linear-gradient(90deg, var(--tone, var(--primary)), color-mix(in srgb, var(--tone, var(--primary)) 20%, white));
+}
+
+/* Consult / request pages — distinct accents so layouts do not feel identical. */
+.page-tone {
+  --tone: var(--primary);
+  --tone-soft: var(--primary-soft);
+  --tone-deep: var(--primary-deep);
+  --tone-wash: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+.page-tone[data-tone="wanted"] {
+  --tone: #0f8f7b;
+  --tone-soft: #e7f6f2;
+  --tone-deep: #0a6b5c;
+  --tone-wash: color-mix(in srgb, #0f8f7b 10%, transparent);
+}
+
+.page-tone[data-tone="export"] {
+  --tone: #155eef;
+  --tone-soft: #e8effc;
+  --tone-deep: #0b4fd0;
+  --tone-wash: color-mix(in srgb, #155eef 10%, transparent);
+}
+
+.page-tone[data-tone="scrap"] {
+  --tone: #b45309;
+  --tone-soft: #fff4e8;
+  --tone-deep: #9a3412;
+  --tone-wash: color-mix(in srgb, #b45309 9%, transparent);
+}
+
+.page-tone[data-tone="sell"] {
+  --tone: #0369a1;
+  --tone-soft: #e0f2fe;
+  --tone-deep: #075985;
+  --tone-wash: color-mix(in srgb, #0369a1 9%, transparent);
+}
+
+.page-tone {
+  background:
+    radial-gradient(980px 420px at 88% -12%, var(--tone-wash), transparent 58%),
+    radial-gradient(720px 360px at 8% 0%, color-mix(in srgb, var(--tone) 5%, transparent), transparent 50%);
+}
+
+.page-tone .tone-text {
+  color: var(--tone);
+}
+
+.page-tone .tone-text-deep {
+  color: var(--tone-deep);
+}
+
+.page-tone .tone-dot {
+  background: var(--tone);
+}
+
+.page-tone .tone-dot-alt {
+  background: var(--tone-deep);
+}
+
+.page-tone .tone-panel {
+  border: 1px solid color-mix(in srgb, var(--tone) 18%, var(--line));
+  background: color-mix(in srgb, var(--tone-soft) 88%, white);
+}
+
+.page-tone .quote-card {
+  border-top: 3px solid var(--tone);
+}
+
+.page-tone .tone-cta {
+  background: var(--tone);
+}
+
+.page-tone .tone-cta:hover {
+  background: var(--tone-deep);
 }
 
 html[lang="km"] body {

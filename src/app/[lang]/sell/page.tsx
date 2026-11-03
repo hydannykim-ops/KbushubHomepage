@@ -30,7 +30,7 @@ export default async function SellPage({
   const role = session?.role === "dealer" || session?.role === "customer" ? session.role : null;
 
   const consult = (
-    <div id="consult" className="border border-line bg-white p-5">
+    <div id="consult" className="quote-card rounded-2xl border border-line bg-white p-5 shadow-[0_12px_36px_rgba(15,28,47,0.06)]">
       <h2 className="text-xl font-semibold">{text.navSell}</h2>
       <p className="mt-2 text-sm leading-6 text-muted">{text.consultBody}</p>
       <div className="mt-5">
@@ -63,50 +63,53 @@ export default async function SellPage({
   );
 
   return (
-    <div className="mx-auto grid max-w-xl gap-8 px-4 py-10">
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight">{text.sellTitle}</h1>
-        <p className="mt-3 text-sm leading-6 text-muted">
-          {role === "dealer" ? text.listingBody : role === "customer" ? text.consultBody : text.guestSellBody}
-        </p>
+    <div className="page-tone -mx-4 px-4 py-10" data-tone="sell">
+      <div className="mx-auto grid max-w-xl gap-8">
+        <div>
+          <p className="tone-text text-xs font-semibold tracking-[0.16em]">K-BUS HUB</p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink">{text.sellTitle}</h1>
+          <p className="mt-3 text-sm leading-6 text-muted">
+            {role === "dealer" ? text.listingBody : role === "customer" ? text.consultBody : text.guestSellBody}
+          </p>
+        </div>
+
+        {role === "dealer" ? (
+          <section className="quote-card rounded-2xl border border-line bg-white p-5 shadow-[0_12px_36px_rgba(15,28,47,0.06)]">
+            <h2 className="text-xl font-semibold">{text.listingTitle}</h2>
+            <p className="mt-2 text-sm leading-6 text-muted">{text.sellBody}</p>
+            <p className="mt-2 text-sm text-muted">{text.reviewNote}</p>
+            <div className="mt-5">
+              <DealerListingForm lang={lang} />
+            </div>
+          </section>
+        ) : null}
+
+        {role === "customer" ? consult : null}
+
+        {!role ? (
+          <section className="grid gap-3">
+            <Link href={hrefTo(lang, "/account/signup", ctx, { role: "dealer" })} className="tone-panel rounded-2xl p-5">
+              <h2 className="text-lg font-semibold">{text.roleDealer}</h2>
+              <p className="mt-2 text-sm leading-6 text-muted">{text.roleDealerBody}</p>
+            </Link>
+            <Link href={hrefTo(lang, "/account/signup", ctx, { role: "customer" })} className="rounded-2xl border border-line bg-white p-5">
+              <h2 className="text-lg font-semibold">{text.roleCustomer}</h2>
+              <p className="mt-2 text-sm leading-6 text-muted">{text.roleCustomerBody}</p>
+            </Link>
+            <div className="flex flex-wrap gap-3">
+              <Link href={hrefTo(lang, "/account/signup", ctx)} className="tone-cta px-4 py-3 text-sm font-semibold text-white">
+                {text.navSignup}
+              </Link>
+              <Link href={hrefTo(lang, "/account/login", ctx)} className="rounded-md border border-line bg-white px-4 py-3 text-sm font-semibold">
+                {text.navLogin}
+              </Link>
+              <Link href={hrefTo(lang, "/account/signup", ctx, { role: "customer" })} className="rounded-md border border-line bg-white px-4 py-3 text-sm font-semibold">
+                {text.navSell}
+              </Link>
+            </div>
+          </section>
+        ) : null}
       </div>
-
-      {role === "dealer" ? (
-        <section className="border border-line bg-white p-5">
-          <h2 className="text-xl font-semibold">{text.listingTitle}</h2>
-          <p className="mt-2 text-sm leading-6 text-muted">{text.sellBody}</p>
-          <p className="mt-2 text-sm text-muted">{text.reviewNote}</p>
-          <div className="mt-5">
-            <DealerListingForm lang={lang} />
-          </div>
-        </section>
-      ) : null}
-
-      {role === "customer" ? consult : null}
-
-      {!role ? (
-        <section className="grid gap-3">
-          <Link href={hrefTo(lang, "/account/signup", ctx, { role: "dealer" })} className="border border-line bg-white p-5">
-            <h2 className="text-lg font-semibold">{text.roleDealer}</h2>
-            <p className="mt-2 text-sm leading-6 text-muted">{text.roleDealerBody}</p>
-          </Link>
-          <Link href={hrefTo(lang, "/account/signup", ctx, { role: "customer" })} className="border border-line bg-white p-5">
-            <h2 className="text-lg font-semibold">{text.roleCustomer}</h2>
-            <p className="mt-2 text-sm leading-6 text-muted">{text.roleCustomerBody}</p>
-          </Link>
-          <div className="flex flex-wrap gap-3">
-            <Link href={hrefTo(lang, "/account/signup", ctx)} className="bg-primary px-4 py-3 text-sm font-semibold text-white">
-              {text.navSignup}
-            </Link>
-            <Link href={hrefTo(lang, "/account/login", ctx)} className="border border-line bg-white px-4 py-3 text-sm font-semibold">
-              {text.navLogin}
-            </Link>
-            <Link href={hrefTo(lang, "/account/signup", ctx, { role: "customer" })} className="border border-line bg-white px-4 py-3 text-sm font-semibold">
-              {text.navSell}
-            </Link>
-          </div>
-        </section>
-      ) : null}
     </div>
   );
 }
