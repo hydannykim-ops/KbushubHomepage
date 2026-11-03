@@ -9,21 +9,24 @@ export const runtime = "nodejs";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
-  const fallback = `/ko/account/inquiries/${encodeURIComponent(id)}`;
-  if (crossOrigin(request)) return resultResponse(request, { status: 403, body: { ok: false, code: "origin" } }, fallback);
+  const adminFallback = `/admin/inquiries/${encodeURIComponent(id)}`;
+  const memberFallback = `/ko/account/inquiries/${encodeURIComponent(id)}`;
+  if (crossOrigin(request)) return resultResponse(request, { status: 403, body: { ok: false, code: "origin" } }, memberFallback);
   if (!allowRequest(`inquiry-msg:${clientKey(request)}`)) {
-    return resultResponse(request, { status: 429, body: { ok: false, code: "rate_limited" } }, fallback);
+    return resultResponse(request, { status: 429, body: { ok: false, code: "rate_limited" } }, memberFallback);
   }
   const body = await readBody(request);
   const lang = langFromBody(body.lang);
-  const redirect = `/${lang}/account/inquiries/${encodeURIComponent(id)}`;
   const message = typeof body.message === "string" ? body.message.trim() : "";
-  if (message.length < 1 || message.length > 4000) {
-    return resultResponse(request, { status: 400, body: { ok: false, code: "invalid_message" } }, redirect);
-  }
 
   const admin = await requireAdmin();
   const session = admin ?? (await getSession());
+  const memberRedirect = `/${lang}/account/inquiries/${encodeURIComponent(id)}`;
+  const redirect = session?.role === "admin" ? adminFallback : memberRedirect;
+
+  if (message.length < 1 || message.length > 4000) {
+    return resultResponse(request, { status: 400, body: { ok: false, code: "invalid_message" } }, redirect);
+  }
   if (!session) {
     return resultResponse(request, { status: 401, body: { ok: false, code: "auth_required" } }, `/${lang}/account/login`);
   }
@@ -41,13 +44,17 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const repo = getRepository();
   const thread = await repo.openInquiryThread(id, viewer);
   if (!thread) {
-    return resultResponse(request, { status: 404, body: { ok: false, code: "not_found" } }, `/${lang}/account`);
+    return resultResponse(
+      request,
+      { status: 404, body: { ok: false, code: "not_found" } },
+      session.role === "admin" ? adminFallback : `/${lang}/account`,
+    );
   }
 
   try {
     await repo.addInquiryMessage(id, {
       authorRole: thread.viewerRole,
-      authorId: session.role === "admin" ? session.sub : session.sub,
+      authorId: session.sub,
       body: message,
     });
   } catch (error) {

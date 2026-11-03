@@ -282,6 +282,8 @@ test("demo inquiry save, referral isolation, and quote snapshot", async () => {
     tradeTerms: "demo terms",
     validUntil: "2026-12-31",
   });
+  const quotedInquiry = await store.getInquiry(inquiry.id);
+  assert.equal(quotedInquiry?.status, "quoted");
   const vehicle = await store.getAdminVehicle("veh-c-01");
   assert.ok(vehicle);
   vehicle.domesticPriceKrw = 1;

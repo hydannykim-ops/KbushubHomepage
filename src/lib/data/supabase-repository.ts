@@ -849,7 +849,7 @@ export function createSupabaseRepository() {
     },
     async createQuote(input: QuoteInput) {
       const service = createServiceClient();
-      const inquiry = await service.from("inquiries").select("id, stock_no").eq("id", input.inquiryId).maybeSingle();
+      const inquiry = await service.from("inquiries").select("id, stock_no, status").eq("id", input.inquiryId).maybeSingle();
       if (inquiry.error) fail(inquiry.error, "quote_inquiry");
       if (!inquiry.data) throw new StoreError("not_found");
       const existing = await service.from("quotes").select("version").eq("inquiry_id", input.inquiryId);
@@ -871,6 +871,14 @@ export function createSupabaseRepository() {
         .select("*")
         .single();
       if (inserted.error) fail(inserted.error, "quote_insert");
+      const currentStatus = String(inquiry.data.status ?? "");
+      if (currentStatus === "new" || currentStatus === "consulting") {
+        const advanced = await service
+          .from("inquiries")
+          .update({ status: "quoted", updated_at: new Date().toISOString() })
+          .eq("id", input.inquiryId);
+        if (advanced.error) fail(advanced.error, "quote_inquiry_status");
+      }
       return mapQuote(inserted.data as Record<string, unknown>);
     },
     async listAgents() {

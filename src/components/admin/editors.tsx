@@ -6,9 +6,25 @@ import { notifyAdminSaved } from "@/components/admin/saved-toast";
 import { MakerModelPicker } from "@/components/maker-model-picker";
 import type { AdminVehicle, Agent, Inquiry, InquiryStatus } from "@/lib/domain/types";
 import type { QuoteInput } from "@/lib/domain/validation";
-import { inquiryStatusLabel } from "@/lib/labels";
+import { fuelLabel, inquiryStatusLabel } from "@/lib/labels";
+import type { Fuel } from "@/lib/domain/types";
 
 const field = "rounded-md border border-line px-3 py-2 text-sm font-normal";
+
+const inquiryErrorLabel: Record<string, string> = {
+  reason_required: "담당을 바꿀 때는 변경 사유를 입력해 주세요.",
+  close_reason_required: "종료할 때는 종료 사유를 입력해 주세요.",
+  agent_not_approved: "승인된 에이전트만 담당으로 지정할 수 있습니다.",
+  not_found: "문의를 찾지 못했습니다.",
+  invalid: "입력값을 확인해 주세요.",
+  save_failed: "저장하지 못했습니다.",
+};
+
+function explainInquiryError(code?: string, errors?: Record<string, string>) {
+  if (errors && Object.keys(errors).length) return Object.values(errors).join(" ");
+  if (code && inquiryErrorLabel[code]) return inquiryErrorLabel[code];
+  return code || "저장하지 못했습니다.";
+}
 
 function inputValue(form: FormData, name: string) {
   const value = form.get(name);
@@ -153,8 +169,10 @@ export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
       </Label>
       <Label text="연료">
         <select name="fuel" defaultValue={v?.fuel ?? "unknown"} className={field}>
-          {["unknown", "diesel", "gasoline", "lpg", "cng", "electric", "hybrid"].map((item) => (
-            <option key={item}>{item}</option>
+          {(["unknown", "diesel", "gasoline", "lpg", "cng", "electric", "hybrid"] as Fuel[]).map((item) => (
+            <option key={item} value={item}>
+              {fuelLabel(item, "ko")}
+            </option>
           ))}
         </select>
       </Label>
@@ -250,7 +268,7 @@ export function InquiryEditor({ inquiry, agents }: { inquiry: Inquiry; agents: A
           });
           const data = (await response.json()) as { ok?: boolean; code?: string; errors?: Record<string, string> };
           if (!response.ok || !data.ok) {
-            setError(data.errors ? Object.values(data.errors).join(" ") : data.code || "save_failed");
+            setError(explainInquiryError(data.code, data.errors));
             return;
           }
           notifyAdminSaved("저장되었습니다.");
@@ -277,7 +295,7 @@ export function InquiryEditor({ inquiry, agents }: { inquiry: Inquiry; agents: A
         담당 에이전트
         <select name="assignedAgentId" defaultValue={inquiry.assignedAgentId ?? ""} className={field}>
           <option value="">없음</option>
-          {agents.filter((agent) => agent.status === "approved").map((agent) => (
+          {agents.map((agent) => (
             <option key={agent.id} value={agent.id}>
               {agent.name} ({agent.referralCode})
             </option>
@@ -289,8 +307,14 @@ export function InquiryEditor({ inquiry, agents }: { inquiry: Inquiry; agents: A
         <input name="assignmentReason" className={field} placeholder="담당을 바꿀 때만 입력" />
       </label>
       <label className="grid gap-1 text-sm">
-        고객 답변 (내 계정에 표시)
-        <textarea name="staffMemo" defaultValue={inquiry.staffMemo ?? ""} rows={4} className={field} placeholder="고객이 계정에서 볼 답변을 적습니다." />
+        고객 답변 메모 (계정 화면 · 채팅과 별개)
+        <textarea
+          name="staffMemo"
+          defaultValue={inquiry.staffMemo ?? ""}
+          rows={4}
+          className={field}
+          placeholder="고객 계정 문의 상세에 표시되는 메모입니다. 채팅 답장과 다릅니다."
+        />
       </label>
       <label className="grid gap-1 text-sm">
         종료 사유
@@ -348,8 +372,9 @@ export function QuoteForm({ inquiryId, stockNo }: { inquiryId: string; stockNo: 
             setError(data.errors ? Object.values(data.errors).join(" ") : data.code || "save_failed");
             return;
           }
-          notifyAdminSaved("견적을 저장했습니다.");
-          router.push("/admin/quotes?saved=1");
+          notifyAdminSaved("견적을 저장했습니다. 문의 상태를 견적 발송으로 갱신했습니다.");
+          router.push(`/admin/inquiries/${encodeURIComponent(inquiryId)}?saved=1`);
+          router.refresh();
         } catch {
           setError("저장하지 못했습니다.");
         } finally {
@@ -358,7 +383,10 @@ export function QuoteForm({ inquiryId, stockNo }: { inquiryId: string; stockNo: 
       }}
     >
       {error ? <p className="text-sm text-[#9f1239]">{error}</p> : null}
-      <p className="text-sm text-muted">매물 {stockNo ?? "-"}의 현재 가격과 별도로 저장됩니다. 미확인 항목이 있으면 총액을 확정하지 않습니다.</p>
+      <p className="text-sm text-muted">
+        매물 {stockNo ?? "-"}의 현재 가격과 별도로 저장됩니다. 미확인 항목이 있으면 총액을 확정하지 않습니다. 문의가 신규/상담 중이면 저장 후 견적
+        발송 상태로 바뀝니다.
+      </p>
       <label className="grid gap-1 text-sm">
         통화
         <select name="currency" className={field} defaultValue="USD">

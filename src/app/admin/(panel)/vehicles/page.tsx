@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { VehicleStatusButton } from "@/components/admin/vehicle-status-button";
 import { getRepository } from "@/lib/data/repository";
 import { statusLabel } from "@/lib/labels";
 import type { SaleStatus } from "@/lib/domain/types";
@@ -18,13 +19,30 @@ export default async function AdminVehiclesPage({
 }) {
   const sp = await searchParams;
   const filter = typeof sp.status === "string" ? sp.status : "";
+  const q = typeof sp.q === "string" ? sp.q.trim().toLowerCase() : "";
   const vehicles = (await getRepository().listAdminVehicles()).slice().sort((a, b) => {
     const rank = statusRank[a.status] - statusRank[b.status];
     if (rank !== 0) return rank;
     return b.updatedAt.localeCompare(a.updatedAt);
   });
-  const visible = filter ? vehicles.filter((vehicle) => vehicle.status === filter) : vehicles;
+  const visible = vehicles.filter((vehicle) => {
+    if (filter && vehicle.status !== filter) return false;
+    if (!q) return true;
+    const haystack = [vehicle.stockNo, vehicle.maker, vehicle.model, vehicle.sellerName, vehicle.sellerEmail, vehicle.sellerCompany]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(q);
+  });
   const reviewCount = vehicles.filter((vehicle) => vehicle.status === "review").length;
+
+  function hrefFor(status: string) {
+    const params = new URLSearchParams();
+    if (status) params.set("status", status);
+    if (q) params.set("q", q);
+    const qs = params.toString();
+    return qs ? `/admin/vehicles?${qs}` : "/admin/vehicles";
+  }
 
   return (
     <div className="grid gap-4">
@@ -37,19 +55,31 @@ export default async function AdminVehiclesPage({
             </p>
           ) : null}
         </div>
-        <Link href="/admin/vehicles/new" className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white">
-          매물 등록
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <form className="flex gap-2" action="/admin/vehicles" method="get">
+            {filter ? <input type="hidden" name="status" value={filter} /> : null}
+            <input
+              name="q"
+              defaultValue={q}
+              placeholder="매물번호·모델·판매자 검색"
+              className="min-w-[14rem] rounded-md border border-line px-3 py-2 text-sm"
+            />
+            <button className="rounded-md border border-line px-3 py-2 text-sm font-semibold">검색</button>
+          </form>
+          <Link href="/admin/vehicles/new" className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white">
+            매물 등록
+          </Link>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2 text-sm">
-        <Link href="/admin/vehicles" className={!filter ? "font-semibold text-ink" : "text-muted hover:text-ink"}>
+        <Link href={hrefFor("")} className={!filter ? "font-semibold text-ink" : "text-muted hover:text-ink"}>
           전체
         </Link>
         {(["review", "available", "reserved", "sold", "hidden"] as const).map((status) => (
           <Link
             key={status}
-            href={`/admin/vehicles?status=${status}`}
+            href={hrefFor(status)}
             className={filter === status ? "font-semibold text-ink" : "text-muted hover:text-ink"}
           >
             {statusLabel(status, "ko")}
@@ -69,6 +99,7 @@ export default async function AdminVehiclesPage({
               <th className="px-3 py-2">판매자</th>
               <th className="px-3 py-2">국내가</th>
               <th className="px-3 py-2">수출가</th>
+              <th className="px-3 py-2">빠른 처리</th>
             </tr>
           </thead>
           <tbody>
@@ -80,11 +111,7 @@ export default async function AdminVehiclesPage({
                     <td className="px-3 py-2">
                       {cover ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={`/api/media/photo/${cover.id}?w=320`}
-                          alt=""
-                          className="h-12 w-16 object-cover"
-                        />
+                        <img src={`/api/media/photo/${cover.id}?w=320`} alt="" className="h-12 w-16 object-cover" />
                       ) : (
                         <span className="inline-flex h-12 w-16 items-center justify-center bg-[#eef1f5] text-[10px] text-muted">없음</span>
                       )}
@@ -108,12 +135,35 @@ export default async function AdminVehiclesPage({
                     <td className="px-3 py-2">
                       {vehicle.exportPriceAmount != null ? `${vehicle.exportPriceAmount} ${vehicle.exportPriceCurrency}` : "가격 문의"}
                     </td>
+                    <td className="px-3 py-2">
+                      <div className="flex flex-wrap gap-1">
+                        {vehicle.status === "review" ? (
+                          <>
+                            <VehicleStatusButton
+                              vehicleId={vehicle.id}
+                              status="available"
+                              label="공개"
+                              className="rounded-md bg-primary px-2 py-1 text-xs font-semibold text-white disabled:opacity-60"
+                            />
+                            <VehicleStatusButton vehicleId={vehicle.id} status="hidden" label="비공개" />
+                          </>
+                        ) : null}
+                        {vehicle.status === "available" ? <VehicleStatusButton vehicleId={vehicle.id} status="reserved" label="예약" /> : null}
+                        {vehicle.status === "reserved" ? (
+                          <>
+                            <VehicleStatusButton vehicleId={vehicle.id} status="available" label="판매중" />
+                            <VehicleStatusButton vehicleId={vehicle.id} status="sold" label="완료" />
+                          </>
+                        ) : null}
+                        {vehicle.status === "hidden" ? <VehicleStatusButton vehicleId={vehicle.id} status="available" label="공개" /> : null}
+                      </div>
+                    </td>
                   </tr>
                 );
               })
             ) : (
               <tr>
-                <td colSpan={8} className="px-3 py-8 text-center text-muted">
+                <td colSpan={9} className="px-3 py-8 text-center text-muted">
                   표시할 매물이 없습니다.
                 </td>
               </tr>

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getRepository } from "@/lib/data/repository";
 import { formatMoney, quoteLineKeys, summarizeQuote } from "@/lib/domain/money";
 import type { QuoteLineKey } from "@/lib/domain/types";
@@ -14,16 +15,29 @@ export default async function QuotesPage() {
   const quotes = await getRepository().listQuotes();
   return (
     <div className="grid gap-4">
-      <h1 className="text-2xl font-bold">견적 관리</h1>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">견적 관리</h1>
+          <p className="mt-1 text-sm text-muted">견적은 문의 상세에서 작성합니다. 저장하면 문의 상태가 신규/상담 중일 때 견적 발송으로 바뀝니다.</p>
+        </div>
+        <Link href="/admin/inquiries" className="rounded-md border border-line px-3 py-2 text-sm font-semibold">
+          문의에서 작성
+        </Link>
+      </div>
       <div className="grid gap-3">
         {quotes.length ? (
           quotes.map((quote) => {
             const summary = summarizeQuote(quote);
             return (
               <article key={quote.id} className="rounded-lg border border-line bg-white p-4 text-sm">
-                <p className="font-semibold">
-                  {quote.vehicleStockNo ?? "-"} · v{quote.version} · {quote.createdAt.slice(0, 16)}
-                </p>
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <p className="font-semibold">
+                    {quote.vehicleStockNo ?? "-"} · v{quote.version} · {quote.createdAt.slice(0, 16).replace("T", " ")}
+                  </p>
+                  <Link href={`/admin/inquiries/${quote.inquiryId}`} className="text-primary">
+                    문의 열기
+                  </Link>
+                </div>
                 <p className="mt-2">
                   {summary.confirmed && summary.total != null
                     ? `총액 ${formatMoney(summary.total, summary.currency, "ko")}`

@@ -534,6 +534,10 @@ export function createDemoStore(dir: string) {
           demo: true,
         };
         state.quotes.push(quote);
+        if (inquiry.status === "new" || inquiry.status === "consulting") {
+          inquiry.status = "quoted";
+          inquiry.updatedAt = nowIso();
+        }
         return clone(quote);
       });
     },

@@ -48,12 +48,23 @@ export function AdminToastHost() {
 
   useEffect(() => {
     const saved = searchParams.get("saved");
-    if (!saved) return;
-    if (saved === "deleted") setMessage("삭제되었습니다.");
+    const error = searchParams.get("error");
+    if (!saved && !error) return;
+    if (error) {
+      const errorLabel: Record<string, string> = {
+        photo_required: "사진 파일을 선택해 주세요.",
+        invalid_image: "이미지 파일이 아니거나 지원하지 않는 형식입니다.",
+        too_many_photos: "사진은 최대 12장까지 올릴 수 있습니다.",
+        photo_update_failed: "사진 정보를 저장하지 못했습니다.",
+        photo_upload_failed: "사진을 올리지 못했습니다.",
+      };
+      setMessage(errorLabel[error] || "처리하지 못했습니다.");
+    } else if (saved === "deleted") setMessage("삭제되었습니다.");
     else if (saved === "uploaded") setMessage("사진을 올렸습니다.");
     else setMessage("저장되었습니다.");
     const next = new URLSearchParams(searchParams.toString());
     next.delete("saved");
+    next.delete("error");
     const query = next.toString();
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
   }, [searchParams, pathname, router]);
