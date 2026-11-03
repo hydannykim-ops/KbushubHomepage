@@ -161,7 +161,7 @@ export function Consent({ lang }: { lang: Lang }) {
 
 export function Honeypot({ lang }: { lang: Lang }) {
   return (
-    <label className="absolute left-[-9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
+    <label className="sr-only" aria-hidden="true">
       {copy(lang).honeypot}
       <input name="companyWebsite" tabIndex={-1} autoComplete="off" />
     </label>

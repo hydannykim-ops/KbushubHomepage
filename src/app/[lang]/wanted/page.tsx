@@ -10,9 +10,9 @@ import { loadSite } from "@/lib/site-load";
 
 function FormSection({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="grid gap-3 border-t border-line pt-4 first:border-t-0 first:pt-0">
-      <h2 className="text-sm font-semibold tracking-tight text-ink">{title}</h2>
-      {children}
+    <section className="grid gap-3">
+      <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">{title}</h2>
+      <div className="grid gap-3">{children}</div>
     </section>
   );
 }
@@ -35,7 +35,7 @@ export default async function WantedPage({
   const text = copy(lang);
 
   const form = (
-    <div className="rounded-2xl border border-line bg-white p-5 shadow-[0_12px_36px_rgba(15,28,47,0.06)]">
+    <div className="relative isolate overflow-hidden rounded-2xl border border-line bg-white p-5 shadow-[0_12px_36px_rgba(15,28,47,0.06)]">
       <SubmitBanner lang={lang} submitted={sp.get("submitted") ?? undefined} error={sp.get("error") ?? undefined} />
       <EnhanceForm action="/api/requests/wanted" lang={lang}>
         <input type="hidden" name="lang" value={lang} />
@@ -43,7 +43,7 @@ export default async function WantedPage({
           <MakerModelPicker lang={lang} allowEmpty emptyLabel={text.noPreference} defaultModel={sp.get("model") ?? ""} />
         </FormSection>
         <FormSection title={text.wantedSectionBudget}>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-2 gap-3">
             <Field label={text.budget} name="budgetAmount" type="number" />
             <label className="grid gap-1 text-sm font-medium">
               {text.currency}
@@ -57,28 +57,18 @@ export default async function WantedPage({
           <Field label={text.quantity} name="quantity" required defaultValue="1" />
         </FormSection>
         <FormSection title={text.wantedSectionSpec}>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Field label={text.wantedYearLabel} name="modelYear" inputMode="numeric" placeholder="2020" hint={text.wantedYearHint} />
-            <Field label={text.wantedSeatsLabel} name="seats" inputMode="numeric" placeholder="28" hint={text.wantedSeatsHint} />
-          </div>
+          <Field label={text.wantedYearLabel} name="modelYear" inputMode="numeric" placeholder="2020" hint={text.wantedYearHint} />
+          <Field label={text.wantedSeatsLabel} name="seats" inputMode="numeric" placeholder="28" hint={text.wantedSeatsHint} />
         </FormSection>
         <FormSection title={text.wantedSectionRoute}>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Field label={text.destinationCountry} name="destinationCountry" required />
-            <Field label={text.desiredTime} name="desiredTime" />
-          </div>
+          <Field label={text.destinationCountry} name="destinationCountry" required />
+          <Field label={text.desiredTime} name="desiredTime" />
         </FormSection>
         <FormSection title={text.wantedSectionContact}>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Field label={text.name} name="name" required />
-            <Field label={text.contact} name="phone" />
-            <div className="sm:col-span-2">
-              <Field label={text.email} name="email" type="email" />
-            </div>
-            <div className="sm:col-span-2">
-              <Field label={text.message} name="message" as="textarea" />
-            </div>
-          </div>
+          <Field label={text.name} name="name" required />
+          <Field label={text.contact} name="phone" />
+          <Field label={text.email} name="email" type="email" />
+          <Field label={text.message} name="message" as="textarea" />
         </FormSection>
         <Consent lang={lang} />
         <Honeypot lang={lang} />

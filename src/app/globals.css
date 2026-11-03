@@ -606,11 +606,31 @@ button {
   box-shadow: 0 10px 28px rgba(15, 28, 47, 0.04);
 }
 
+/* Inside sticky quote cards, avoid a second heavy panel that reads as stacked boxes. */
+#quote .picker-stage {
+  border-color: var(--line);
+  border-radius: 0.85rem;
+  box-shadow: none;
+}
+
+#quote .picker-locked {
+  box-shadow: none;
+}
+
+#quote [data-maker-model-picker] {
+  min-width: 0;
+}
+
 .picker-stage__list {
   display: grid;
   gap: 0.15rem;
   padding: 0.4rem;
   animation: picker-enter 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#quote .picker-stage__list {
+  /* Transform animations inside sticky/overflow parents create stacking glitches. */
+  animation: none;
 }
 
 .picker-option {
