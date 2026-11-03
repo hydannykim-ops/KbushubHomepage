@@ -138,10 +138,10 @@ export function Header({
 
   const links = [
     [text.navVehicles, href("/vehicles"), "/vehicles"],
-    [text.navWanted, href("/wanted"), "/wanted"],
     [text.navSell, href("/sell"), "/sell"],
     [text.navExportSell, href("/export-sell"), "/export-sell"],
     [text.navScrap, href("/scrap"), "/scrap"],
+    [text.navWanted, href("/wanted"), "/wanted"],
   ] as const;
 
   const accountLinks = signedIn
@@ -244,10 +244,10 @@ export function Footer({
         </div>
         <div className="grid content-start gap-2">
           <Link href={href("/vehicles")}>{text.navVehicles}</Link>
-          <Link href={href("/wanted")}>{text.navWanted}</Link>
           <Link href={href("/sell")}>{text.navSell}</Link>
           <Link href={href("/export-sell")}>{text.navExportSell}</Link>
           <Link href={href("/scrap")}>{text.navScrap}</Link>
+          <Link href={href("/wanted")}>{text.navWanted}</Link>
           <Link href={href("/privacy")}>{text.privacyTitle}</Link>
           <Link href={href("/account/login")}>{text.navLogin}</Link>
           <Link href={href("/agent/login")}>{text.navAgent}</Link>
