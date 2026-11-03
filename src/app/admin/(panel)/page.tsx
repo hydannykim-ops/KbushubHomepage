@@ -36,7 +36,7 @@ export default async function AdminHome() {
     { label: "비공개", value: count("hidden"), href: "/admin/vehicles?status=hidden" },
     { label: "검토 중 (딜러 등록)", value: count("review"), href: "/admin/vehicles?status=review" },
     { label: "문의 전체", value: inquiries.length, href: "/admin/inquiries" },
-    { label: "신규 문의", value: newInquiries.length ? inquiries.filter((item) => item.status === "new").length : 0, href: "/admin/inquiries?status=new" },
+    { label: "신규 문의", value: inquiries.filter((item) => item.status === "new").length, href: "/admin/inquiries?status=new" },
     { label: "승인 대기 에이전트", value: pendingAgents, href: "/admin/agents?status=pending" },
     { label: "신규 요청·매입", value: requests.filter((item) => item.status === "new").length, href: "/admin/requests?status=new" },
   ];

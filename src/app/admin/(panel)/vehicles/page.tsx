@@ -105,38 +105,66 @@ export default async function AdminVehiclesPage({
           <tbody>
             {visible.length ? (
               visible.map((vehicle) => {
-                const cover = vehicle.photos.find((photo) => photo.isCover && !photo.placeholder) ?? vehicle.photos.find((photo) => !photo.placeholder);
+                const href = `/admin/vehicles/${encodeURIComponent(vehicle.id)}`;
+                const cover =
+                  vehicle.photos.find((photo) => photo.isCover && !photo.placeholder) ??
+                  vehicle.photos.find((photo) => !photo.placeholder);
                 return (
-                  <tr key={vehicle.id} className="border-b border-line">
+                  <tr key={vehicle.id} className="border-b border-line hover:bg-[#f7f9fc]">
                     <td className="px-3 py-2">
-                      {cover ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={`/api/media/photo/${cover.id}?w=320`} alt="" className="h-12 w-16 object-cover" />
-                      ) : (
-                        <span className="inline-flex h-12 w-16 items-center justify-center bg-[#eef1f5] text-[10px] text-muted">없음</span>
-                      )}
+                      <Link href={href} className="block" aria-label={`${vehicle.stockNo} 상세`}>
+                        {cover ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={`/api/media/photo/${cover.id}?w=320`} alt="" className="h-12 w-16 object-cover" />
+                        ) : (
+                          <span className="inline-flex h-12 w-16 items-center justify-center bg-[#eef1f5] text-[10px] text-muted">없음</span>
+                        )}
+                      </Link>
                     </td>
                     <td className="px-3 py-2">
-                      <Link href={`/admin/vehicles/${vehicle.id}`} className="text-primary">
+                      <Link href={href} className="font-semibold text-primary">
                         {vehicle.stockNo}
                       </Link>
                     </td>
                     <td className="px-3 py-2">
-                      {vehicle.maker} {vehicle.model}
-                    </td>
-                    <td className="px-3 py-2">{statusLabel(vehicle.status, "ko")}</td>
-                    <td className="px-3 py-2">{vehicle.listingSource === "dealer" ? "딜러" : "회사"}</td>
-                    <td className="px-3 py-2">
-                      {vehicle.listingSource === "dealer"
-                        ? [vehicle.sellerName, vehicle.sellerEmail, vehicle.sellerCompany].filter(Boolean).join(" · ") || "-"
-                        : "-"}
-                    </td>
-                    <td className="px-3 py-2">{vehicle.domesticPriceKrw ?? "가격 문의"}</td>
-                    <td className="px-3 py-2">
-                      {vehicle.exportPriceAmount != null ? `${vehicle.exportPriceAmount} ${vehicle.exportPriceCurrency}` : "가격 문의"}
+                      <Link href={href} className="text-ink hover:text-primary">
+                        {vehicle.maker} {vehicle.model}
+                      </Link>
                     </td>
                     <td className="px-3 py-2">
-                      <div className="flex flex-wrap gap-1">
+                      <Link href={href} className="text-ink hover:text-primary">
+                        {statusLabel(vehicle.status, "ko")}
+                      </Link>
+                    </td>
+                    <td className="px-3 py-2">
+                      <Link href={href} className="text-ink hover:text-primary">
+                        {vehicle.listingSource === "dealer" ? "딜러" : "회사"}
+                      </Link>
+                    </td>
+                    <td className="px-3 py-2">
+                      <Link href={href} className="text-ink hover:text-primary">
+                        {vehicle.listingSource === "dealer"
+                          ? [vehicle.sellerName, vehicle.sellerEmail, vehicle.sellerCompany].filter(Boolean).join(" · ") || "-"
+                          : "-"}
+                      </Link>
+                    </td>
+                    <td className="px-3 py-2">
+                      <Link href={href} className="text-ink hover:text-primary">
+                        {vehicle.domesticPriceKrw ?? "가격 문의"}
+                      </Link>
+                    </td>
+                    <td className="px-3 py-2">
+                      <Link href={href} className="text-ink hover:text-primary">
+                        {vehicle.exportPriceAmount != null
+                          ? `${vehicle.exportPriceAmount} ${vehicle.exportPriceCurrency}`
+                          : "가격 문의"}
+                      </Link>
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="flex flex-wrap items-center gap-1">
+                        <Link href={href} className="rounded-md border border-line px-2 py-1 text-xs font-semibold text-ink hover:bg-[#f3f5f8]">
+                          상세
+                        </Link>
                         {vehicle.status === "review" ? (
                           <>
                             <VehicleStatusButton
@@ -148,14 +176,33 @@ export default async function AdminVehiclesPage({
                             <VehicleStatusButton vehicleId={vehicle.id} status="hidden" label="비공개" />
                           </>
                         ) : null}
-                        {vehicle.status === "available" ? <VehicleStatusButton vehicleId={vehicle.id} status="reserved" label="예약" /> : null}
+                        {vehicle.status === "available" ? (
+                          <>
+                            <VehicleStatusButton vehicleId={vehicle.id} status="reserved" label="예약" />
+                            <VehicleStatusButton vehicleId={vehicle.id} status="sold" label="완료" />
+                            <VehicleStatusButton vehicleId={vehicle.id} status="hidden" label="비공개" />
+                          </>
+                        ) : null}
                         {vehicle.status === "reserved" ? (
                           <>
                             <VehicleStatusButton vehicleId={vehicle.id} status="available" label="판매중" />
                             <VehicleStatusButton vehicleId={vehicle.id} status="sold" label="완료" />
                           </>
                         ) : null}
-                        {vehicle.status === "hidden" ? <VehicleStatusButton vehicleId={vehicle.id} status="available" label="공개" /> : null}
+                        {vehicle.status === "sold" ? (
+                          <>
+                            <VehicleStatusButton vehicleId={vehicle.id} status="available" label="재판매" />
+                            <VehicleStatusButton vehicleId={vehicle.id} status="hidden" label="비공개" />
+                          </>
+                        ) : null}
+                        {vehicle.status === "hidden" ? (
+                          <VehicleStatusButton
+                            vehicleId={vehicle.id}
+                            status="available"
+                            label="공개"
+                            className="rounded-md bg-primary px-2 py-1 text-xs font-semibold text-white disabled:opacity-60"
+                          />
+                        ) : null}
                       </div>
                     </td>
                   </tr>

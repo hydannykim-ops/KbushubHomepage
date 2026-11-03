@@ -218,7 +218,10 @@ export function createDemoStore(dir: string) {
       return clone((await read()).vehicles);
     },
     async getAdminVehicle(id: string): Promise<AdminVehicle | null> {
-      const found = (await read()).vehicles.find((vehicle) => vehicle.id === id || vehicle.stockNo === id);
+      const needle = id.trim().toLowerCase();
+      const found = (await read()).vehicles.find(
+        (vehicle) => vehicle.id === id || vehicle.stockNo === id || vehicle.stockNo.toLowerCase() === needle,
+      );
       return found ? clone(found) : null;
     },
     async createVehicle(input: VehicleInput): Promise<AdminVehicle> {

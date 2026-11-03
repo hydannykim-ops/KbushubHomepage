@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { VehicleForm } from "@/components/admin/editors";
 import { getRepository } from "@/lib/data/repository";
@@ -6,7 +7,7 @@ import { photoCategoryList, photoLabel } from "@/lib/labels";
 
 export default async function EditVehiclePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const vehicle = await getRepository().getAdminVehicle(id);
+  const vehicle = await getRepository().getAdminVehicle(decodeURIComponent(id));
   if (!vehicle) notFound();
   const profit = internalProfit(vehicle.internal);
   const realPhotos = vehicle.photos.filter((photo) => !photo.placeholder);
@@ -14,7 +15,12 @@ export default async function EditVehiclePage({ params }: { params: Promise<{ id
 
   return (
     <div className="grid gap-6">
-      <h1 className="text-2xl font-bold">{vehicle.stockNo}</h1>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-2xl font-bold">{vehicle.stockNo}</h1>
+        <Link href="/admin/vehicles" className="text-sm font-semibold text-muted hover:text-ink">
+          목록으로
+        </Link>
+      </div>
       {vehicle.listingSource === "dealer" ? (
         <p className="text-sm">
           판매 사업자 등록 · {vehicle.sellerCompany ?? "상호 없음"} · {vehicle.sellerName ?? "이름 없음"} · {vehicle.sellerEmail ?? "이메일 없음"}

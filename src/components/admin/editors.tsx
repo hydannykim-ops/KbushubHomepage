@@ -139,7 +139,14 @@ export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
           <option value="large">대형</option>
         </select>
       </Label>
-      <MakerModelPicker lang="ko" required defaultMaker={v?.maker ?? ""} defaultModel={v?.model ?? ""} />
+      <MakerModelPicker
+        key={`${v?.id ?? "new"}-${v?.vehicleClass ?? "county"}-${v?.maker ?? ""}-${v?.model ?? ""}`}
+        lang="ko"
+        required
+        vehicleClass={v?.vehicleClass ?? ""}
+        defaultMaker={v?.maker ?? ""}
+        defaultModel={v?.model ?? ""}
+      />
       <Label text="세부 모델"><input name="trim" defaultValue={v?.trim ?? ""} className={field} /></Label>
       <Label text="연식 (2020 또는 2020/03)">
         <input

@@ -407,11 +407,15 @@ function mapRequest(row: Record<string, unknown>, files: VehicleRequest["files"]
   };
 }
 
-async function loadAdmin(id: string): Promise<AdminVehicle | null> {
+async function loadAdmin(idOrStock: string): Promise<AdminVehicle | null> {
   const service = createServiceClient();
-  const result = await service.from("vehicles").select(`${adminColumns}, vehicle_internal(*)`).eq("id", id).maybeSingle();
-  if (result.error) fail(result.error, "admin_vehicle");
-  return result.data ? mapVehicle(result.data as Record<string, unknown>, true) : null;
+  const byId = await service.from("vehicles").select(`${adminColumns}, vehicle_internal(*)`).eq("id", idOrStock).maybeSingle();
+  if (byId.error) fail(byId.error, "admin_vehicle");
+  if (byId.data) return mapVehicle(byId.data as Record<string, unknown>, true);
+  // Allow opening from inquiry/stock links that pass stock_no instead of UUID.
+  const byStock = await service.from("vehicles").select(`${adminColumns}, vehicle_internal(*)`).eq("stock_no", idOrStock).maybeSingle();
+  if (byStock.error) fail(byStock.error, "admin_vehicle_stock");
+  return byStock.data ? mapVehicle(byStock.data as Record<string, unknown>, true) : null;
 }
 
 export function createSupabaseRepository() {
