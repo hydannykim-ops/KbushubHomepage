@@ -50,7 +50,7 @@ npm run build
 
 ## 데이터베이스
 
-`supabase/migrations/0001_init.sql` 다음에 `0002_members_and_review.sql` 을 적용합니다. 데모 자료는 운영 DB에 넣지 않습니다.
+`supabase/migrations/` 아래 SQL을 번호 순서대로 적용합니다. `0004_inquiry_messages.sql` 이 없으면 문의는 목록에만 보이고 상세·채팅이 깨질 수 있습니다. 데모 자료는 운영 DB에 넣지 않습니다.
 
 공개 읽기는 판매 중·예약·판매 완료 매물, 그 사진, 사이트 설정만 허용합니다. 검토 중 매물과 회원 정보는 공개 조회에서 빠집니다. 내부 원가, 문의, 견적, 요청, 역할, `member_profiles` 는 `anon` 과 `authenticated` 에서 권한이 제거되어 있고, 서버의 service role 로만 다룹니다. 사용자는 자신의 관리자 권한을 만들 수 없습니다. 차량의 `owner_id`, 판매자 이름·이메일·상호, 등록 출처 열도 공개 역할에서 select 가 제거되어 있습니다.
 

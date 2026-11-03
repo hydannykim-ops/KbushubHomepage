@@ -294,10 +294,24 @@ function mapInquiryMessage(row: Record<string, unknown>): InquiryMessage {
   };
 }
 
+function isMissingRelation(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const code = "code" in error ? String((error as { code?: unknown }).code ?? "") : "";
+  const message = "message" in error ? String((error as { message?: unknown }).message ?? "") : "";
+  return code === "PGRST205" || code === "42P01" || /could not find the table|does not exist/i.test(message);
+}
+
 async function fetchInquiryMessages(inquiryId: string): Promise<InquiryMessage[]> {
   const service = createServiceClient();
   const result = await service.from("inquiry_messages").select("*").eq("inquiry_id", inquiryId).order("created_at");
-  if (result.error) fail(result.error, "inquiry_messages");
+  if (result.error) {
+    // Detail/list views must still open when the chat migration is not applied yet.
+    if (isMissingRelation(result.error)) {
+      console.error(JSON.stringify({ context: "inquiry_messages", code: "missing_relation", message: sanitizeErrorDetail(result.error) }));
+      return [];
+    }
+    fail(result.error, "inquiry_messages");
+  }
   return (result.data ?? []).map((row) => mapInquiryMessage(row as Record<string, unknown>));
 }
 
@@ -669,7 +683,17 @@ export function createSupabaseRepository() {
         body: input.message,
         created_at: consentAt,
       });
-      if (firstMessage.error) fail(firstMessage.error, "inquiry_message_insert");
+      if (firstMessage.error) {
+        // Keep the inquiry row even if chat seeding fails (e.g. migration lag).
+        console.error(
+          JSON.stringify({
+            context: "inquiry_message_insert",
+            code: isMissingRelation(firstMessage.error) ? "missing_relation" : "upstream",
+            message: sanitizeErrorDetail(firstMessage.error),
+            inquiryId: inserted.data.id,
+          }),
+        );
+      }
       if (assigned) {
         await service.from("inquiry_agent_history").insert({
           inquiry_id: inserted.data.id,

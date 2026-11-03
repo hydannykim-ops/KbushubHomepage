@@ -500,6 +500,11 @@ test("migration locks down internal tables and admin role grants", async () => {
   assert.match(sql, /agent_my_referrals/);
   assert.match(messagesSql, /create table if not exists public\.inquiry_messages/i);
   assert.match(messagesSql, /revoke all on table public\.inquiry_messages from anon, authenticated/i);
+  const supabaseRepo = await readFile(path.join(process.cwd(), "src/lib/data/supabase-repository.ts"), "utf8");
+  assert.match(supabaseRepo, /isMissingRelation/);
+  assert.match(supabaseRepo, /Keep the inquiry row even if chat seeding fails/);
+  const adminInquiryPage = await readFile(path.join(process.cwd(), "src/app/admin/(panel)/inquiries/[id]/page.tsx"), "utf8");
+  assert.match(adminInquiryPage, /Promise\.allSettled/);
   assert.match(scrapSql, /check \(type in \('wanted', 'sell', 'scrap'\)\)/i);
   assert.match(scrapSql, /add column if not exists plate_no text/i);
   assert.match(scrapSql, /revoke select \(plate_no\) on table public\.vehicle_requests from anon, authenticated/i);

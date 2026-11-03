@@ -10,12 +10,16 @@ export default async function InquiryDetailPage({ params }: { params: Promise<{ 
   const repo = getRepository();
   const inquiry = await repo.getInquiry(id);
   if (!inquiry) notFound();
-  const [agents, history, thread, quotes] = await Promise.all([
+  const [agentsResult, historyResult, threadResult, quotesResult] = await Promise.allSettled([
     repo.listAgents(),
     repo.historyFor(id),
     repo.openInquiryThread(id, { memberId: null, email: null, admin: true }),
     repo.listQuotes(),
   ]);
+  const agents = agentsResult.status === "fulfilled" ? agentsResult.value : [];
+  const history = historyResult.status === "fulfilled" ? historyResult.value : [];
+  const thread = threadResult.status === "fulfilled" ? threadResult.value : null;
+  const quotes = quotesResult.status === "fulfilled" ? quotesResult.value : [];
   const relatedQuotes = quotes.filter((quote) => quote.inquiryId === inquiry.id);
   const approvedAgents = agents.filter((agent) => agent.status === "approved");
 
