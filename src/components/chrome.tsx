@@ -136,16 +136,22 @@ export function Header({
     return `${parts.join("/") || `/${next}`}${qs ? `?${qs}` : ""}`;
   }
 
-  const links = (
-    [
-      [text.navVehicles, href("/vehicles"), "/vehicles"],
-      // Domestic purchase intake only — Korean site.
-      ...(lang === "ko" ? ([[text.navSell, href("/sell"), "/sell"]] as const) : []),
-      [text.navExportSell, href("/export-sell"), "/export-sell"],
-      [text.navScrap, href("/scrap"), "/scrap"],
-      [text.navWanted, href("/wanted"), "/wanted"],
-    ] as const
-  );
+  // Overseas visitors focus on inventory + vehicle requests.
+  // Domestic sell / export-my-bus stay Korean-only.
+  const links =
+    lang === "ko"
+      ? ([
+          [text.navVehicles, href("/vehicles"), "/vehicles"],
+          [text.navSell, href("/sell"), "/sell"],
+          [text.navExportSell, href("/export-sell"), "/export-sell"],
+          [text.navScrap, href("/scrap"), "/scrap"],
+          [text.navWanted, href("/wanted"), "/wanted"],
+        ] as const)
+      : ([
+          [text.navVehicles, href("/vehicles"), "/vehicles"],
+          [text.navWanted, href("/wanted"), "/wanted"],
+          [text.navScrap, href("/scrap"), "/scrap"],
+        ] as const);
 
   const accountLinks = signedIn
     ? ([[text.navAccount, href("/account")]] as const)
@@ -247,10 +253,19 @@ export function Footer({
         </div>
         <div className="grid content-start gap-2">
           <Link href={href("/vehicles")}>{text.navVehicles}</Link>
-          {lang === "ko" ? <Link href={href("/sell")}>{text.navSell}</Link> : null}
-          <Link href={href("/export-sell")}>{text.navExportSell}</Link>
-          <Link href={href("/scrap")}>{text.navScrap}</Link>
-          <Link href={href("/wanted")}>{text.navWanted}</Link>
+          {lang === "ko" ? (
+            <>
+              <Link href={href("/sell")}>{text.navSell}</Link>
+              <Link href={href("/export-sell")}>{text.navExportSell}</Link>
+              <Link href={href("/scrap")}>{text.navScrap}</Link>
+              <Link href={href("/wanted")}>{text.navWanted}</Link>
+            </>
+          ) : (
+            <>
+              <Link href={href("/wanted")}>{text.navWanted}</Link>
+              <Link href={href("/scrap")}>{text.navScrap}</Link>
+            </>
+          )}
           <Link href={href("/privacy")}>{text.privacyTitle}</Link>
           <Link href={href("/account/login")}>{text.navLogin}</Link>
           <Link href={href("/agent/login")}>{text.navAgent}</Link>

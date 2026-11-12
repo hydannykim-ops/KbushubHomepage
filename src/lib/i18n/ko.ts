@@ -116,6 +116,7 @@ export const ko: Messages = {
   "sellPhotoOptionalTitle": "사진 등록 (선택)",
   "sellPhotoOptionalBody": "있으면 칸을 눌러 올려 주세요. 없어도 접수되며, 담당자 확인 후 연락드립니다.",
   "sellDomesticOnly": "내 차 팔기는 국내(한국어)에서만 이용할 수 있습니다. 한국에서 운행 중인 버스 매입만 진행합니다.",
+  "exportSellDomesticOnly": "내 차 수출하기는 국내(한국어)에서만 이용할 수 있습니다. 해외 고객은 매물 보기와 차량 요청을 이용해 주세요.",
   "dealerSignupPaused": "판매 사업자 가입·직접 매물 등록은 준비 중입니다. 지금은 내 차 팔기 상담으로 문의를 남겨 주세요.",
   "partnerTitle": "에이전트 파트너",
   "partnerBody": "해외 에이전트는 가입 신청 후 관리자 승인을 받으면 매물별 공유 링크를 만들고, 본인이 소개한 문의의 진행 상태만 볼 수 있습니다.",

@@ -116,6 +116,7 @@ export const en: Messages = {
   "sellPhotoOptionalTitle": "Photos (optional)",
   "sellPhotoOptionalBody": "Tap a slot to upload if you have photos. You can submit without them; staff will follow up.",
   "sellDomesticOnly": "Sell-my-bus is available in Korean only. We currently purchase buses operating in Korea.",
+  "exportSellDomesticOnly": "Export-my-bus is available in Korean only. Overseas buyers should use Browse stock and Request a vehicle.",
   "dealerSignupPaused": "Dealer signup and self-listing are paused. Please use Sell my bus to leave a consult.",
   "partnerTitle": "Agent partners",
   "partnerBody": "An overseas agent applies, waits for approval, then receives a share link for each vehicle and can see only the status of inquiries they introduced.",

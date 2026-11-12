@@ -26,6 +26,9 @@ export async function POST(request: Request) {
   const body: Record<string, unknown> = {};
   for (const [key, value] of form.entries()) if (typeof value === "string") body[key] = value;
   const lang = langFromBody(body.lang);
+  if (lang !== "ko") {
+    return resultResponse(request, { status: 403, body: { ok: false, code: "forbidden" } }, `/${lang}/export-sell`);
+  }
   const parsed = parseSell(body, lang);
   if (!parsed.ok) {
     return resultResponse(request, { status: 400, body: { ok: false, code: "invalid", errors: parsed.errors } }, `/${lang}/export-sell`);

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DataProblem } from "@/components/catalog";
 import { Consent, EnhanceForm, Field, Honeypot, SubmitBanner } from "@/components/forms";
@@ -5,7 +6,7 @@ import { MakerModelPicker } from "@/components/maker-model-picker";
 import { PhotoSlotUploader } from "@/components/photo-slot-uploader";
 import { StickyQuoteLayout } from "@/components/sticky-quote-layout";
 import { copy } from "@/lib/i18n";
-import { parseLang, requestContext } from "@/lib/request-context";
+import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
 import { loadSite } from "@/lib/site-load";
 
 export default async function ExportSellPage({
@@ -20,10 +21,30 @@ export default async function ExportSellPage({
   const raw = await searchParams;
   const sp = new URLSearchParams();
   for (const [key, value] of Object.entries(raw)) if (typeof value === "string") sp.set(key, value);
-  await requestContext(lang, sp);
+  const ctx = await requestContext(lang, sp);
   const site = await loadSite();
   if (!site.ok) return <DataProblem lang={lang} code={site.code} />;
   const text = copy(lang);
+
+  if (lang !== "ko") {
+    return (
+      <div className="page-tone -mx-4 px-4 py-10" data-tone="export">
+        <div className="mx-auto max-w-xl">
+          <p className="tone-text text-xs font-semibold tracking-[0.16em]">K-BUS HUB</p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink">{text.exportSellTitle}</h1>
+          <p className="mt-3 text-sm leading-6 text-muted">{text.exportSellDomesticOnly}</p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href={hrefTo(lang, "/vehicles", ctx)} className="tone-cta inline-flex px-4 py-3 text-sm font-semibold text-white">
+              {text.browseInventory}
+            </Link>
+            <Link href={hrefTo(lang, "/wanted", ctx)} className="inline-flex rounded-md border border-line bg-white px-4 py-3 text-sm font-semibold">
+              {text.navWanted}
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const form = (
     <div className="quote-card rounded-2xl border border-line bg-white p-5 shadow-[0_12px_36px_rgba(15,28,47,0.06)]">

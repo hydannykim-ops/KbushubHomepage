@@ -99,6 +99,7 @@ export type Messages = {
   sellPhotoOptionalTitle: string;
   sellPhotoOptionalBody: string;
   sellDomesticOnly: string;
+  exportSellDomesticOnly: string;
   dealerSignupPaused: string;
   partnerTitle: string;
   partnerBody: string;

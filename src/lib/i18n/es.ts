@@ -116,6 +116,7 @@ export const es: Messages = {
   "sellPhotoOptionalTitle": "Fotos (opcional)",
   "sellPhotoOptionalBody": "Toque un espacio para subir fotos si las tiene. Puede enviar sin ellas.",
   "sellDomesticOnly": "Vender mi bus solo está disponible en coreano. Compramos buses en operación en Corea.",
+  "exportSellDomesticOnly": "Exportar mi bus solo está disponible en coreano. Compradores del exterior: use Ver stock y Solicitar vehículo.",
   "dealerSignupPaused": "El registro de concesionario está en pausa. Use Vender mi bus para dejar una consulta.",
   "partnerTitle": "Socios agentes",
   "partnerBody": "Un agente en el exterior solicita el alta, espera la aprobación y luego recibe un enlace por cada vehículo. Solo ve el estado de las consultas que presentó.",

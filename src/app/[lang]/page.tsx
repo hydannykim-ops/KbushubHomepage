@@ -59,26 +59,37 @@ export default async function HomePage({
             tone: "sell" as const,
             primary: { href: hrefTo(lang, "/sell", ctx), label: text.navSell },
           },
+          {
+            id: "export-sell",
+            image: "/demo/hero-export.jpg",
+            imageAlt: text.navExportSell,
+            title: text.exportSellTitle,
+            body: text.exportSellBody,
+            tone: "export" as const,
+            primary: { href: hrefTo(lang, "/export-sell", ctx), label: text.navExportSell },
+          },
+          {
+            id: "scrap",
+            image: "/demo/hero-scrap.jpg",
+            imageAlt: text.navScrap,
+            title: text.scrapTitle,
+            body: text.scrapBody,
+            tone: "scrap" as const,
+            primary: { href: hrefTo(lang, "/scrap", ctx), label: text.navScrap },
+          },
         ]
-      : []),
-    {
-      id: "export-sell",
-      image: "/demo/hero-export.jpg",
-      imageAlt: text.navExportSell,
-      title: text.exportSellTitle,
-      body: text.exportSellBody,
-      tone: "export" as const,
-      primary: { href: hrefTo(lang, "/export-sell", ctx), label: text.navExportSell },
-    },
-    {
-      id: "scrap",
-      image: "/demo/hero-scrap.jpg",
-      imageAlt: text.navScrap,
-      title: text.scrapTitle,
-      body: text.scrapBody,
-      tone: "scrap" as const,
-      primary: { href: hrefTo(lang, "/scrap", ctx), label: text.navScrap },
-    },
+      : [
+          {
+            id: "wanted",
+            image: "/demo/hero-hub.jpg",
+            imageAlt: text.wantedTitle,
+            title: text.wantedTitle,
+            body: text.wantedBody,
+            tone: "hub" as const,
+            primary: { href: hrefTo(lang, "/wanted", ctx), label: text.navWanted },
+            secondary: { href: hrefTo(lang, "/vehicles", ctx), label: text.browseInventory },
+          },
+        ]),
   ];
 
   return (
@@ -135,31 +146,31 @@ export default async function HomePage({
 
       <section className={`grid gap-4 ${lang === "ko" ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
         <Link
-          href={hrefTo(lang, "/wanted", ctx)}
+          href={hrefTo(lang, "/vehicles", ctx)}
           className="rounded-2xl border border-primary/15 bg-primary-soft/60 p-6 shadow-[0_8px_24px_rgba(15,28,47,0.04)] transition hover:-translate-y-0.5 hover:border-primary/35 hover:bg-primary-soft hover:shadow-[0_16px_36px_rgba(15,28,47,0.08)]"
         >
-          <p className="text-xs font-semibold tracking-[0.14em] text-primary">{text.search}</p>
+          <p className="text-xs font-semibold tracking-[0.14em] text-primary">{text.browseInventory}</p>
+          <h2 className="mt-2 text-xl font-semibold text-ink">{text.navVehicles}</h2>
+          <p className="mt-2 text-sm leading-6 text-muted">{text.heroBody}</p>
+        </Link>
+        <Link
+          href={hrefTo(lang, "/wanted", ctx)}
+          className="rounded-2xl border border-accent-warm/20 bg-accent-warm-soft/70 p-6 shadow-[0_8px_24px_rgba(15,28,47,0.04)] transition hover:-translate-y-0.5 hover:border-accent-warm/40 hover:bg-accent-warm-soft hover:shadow-[0_16px_36px_rgba(15,28,47,0.08)]"
+        >
+          <p className="text-xs font-semibold tracking-[0.14em] text-accent-warm">{text.search}</p>
           <h2 className="mt-2 text-xl font-semibold text-ink">{text.wantedTitle}</h2>
           <p className="mt-2 text-sm leading-6 text-muted">{text.wantedBody}</p>
         </Link>
         {lang === "ko" ? (
           <Link
             href={hrefTo(lang, "/sell", ctx)}
-            className="rounded-2xl border border-accent-warm/20 bg-accent-warm-soft/70 p-6 shadow-[0_8px_24px_rgba(15,28,47,0.04)] transition hover:-translate-y-0.5 hover:border-accent-warm/40 hover:bg-accent-warm-soft hover:shadow-[0_16px_36px_rgba(15,28,47,0.08)]"
+            className="rounded-2xl border border-line bg-white p-6 shadow-[0_8px_24px_rgba(15,28,47,0.04)] transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_16px_36px_rgba(15,28,47,0.08)]"
           >
-            <p className="text-xs font-semibold tracking-[0.14em] text-accent-warm">{text.navSell}</p>
+            <p className="text-xs font-semibold tracking-[0.14em] text-primary">{text.navSell}</p>
             <h2 className="mt-2 text-xl font-semibold text-ink">{text.sellTitle}</h2>
             <p className="mt-2 text-sm leading-6 text-muted">{text.sellBody}</p>
           </Link>
         ) : null}
-        <Link
-          href={hrefTo(lang, "/export-sell", ctx)}
-          className="rounded-2xl border border-line bg-white p-6 shadow-[0_8px_24px_rgba(15,28,47,0.04)] transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_16px_36px_rgba(15,28,47,0.08)]"
-        >
-          <p className="text-xs font-semibold tracking-[0.14em] text-primary">{text.modeExport}</p>
-          <h2 className="mt-2 text-xl font-semibold text-ink">{text.navExportSell}</h2>
-          <p className="mt-2 text-sm leading-6 text-muted">{text.exportSellBody}</p>
-        </Link>
       </section>
 
       <section className="grid gap-6 rounded-2xl border border-line bg-white p-6 shadow-[0_8px_24px_rgba(15,28,47,0.04)] md:grid-cols-[0.8fr_1.2fr]">
