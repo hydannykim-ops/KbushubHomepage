@@ -229,7 +229,7 @@ export const ko: Messages = {
   "share": "공유 링크",
   "loginFailed": "로그인할 수 없습니다. 승인된 계정인지 확인해 주세요.",
   "logout": "로그아웃",
-  "footerNote": "회사 매물과 판매 사업자 매물을 소개합니다.",
+  "footerNote": "회사가 확인한 현대 E-카운티와 중고버스 매물을 소개합니다.",
   "menu": "메뉴",
   "quantity": "필요 대수",
   "budget": "예산",

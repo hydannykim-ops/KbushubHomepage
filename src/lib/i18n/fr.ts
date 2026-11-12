@@ -229,7 +229,7 @@ export const fr: Messages = {
   "share": "Lien de partage",
   "loginFailed": "Échec de la connexion. Vérifiez que le compte est approuvé.",
   "logout": "Déconnexion",
-  "footerNote": "Le stock de l'entreprise et les annonces concessionnaires sont affichés après validation.",
+  "footerNote": "K-BUS HUB présente le stock vérifié Hyundai E-County et bus d'occasion.",
   "menu": "Menu",
   "quantity": "Quantité",
   "budget": "Budget",

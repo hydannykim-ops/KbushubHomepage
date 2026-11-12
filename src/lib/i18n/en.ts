@@ -229,7 +229,7 @@ export const en: Messages = {
   "share": "Share link",
   "loginFailed": "Sign-in failed. Check that the account is approved.",
   "logout": "Log out",
-  "footerNote": "Company stock and dealer listings appear in public inventory.",
+  "footerNote": "K-BUS HUB presents company-verified Hyundai E-County and used bus stock.",
   "menu": "Menu",
   "quantity": "Quantity",
   "budget": "Budget",

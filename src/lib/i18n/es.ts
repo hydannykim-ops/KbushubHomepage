@@ -229,7 +229,7 @@ export const es: Messages = {
   "share": "Enlace para compartir",
   "loginFailed": "Error al iniciar sesión. Compruebe que la cuenta esté aprobada.",
   "logout": "Cerrar sesión",
-  "footerNote": "Se muestran el stock de la empresa y los anuncios de concesionarios tras la revisión.",
+  "footerNote": "K-BUS HUB presenta stock verificado de Hyundai E-County y buses usados.",
   "menu": "Menú",
   "quantity": "Cantidad",
   "budget": "Presupuesto",
