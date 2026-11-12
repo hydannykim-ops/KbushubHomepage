@@ -37,7 +37,7 @@ const intents: Intent[] = [
   },
   {
     id: "county",
-    keywords: ["카운티", "county", "현대 카운티", "hyundai county"],
+    keywords: ["카운티", "e-카운티", "county", "현대 카운티", "현대 e-카운티", "hyundai county", "hyundai e-county"],
   },
   {
     id: "export",
@@ -84,7 +84,7 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       suggestions: ["카운티", "견적 문의", "가격 문의"],
     },
     county: {
-      text: "현대 카운티는 차급에서 카운티를 고른 뒤 제조사·모델로 좁히면 됩니다.",
+      text: "현대 E-카운티는 차급에서 카운티를 고른 뒤 제조사·모델로 좁히면 됩니다.",
       links: [{ href: "/vehicles?class=county", label: "카운티 매물" }],
       suggestions: ["매물 보기", "원하는 차량 요청"],
     },
@@ -158,7 +158,7 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       suggestions: ["County", "Ask for a quote", "Price"],
     },
     county: {
-      text: "For Hyundai County, choose the County class first, then maker and model.",
+      text: "For Hyundai E-County, choose the County class first, then maker and model.",
       links: [{ href: "/vehicles?class=county", label: "County stock" }],
       suggestions: ["Browse inventory", "Request a vehicle"],
     },

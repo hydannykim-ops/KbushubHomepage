@@ -36,52 +36,54 @@ export default async function HomePage({
     [text.classLarge, text.classLargeBody, text.mediaLarge, hrefTo(lang, "/vehicles", ctx, { class: "large" })],
   ] as const;
 
-  return (
-    <div className="mx-auto grid max-w-6xl gap-16 px-4 py-10 md:py-14">
-      <HeroBanner
-        prevLabel={text.heroPrev}
-        nextLabel={text.heroNext}
-        slides={[
-          {
-            id: "hub",
-            image: "/demo/hero-hub.jpg",
-            imageAlt: text.mediaHero,
-            brand: "K-BUS HUB",
-            title: text.heroTitle,
-            body: text.heroBody,
-            tone: "hub",
-            primary: { href: hrefTo(lang, "/vehicles", ctx), label: text.browseInventory },
-            secondary: { href: hrefTo(lang, "/vehicles", ctx, { class: "county" }), label: text.classCounty },
-          },
+  const slides = [
+    {
+      id: "hub",
+      image: "/demo/hero-hub.jpg",
+      imageAlt: text.mediaHero,
+      brand: "K-BUS HUB",
+      title: text.heroTitle,
+      body: text.heroBody,
+      tone: "hub" as const,
+      primary: { href: hrefTo(lang, "/vehicles", ctx), label: text.browseInventory },
+      secondary: { href: hrefTo(lang, "/vehicles", ctx, { class: "county" }), label: text.classCounty },
+    },
+    ...(lang === "ko"
+      ? [
           {
             id: "sell",
             image: "/demo/hero-sell.jpg",
             imageAlt: text.navSell,
             title: text.sellTitle,
             body: text.sellBody,
-            tone: "sell",
+            tone: "sell" as const,
             primary: { href: hrefTo(lang, "/sell", ctx), label: text.navSell },
           },
-          {
-            id: "export-sell",
-            image: "/demo/hero-export.jpg",
-            imageAlt: text.navExportSell,
-            title: text.exportSellTitle,
-            body: text.exportSellBody,
-            tone: "export",
-            primary: { href: hrefTo(lang, "/export-sell", ctx), label: text.navExportSell },
-          },
-          {
-            id: "scrap",
-            image: "/demo/hero-scrap.jpg",
-            imageAlt: text.navScrap,
-            title: text.scrapTitle,
-            body: text.scrapBody,
-            tone: "scrap",
-            primary: { href: hrefTo(lang, "/scrap", ctx), label: text.navScrap },
-          },
-        ]}
-      />
+        ]
+      : []),
+    {
+      id: "export-sell",
+      image: "/demo/hero-export.jpg",
+      imageAlt: text.navExportSell,
+      title: text.exportSellTitle,
+      body: text.exportSellBody,
+      tone: "export" as const,
+      primary: { href: hrefTo(lang, "/export-sell", ctx), label: text.navExportSell },
+    },
+    {
+      id: "scrap",
+      image: "/demo/hero-scrap.jpg",
+      imageAlt: text.navScrap,
+      title: text.scrapTitle,
+      body: text.scrapBody,
+      tone: "scrap" as const,
+      primary: { href: hrefTo(lang, "/scrap", ctx), label: text.navScrap },
+    },
+  ];
+
+  return (
+    <div className="mx-auto grid max-w-6xl gap-16 px-4 py-10 md:py-14">
+      <HeroBanner prevLabel={text.heroPrev} nextLabel={text.heroNext} slides={slides} />
 
       <section className="grid gap-4 md:grid-cols-3">
         {(
@@ -131,7 +133,7 @@ export default async function HomePage({
         )}
       </section>
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className={`grid gap-4 ${lang === "ko" ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
         <Link
           href={hrefTo(lang, "/wanted", ctx)}
           className="rounded-2xl border border-primary/15 bg-primary-soft/60 p-6 shadow-[0_8px_24px_rgba(15,28,47,0.04)] transition hover:-translate-y-0.5 hover:border-primary/35 hover:bg-primary-soft hover:shadow-[0_16px_36px_rgba(15,28,47,0.08)]"
@@ -140,14 +142,16 @@ export default async function HomePage({
           <h2 className="mt-2 text-xl font-semibold text-ink">{text.wantedTitle}</h2>
           <p className="mt-2 text-sm leading-6 text-muted">{text.wantedBody}</p>
         </Link>
-        <Link
-          href={hrefTo(lang, "/sell", ctx)}
-          className="rounded-2xl border border-accent-warm/20 bg-accent-warm-soft/70 p-6 shadow-[0_8px_24px_rgba(15,28,47,0.04)] transition hover:-translate-y-0.5 hover:border-accent-warm/40 hover:bg-accent-warm-soft hover:shadow-[0_16px_36px_rgba(15,28,47,0.08)]"
-        >
-          <p className="text-xs font-semibold tracking-[0.14em] text-accent-warm">{text.navSell}</p>
-          <h2 className="mt-2 text-xl font-semibold text-ink">{text.sellTitle}</h2>
-          <p className="mt-2 text-sm leading-6 text-muted">{text.sellBody}</p>
-        </Link>
+        {lang === "ko" ? (
+          <Link
+            href={hrefTo(lang, "/sell", ctx)}
+            className="rounded-2xl border border-accent-warm/20 bg-accent-warm-soft/70 p-6 shadow-[0_8px_24px_rgba(15,28,47,0.04)] transition hover:-translate-y-0.5 hover:border-accent-warm/40 hover:bg-accent-warm-soft hover:shadow-[0_16px_36px_rgba(15,28,47,0.08)]"
+          >
+            <p className="text-xs font-semibold tracking-[0.14em] text-accent-warm">{text.navSell}</p>
+            <h2 className="mt-2 text-xl font-semibold text-ink">{text.sellTitle}</h2>
+            <p className="mt-2 text-sm leading-6 text-muted">{text.sellBody}</p>
+          </Link>
+        ) : null}
         <Link
           href={hrefTo(lang, "/export-sell", ctx)}
           className="rounded-2xl border border-line bg-white p-6 shadow-[0_8px_24px_rgba(15,28,47,0.04)] transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_16px_36px_rgba(15,28,47,0.08)]"

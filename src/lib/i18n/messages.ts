@@ -95,6 +95,11 @@ export type Messages = {
   noPreference: string;
   sellTitle: string;
   sellBody: string;
+  sellLead: string;
+  sellPhotoOptionalTitle: string;
+  sellPhotoOptionalBody: string;
+  sellDomesticOnly: string;
+  dealerSignupPaused: string;
   partnerTitle: string;
   partnerBody: string;
   companyTitle: string;

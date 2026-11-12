@@ -130,8 +130,8 @@ export function PhotoSlotUploader({
   return (
     <div className="grid gap-4">
       <div className="border border-line bg-[#f7f9fb] px-3 py-3 text-sm leading-6 text-muted">
-        <p className="font-semibold text-ink">{text.photoGuideTitle}</p>
-        <p className="mt-1">{text.photoGuideBody}</p>
+        <p className="font-semibold text-ink">{optional ? text.sellPhotoOptionalTitle : text.photoGuideTitle}</p>
+        <p className="mt-1">{optional ? text.sellPhotoOptionalBody : text.photoGuideBody}</p>
         <p className="mt-2 font-medium text-ink">
           {text.photoProgress
             .replace("{filled}", String(filled))

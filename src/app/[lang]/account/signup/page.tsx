@@ -27,6 +27,25 @@ export default async function SignupPage({
   const nextRaw = sp.get("next");
   const nextPath = nextRaw && nextRaw.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : hrefTo(lang, "/account", ctx);
 
+  if (role === "dealer") {
+    return (
+      <div className="mx-auto max-w-xl px-4 py-10">
+        <h1 className="text-3xl font-semibold tracking-tight">{text.roleDealer}</h1>
+        <p className="mt-3 text-sm leading-6 text-muted">{text.dealerSignupPaused}</p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          {lang === "ko" ? (
+            <Link href={hrefTo(lang, "/sell", ctx)} className="bg-primary px-4 py-3 text-sm font-semibold text-white">
+              {text.navSell}
+            </Link>
+          ) : null}
+          <Link href={hrefTo(lang, "/account/signup", ctx, { role: "customer" })} className="border border-line bg-white px-4 py-3 text-sm font-semibold">
+            {text.signupCustomerCta}
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   if (!role) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10">
@@ -37,21 +56,14 @@ export default async function SignupPage({
         ) : null}
 
         <div className="mt-8 grid gap-4 md:grid-cols-2">
-          <Link
-            href={
-              nextRaw
-                ? `${hrefTo(lang, "/account/signup", ctx, { role: "dealer" })}&next=${encodeURIComponent(nextPath)}`
-                : hrefTo(lang, "/account/signup", ctx, { role: "dealer" })
-            }
-            className="group flex min-h-56 flex-col justify-between border border-line bg-white p-6 transition-shadow hover:shadow-[0_10px_30px_rgba(16,32,51,0.08)]"
-          >
+          <div className="flex min-h-56 flex-col justify-between border border-line bg-[#f7f9fb] p-6 opacity-80">
             <div>
               <p className="text-xs font-semibold tracking-[0.16em] text-muted">DEALER</p>
               <h2 className="mt-3 text-2xl font-semibold text-ink">{text.roleDealer}</h2>
-              <p className="mt-3 text-sm leading-6 text-muted">{text.roleDealerBody}</p>
+              <p className="mt-3 text-sm leading-6 text-muted">{text.dealerSignupPaused}</p>
             </div>
-            <span className="mt-8 inline-flex bg-ink px-4 py-3 text-sm font-semibold text-white group-hover:bg-primary">{text.signupDealerCta}</span>
-          </Link>
+            <span className="mt-8 inline-flex cursor-not-allowed bg-[#c5ccd6] px-4 py-3 text-sm font-semibold text-white">{text.signupDealerCta}</span>
+          </div>
 
           <Link
             href={
@@ -84,14 +96,14 @@ export default async function SignupPage({
 
   return (
     <div className="mx-auto max-w-xl px-4 py-10">
-      <p className="text-xs font-semibold tracking-[0.16em] text-muted">{role === "dealer" ? "DEALER" : "CUSTOMER"}</p>
-      <h1 className="mt-2 text-3xl font-semibold tracking-tight">{role === "dealer" ? text.roleDealer : text.roleCustomer}</h1>
-      <p className="mt-3 text-sm leading-6 text-muted">{role === "dealer" ? text.roleDealerBody : text.roleCustomerBody}</p>
+      <p className="text-xs font-semibold tracking-[0.16em] text-muted">CUSTOMER</p>
+      <h1 className="mt-2 text-3xl font-semibold tracking-tight">{text.roleCustomer}</h1>
+      <p className="mt-3 text-sm leading-6 text-muted">{text.roleCustomerBody}</p>
       {site.source !== "demo" && !site.settings.privacyCollectionEnabled ? (
         <p className="mt-2 text-sm text-muted">{text.liveClosedNote}</p>
       ) : null}
       <div className="relative mt-6 border border-line bg-white p-5">
-        <SignupForm lang={lang} nextPath={nextPath} role={role} />
+        <SignupForm lang={lang} nextPath={nextPath} role="customer" />
       </div>
       <p className="mt-4 flex flex-wrap gap-4 text-sm">
         <Link href={hrefTo(lang, "/account/signup", ctx)} className="font-semibold text-muted hover:text-ink">

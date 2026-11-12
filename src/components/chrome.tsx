@@ -136,13 +136,16 @@ export function Header({
     return `${parts.join("/") || `/${next}`}${qs ? `?${qs}` : ""}`;
   }
 
-  const links = [
-    [text.navVehicles, href("/vehicles"), "/vehicles"],
-    [text.navSell, href("/sell"), "/sell"],
-    [text.navExportSell, href("/export-sell"), "/export-sell"],
-    [text.navScrap, href("/scrap"), "/scrap"],
-    [text.navWanted, href("/wanted"), "/wanted"],
-  ] as const;
+  const links = (
+    [
+      [text.navVehicles, href("/vehicles"), "/vehicles"],
+      // Domestic purchase intake only — Korean site.
+      ...(lang === "ko" ? ([[text.navSell, href("/sell"), "/sell"]] as const) : []),
+      [text.navExportSell, href("/export-sell"), "/export-sell"],
+      [text.navScrap, href("/scrap"), "/scrap"],
+      [text.navWanted, href("/wanted"), "/wanted"],
+    ] as const
+  );
 
   const accountLinks = signedIn
     ? ([[text.navAccount, href("/account")]] as const)
@@ -244,7 +247,7 @@ export function Footer({
         </div>
         <div className="grid content-start gap-2">
           <Link href={href("/vehicles")}>{text.navVehicles}</Link>
-          <Link href={href("/sell")}>{text.navSell}</Link>
+          {lang === "ko" ? <Link href={href("/sell")}>{text.navSell}</Link> : null}
           <Link href={href("/export-sell")}>{text.navExportSell}</Link>
           <Link href={href("/scrap")}>{text.navScrap}</Link>
           <Link href={href("/wanted")}>{text.navWanted}</Link>

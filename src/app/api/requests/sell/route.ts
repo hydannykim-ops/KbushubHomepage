@@ -18,10 +18,13 @@ export async function POST(request: Request) {
   const body: Record<string, unknown> = {};
   for (const [key, value] of form.entries()) if (typeof value === "string") body[key] = value;
   const lang = langFromBody(body.lang);
+  if (lang !== "ko") {
+    return resultResponse(request, { status: 403, body: { ok: false, code: "forbidden" } }, `/${lang}/sell`);
+  }
   const parsed = parseSell(body, lang);
   if (!parsed.ok) return resultResponse(request, { status: 400, body: { ok: false, code: "invalid", errors: parsed.errors } }, `/${lang}/sell`);
 
-  const photos = await readGuidedPhotos(form, lang, MAX_SELL_PHOTOS);
+  const photos = await readGuidedPhotos(form, lang, MAX_SELL_PHOTOS, { requireRequiredSlots: false });
   if (!photos.ok) {
     return resultResponse(
       request,
@@ -33,8 +36,8 @@ export async function POST(request: Request) {
           errors: {
             photos:
               lang === "ko"
-                ? "정면·좌측·우측·후면 사진을 JPEG/PNG/WebP로 올려 주세요. (각 8MB 이하)"
-                : "Upload front, left, right, and rear photos as JPEG/PNG/WebP (max 8MB each).",
+                ? "사진은 JPEG/PNG/WebP로 올려 주세요. (각 8MB 이하, 선택)"
+                : "Upload photos as JPEG/PNG/WebP (max 8MB each, optional).",
           },
         },
       },
