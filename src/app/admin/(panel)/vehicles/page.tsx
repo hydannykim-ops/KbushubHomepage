@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { VehicleOps } from "@/components/admin/vehicle-ops";
 import { getRepository } from "@/lib/data/repository";
+import { usdFromKrw } from "@/lib/domain/money";
 import { statusLabel } from "@/lib/labels";
 import type { SaleStatus } from "@/lib/domain/types";
 
@@ -99,8 +100,9 @@ export default async function AdminVehiclesPage({
                       </p>
                     </div>
                     <p className="text-sm text-muted">
-                      국내 {vehicle.domesticPriceKrw ?? "문의"} · 수출{" "}
-                      {vehicle.exportPriceAmount != null ? `${vehicle.exportPriceAmount} ${vehicle.exportPriceCurrency}` : "문의"}
+                      {vehicle.domesticPriceKrw != null
+                        ? `국내 ${vehicle.domesticPriceKrw.toLocaleString("ko-KR")}원 · $${usdFromKrw(vehicle.domesticPriceKrw).toLocaleString("en-US")}`
+                        : "가격 문의"}
                     </p>
                   </div>
                   <div className="mt-3">

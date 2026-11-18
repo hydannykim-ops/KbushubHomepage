@@ -47,6 +47,7 @@ export type Messages = {
   exportShippingTitle: string;
   exportShippingBody: string;
   exportQuoteNote: string;
+  shippingExtraNote: string;
   guideCtaInventory: string;
   guideCtaQuote: string;
   wantedTitle: string;

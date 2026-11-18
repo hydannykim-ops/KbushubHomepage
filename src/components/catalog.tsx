@@ -101,6 +101,7 @@ export function VehicleCard({
             ) : null}
           </div>
           {price.basis ? <p className="text-sm text-muted">{price.basis}</p> : null}
+          {lang !== "ko" && !price.ask ? <p className="text-xs leading-5 text-muted">{text.shippingExtraNote}</p> : null}
         </div>
       </Link>
     </article>
@@ -121,10 +122,6 @@ export function Gallery({ photos, lang }: { photos: VehiclePhoto[]; lang: Lang }
 
 export function SpecTable({ vehicle, lang }: { vehicle: PublicVehicle; lang: Lang }) {
   const text = copy(lang);
-  const dimension =
-    vehicle.lengthMm || vehicle.widthMm || vehicle.heightMm
-      ? `${vehicle.lengthMm ?? "-"} / ${vehicle.widthMm ?? "-"} / ${vehicle.heightMm ?? "-"} mm`
-      : null;
   const rows: Array<[string, string]> = [
     [text.maker, makerLabel(vehicle.maker, lang)],
     [text.model, `${modelLabel(vehicle.model, lang)}${vehicle.trim ? ` / ${vehicle.trim}` : ""}`],
@@ -148,7 +145,6 @@ export function SpecTable({ vehicle, lang }: { vehicle: PublicVehicle; lang: Lan
     [text.steering, steeringLabel(vehicle.steering, lang)],
     [text.longBody, longBodyLabel(vehicle.longBody, lang)],
     [text.transferType, transferLabel(vehicle.transferType, lang)],
-    [text.dimensions, dimension ?? text.unknown],
     [text.previousUse, showText(contentFieldLang(lang) === "ko" ? vehicle.previousUseKo : vehicle.previousUseEn, lang)],
     [text.location, showText(vehicle.location, lang)],
     [text.photographed, showText(vehicle.photographedOn, lang)],

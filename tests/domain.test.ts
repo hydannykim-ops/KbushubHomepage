@@ -6,7 +6,8 @@ import test from "node:test";
 import { containsInternalKey, publicJson, visibleReferrals } from "../src/lib/domain/access";
 import { readSession, signSession } from "../src/lib/domain/auth-token";
 import { filterVehicles, parseVehicleQuery, serializeVehicleQuery } from "../src/lib/domain/filters";
-import { internalProfit, summarizeQuote } from "../src/lib/domain/money";
+import { internalProfit, priceView, summarizeQuote, usdFromKrw } from "../src/lib/domain/money";
+import { standardForModel } from "../src/lib/domain/model-specs";
 import { normalizeReferralCode, referralForInquiry, rememberReferral, whatsappHref, whatsappMessage } from "../src/lib/domain/referral";
 import { acceptOrReject, submissionGate } from "../src/lib/domain/submit";
 import { checkImage } from "../src/lib/domain/uploads";
@@ -490,6 +491,26 @@ test("catalog labels localize maker model series for non-Korean UI", () => {
   assert.equal(vehicleTitle({ maker: "현대", model: "카운티", trim: "데모" }, "en"), "Hyundai County 데모");
   assert.equal(vehicleTitle({ maker: "현대", model: "카운티", trim: "데모" }, "en", { includeTrim: false }), "Hyundai County");
   assert.equal(vehicleTitle({ maker: "현대", model: "카운티" }, "ko"), "현대 카운티");
+});
+
+test("model standards fill powertrain and foreign prices convert domestic KRW to USD", () => {
+  const county = standardForModel("카운티");
+  assert.equal(county?.horsepowerPs, 170);
+  assert.equal(county?.displacementCc, 3933);
+  assert.equal(county?.fuel, "diesel");
+  assert.equal(standardForModel("카운티 롱바디")?.longBody, true);
+  assert.equal(standardForModel("유니버스 노블")?.horsepowerPs, 440);
+  assert.equal(usdFromKrw(28_000_000), 20_000);
+
+  const seed = buildSeed();
+  const vehicle = seed.vehicles.find((item) => item.stockNo === "HB-C-01");
+  assert.ok(vehicle);
+  const korean = priceView(vehicle, "export", "ko");
+  const english = priceView(vehicle, "export", "en");
+  assert.equal(korean.primary.includes("28,000,000") || korean.primary.includes("28000000"), true);
+  assert.equal(english.ask, false);
+  assert.match(english.primary, /20,000|20000/);
+  assert.doesNotMatch(english.primary, /24,000/);
 });
 
 test("admin can mark a vehicle sold and delete it", async () => {

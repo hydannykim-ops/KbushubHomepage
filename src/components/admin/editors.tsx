@@ -4,7 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { notifyAdminSaved } from "@/components/admin/saved-toast";
 import { MakerModelPicker } from "@/components/maker-model-picker";
-import type { AdminVehicle, Agent, Inquiry, InquiryStatus } from "@/lib/domain/types";
+import { classForModel } from "@/lib/domain/vehicle-catalog";
+import { standardForModel } from "@/lib/domain/model-specs";
+import type { AdminVehicle, Agent, Inquiry, InquiryStatus, VehicleClass } from "@/lib/domain/types";
 import type { QuoteInput } from "@/lib/domain/validation";
 import { inquiryStatusLabel } from "@/lib/labels";
 
@@ -19,7 +21,36 @@ export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [specNote, setSpecNote] = useState<string | null>(null);
   const v = vehicle;
+  const [vehicleClass, setVehicleClass] = useState<VehicleClass>(v?.vehicleClass ?? "county");
+  const [seats, setSeats] = useState(v?.seats ?? "");
+  const [horsepowerPs, setHorsepowerPs] = useState(v?.horsepowerPs ?? "");
+  const [transmission, setTransmission] = useState(v?.transmission ?? "unknown");
+  const [fuel, setFuel] = useState(v?.fuel ?? "unknown");
+  const [engineModel, setEngineModel] = useState(v?.engineModel ?? "");
+  const [displacementCc, setDisplacementCc] = useState(v?.displacementCc ?? "");
+  const [steering, setSteering] = useState(v?.steering ?? "unknown");
+  const [longBody, setLongBody] = useState(v?.longBody == null ? "" : String(v.longBody));
+
+  function applyStandard(model: string) {
+    const standard = standardForModel(model);
+    const nextClass = classForModel(model);
+    if (nextClass) setVehicleClass(nextClass);
+    if (!standard) {
+      setSpecNote("이 모델의 표준 제원은 없습니다. 마력·변속기·배기량은 직접 입력해 주세요.");
+      return;
+    }
+    setSeats(standard.seats ?? "");
+    setHorsepowerPs(standard.horsepowerPs ?? "");
+    setTransmission(standard.transmission);
+    setFuel(standard.fuel);
+    setEngineModel(standard.engineModel ?? "");
+    setDisplacementCc(standard.displacementCc ?? "");
+    setSteering(standard.steering);
+    setLongBody(standard.longBody == null ? "" : String(standard.longBody));
+    setSpecNote("모델 표준 제원을 채웠습니다. 연식·옵션에 따라 다르면 고친 뒤 저장하세요.");
+  }
   return (
     <form
       className="grid gap-3 md:grid-cols-2"
@@ -52,9 +83,9 @@ export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
           steering: inputValue(form, "steering"),
           longBody: inputValue(form, "longBody"),
           transferType: inputValue(form, "transferType"),
-          lengthMm: inputValue(form, "lengthMm"),
-          widthMm: inputValue(form, "widthMm"),
-          heightMm: inputValue(form, "heightMm"),
+          lengthMm: "",
+          widthMm: "",
+          heightMm: "",
           previousUseKo: inputValue(form, "previousUseKo"),
           previousUseEn: inputValue(form, "previousUseEn"),
           location: inputValue(form, "location"),
@@ -68,10 +99,10 @@ export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
           stockCheckedOn: inputValue(form, "stockCheckedOn"),
           featured: form.get("featured") === "on",
           domesticPriceKrw: inputValue(form, "domesticPriceKrw"),
-          exportPriceAmount: inputValue(form, "exportPriceAmount"),
-          exportPriceCurrency: inputValue(form, "exportPriceCurrency"),
-          exportPriceTermsKo: inputValue(form, "exportPriceTermsKo"),
-          exportPriceTermsEn: inputValue(form, "exportPriceTermsEn"),
+          exportPriceAmount: "",
+          exportPriceCurrency: "",
+          exportPriceTermsKo: "",
+          exportPriceTermsEn: "",
           videoUrl: inputValue(form, "videoUrl"),
           internal: {
             purchaseCost: inputValue(form, "purchaseCost"),
@@ -117,19 +148,20 @@ export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
         </select>
       </Label>
       <Label text="차급">
-        <select name="vehicleClass" defaultValue={v?.vehicleClass ?? "county"} className={field}>
+        <select name="vehicleClass" value={vehicleClass} onChange={(event) => setVehicleClass(event.target.value as VehicleClass)} className={field}>
           <option value="county">카운티</option>
           <option value="medium">중형</option>
           <option value="large">대형</option>
         </select>
       </Label>
-      <MakerModelPicker lang="ko" required defaultMaker={v?.maker ?? ""} defaultModel={v?.model ?? ""} />
+      <MakerModelPicker lang="ko" required defaultMaker={v?.maker ?? ""} defaultModel={v?.model ?? ""} onModelChange={applyStandard} />
+      {specNote ? <p className="text-sm text-muted md:col-span-2">{specNote}</p> : null}
       <Label text="세부 모델"><input name="trim" defaultValue={v?.trim ?? ""} className={field} /></Label>
       <Label text="연식"><input name="modelYear" defaultValue={v?.modelYear ?? ""} className={field} /></Label>
       <Label text="최초 등록일"><input name="firstRegisteredOn" type="date" defaultValue={v?.firstRegisteredOn ?? ""} className={field} /></Label>
       <Label text="주행거리 km"><input name="mileageKm" defaultValue={v?.mileageKm ?? ""} className={field} /></Label>
-      <Label text="인승"><input name="seats" defaultValue={v?.seats ?? ""} className={field} /></Label>
-      <Label text="마력 (PS)"><input name="horsepowerPs" defaultValue={v?.horsepowerPs ?? ""} className={field} /></Label>
+      <Label text="인승"><input name="seats" value={seats} onChange={(event) => setSeats(event.target.value)} className={field} /></Label>
+      <Label text="마력 (PS)"><input name="horsepowerPs" value={horsepowerPs} onChange={(event) => setHorsepowerPs(event.target.value)} className={field} /></Label>
       <Label text="양도양수">
         <select name="transferType" defaultValue={v?.transferType ?? "unknown"} className={field}>
           <option value="unknown">미확인</option>
@@ -138,42 +170,40 @@ export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
         </select>
       </Label>
       <Label text="변속기">
-        <select name="transmission" defaultValue={v?.transmission ?? "unknown"} className={field}>
+        <select name="transmission" value={transmission} onChange={(event) => setTransmission(event.target.value as typeof transmission)} className={field}>
           <option value="unknown">미확인</option>
           <option value="automatic">자동</option>
           <option value="manual">수동</option>
         </select>
       </Label>
       <Label text="연료">
-        <select name="fuel" defaultValue={v?.fuel ?? "unknown"} className={field}>
+        <select name="fuel" value={fuel} onChange={(event) => setFuel(event.target.value as typeof fuel)} className={field}>
           {["unknown", "diesel", "gasoline", "lpg", "cng", "electric", "hybrid"].map((item) => (
             <option key={item}>{item}</option>
           ))}
         </select>
       </Label>
-      <Label text="엔진 모델"><input name="engineModel" defaultValue={v?.engineModel ?? ""} className={field} /></Label>
-      <Label text="배기량 cc"><input name="displacementCc" defaultValue={v?.displacementCc ?? ""} className={field} /></Label>
+      <Label text="엔진 모델"><input name="engineModel" value={engineModel} onChange={(event) => setEngineModel(event.target.value)} className={field} /></Label>
+      <Label text="배기량 cc"><input name="displacementCc" value={displacementCc} onChange={(event) => setDisplacementCc(event.target.value)} className={field} /></Label>
       <Label text="핸들">
-        <select name="steering" defaultValue={v?.steering ?? "unknown"} className={field}>
+        <select name="steering" value={steering} onChange={(event) => setSteering(event.target.value as typeof steering)} className={field}>
           <option value="unknown">미확인</option>
           <option value="lhd">좌핸들</option>
           <option value="rhd">우핸들</option>
         </select>
       </Label>
       <Label text="롱바디">
-        <select name="longBody" defaultValue={v?.longBody == null ? "" : String(v.longBody)} className={field}>
+        <select name="longBody" value={longBody} onChange={(event) => setLongBody(event.target.value)} className={field}>
           <option value="">미확인</option>
           <option value="true">예</option>
           <option value="false">아니오</option>
         </select>
       </Label>
-      <Label text="전장 mm"><input name="lengthMm" defaultValue={v?.lengthMm ?? ""} className={field} /></Label>
-      <Label text="전폭 mm"><input name="widthMm" defaultValue={v?.widthMm ?? ""} className={field} /></Label>
-      <Label text="전고 mm"><input name="heightMm" defaultValue={v?.heightMm ?? ""} className={field} /></Label>
       <Label text="위치"><input name="location" defaultValue={v?.location ?? ""} className={field} /></Label>
-      <Label text="국내 가격 KRW"><input name="domesticPriceKrw" defaultValue={v?.domesticPriceKrw ?? ""} className={field} /></Label>
-      <Label text="수출 금액"><input name="exportPriceAmount" defaultValue={v?.exportPriceAmount ?? ""} className={field} /></Label>
-      <Label text="수출 통화"><input name="exportPriceCurrency" defaultValue={v?.exportPriceCurrency ?? ""} className={field} /></Label>
+      <Label text="국내 가격 KRW" className="md:col-span-2">
+        <input name="domesticPriceKrw" defaultValue={v?.domesticPriceKrw ?? ""} className={field} />
+        <span className="text-xs font-normal text-muted">해외 언어에서는 이 금액을 달러로만 보여 줍니다. 수출 금액은 따로 넣지 않습니다.</span>
+      </Label>
       <Label text="촬영일"><input name="photographedOn" type="date" defaultValue={v?.photographedOn ?? ""} className={field} /></Label>
       <Label text="재고 확인일"><input name="stockCheckedOn" type="date" defaultValue={v?.stockCheckedOn ?? ""} className={field} /></Label>
       <label className="flex items-center gap-2 text-sm md:col-span-2">
@@ -181,8 +211,6 @@ export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
       </label>
       <Label text="기존 용도 한국어"><input name="previousUseKo" defaultValue={v?.previousUseKo ?? ""} className={field} /></Label>
       <Label text="기존 용도 영어"><input name="previousUseEn" defaultValue={v?.previousUseEn ?? ""} className={field} /></Label>
-      <Label text="수출 조건 한국어"><input name="exportPriceTermsKo" defaultValue={v?.exportPriceTermsKo ?? ""} className={field} /></Label>
-      <Label text="수출 조건 영어"><input name="exportPriceTermsEn" defaultValue={v?.exportPriceTermsEn ?? ""} className={field} /></Label>
       <Label text="영상 https 링크" className="md:col-span-2"><input name="videoUrl" defaultValue={v?.videoUrl ?? ""} className={field} /></Label>
       <Label text="정비 확인 한국어" className="md:col-span-2"><textarea name="maintenanceKo" defaultValue={v?.maintenanceKo ?? ""} rows={3} className={field} /></Label>
       <Label text="정비 확인 영어" className="md:col-span-2"><textarea name="maintenanceEn" defaultValue={v?.maintenanceEn ?? ""} rows={3} className={field} /></Label>
