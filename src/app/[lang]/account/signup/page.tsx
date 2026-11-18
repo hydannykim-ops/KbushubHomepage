@@ -36,23 +36,7 @@ export default async function SignupPage({
           <p className="mt-2 text-sm text-muted">{text.liveClosedNote}</p>
         ) : null}
 
-        <div className="mt-8 grid gap-4 md:grid-cols-2">
-          <Link
-            href={
-              nextRaw
-                ? `${hrefTo(lang, "/account/signup", ctx, { role: "dealer" })}&next=${encodeURIComponent(nextPath)}`
-                : hrefTo(lang, "/account/signup", ctx, { role: "dealer" })
-            }
-            className="group flex min-h-56 flex-col justify-between border border-line bg-white p-6 transition-shadow hover:shadow-[0_10px_30px_rgba(16,32,51,0.08)]"
-          >
-            <div>
-              <p className="text-xs font-semibold tracking-[0.16em] text-muted">DEALER</p>
-              <h2 className="mt-3 text-2xl font-semibold text-ink">{text.roleDealer}</h2>
-              <p className="mt-3 text-sm leading-6 text-muted">{text.roleDealerBody}</p>
-            </div>
-            <span className="mt-8 inline-flex bg-ink px-4 py-3 text-sm font-semibold text-white group-hover:bg-primary">{text.signupDealerCta}</span>
-          </Link>
-
+        <div className="mt-8 grid gap-4 md:grid-cols-1">
           <Link
             href={
               nextRaw
@@ -82,11 +66,28 @@ export default async function SignupPage({
     );
   }
 
+  if (role === "dealer") {
+    return (
+      <div className="mx-auto max-w-xl px-4 py-10">
+        <p className="text-xs font-semibold tracking-[0.16em] text-muted">DEALER</p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight">{text.roleDealer}</h1>
+        <p className="mt-3 text-sm leading-6 text-muted">
+          {lang === "ko"
+            ? "사업자 매물 등록은 받지 않습니다. 재고는 관리자가 직접 올립니다. 차를 팔고 싶으면 매입 상담을 남겨 주세요."
+            : "Dealer self-listing is closed. Staff publish inventory. Leave a sell inquiry if you want to sell a bus."}
+        </p>
+        <Link href={hrefTo(lang, "/sell", ctx)} className="mt-6 inline-flex bg-primary px-4 py-3 text-sm font-semibold text-white">
+          {text.navSell}
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-xl px-4 py-10">
-      <p className="text-xs font-semibold tracking-[0.16em] text-muted">{role === "dealer" ? "DEALER" : "CUSTOMER"}</p>
-      <h1 className="mt-2 text-3xl font-semibold tracking-tight">{role === "dealer" ? text.roleDealer : text.roleCustomer}</h1>
-      <p className="mt-3 text-sm leading-6 text-muted">{role === "dealer" ? text.roleDealerBody : text.roleCustomerBody}</p>
+      <p className="text-xs font-semibold tracking-[0.16em] text-muted">CUSTOMER</p>
+      <h1 className="mt-2 text-3xl font-semibold tracking-tight">{text.roleCustomer}</h1>
+      <p className="mt-3 text-sm leading-6 text-muted">{text.roleCustomerBody}</p>
       {site.source !== "demo" && !site.settings.privacyCollectionEnabled ? (
         <p className="mt-2 text-sm text-muted">{text.liveClosedNote}</p>
       ) : null}

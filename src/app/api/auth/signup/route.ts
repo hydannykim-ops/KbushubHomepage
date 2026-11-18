@@ -21,6 +21,9 @@ export async function POST(request: Request) {
   const lang = langFromBody(body.lang);
   const parsed = parseSignup(body, lang);
   if (!parsed.ok) return resultResponse(request, { status: 400, body: { ok: false, code: "invalid", errors: parsed.errors } }, `/${lang}/account/signup`);
+  if (parsed.data.role === "dealer") {
+    return resultResponse(request, { status: 403, body: { ok: false, code: "forbidden" } }, `/${lang}/account/signup`);
+  }
   const gate = await openGate();
   if (!gate.ok) return resultResponse(request, { status: gate.code === "privacy_disabled" ? 403 : 503, body: { ok: false, code: gate.code } }, `/${lang}/account/signup`);
   try {

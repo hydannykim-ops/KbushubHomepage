@@ -16,7 +16,7 @@ export default async function AdminHome() {
     { label: "예약 중", value: count("reserved"), href: "/admin/vehicles?status=reserved" },
     { label: "판매 완료", value: count("sold"), href: "/admin/vehicles?status=sold" },
     { label: "비공개", value: count("hidden"), href: "/admin/vehicles?status=hidden" },
-    { label: "검토 중 (딜러 등록)", value: count("review"), href: "/admin/vehicles?status=review" },
+    { label: "검토 중", value: count("review"), href: "/admin/vehicles?status=review" },
     { label: "문의", value: inquiries.length, href: "/admin/inquiries" },
     { label: "신규 문의", value: inquiries.filter((item) => item.status === "new").length, href: "/admin/inquiries" },
     { label: "승인 대기 에이전트", value: agents.filter((agent) => agent.status === "pending").length, href: "/admin/agents" },
@@ -28,15 +28,15 @@ export default async function AdminHome() {
       <h1 className="text-2xl font-bold">대시보드</h1>
       {getDataSource() === "demo" ? <p className="text-sm">데모 데이터 집계입니다. 실제 영업 실적이 아닙니다.</p> : null}
       <p className="text-sm text-muted">
-        딜러가 <strong className="font-semibold text-ink">내 차 팔기</strong>로 올린 매물은{" "}
-        <Link href="/admin/vehicles?status=review" className="font-semibold text-primary underline">
-          매물 관리 → 검토 중
+        매물은 관리자가{" "}
+        <Link href="/admin/vehicles/new" className="font-semibold text-primary underline">
+          직접 등록
         </Link>
-        에 있습니다. 홈의 <strong className="font-semibold text-ink">원하는 차량 요청</strong>은{" "}
+        합니다. 목록에서 판매 완료·삭제·공개 보기를 바로 할 수 있습니다. 고객의 차량 요청·매입 상담은{" "}
         <Link href="/admin/requests" className="font-semibold text-primary underline">
           차량 요청·매입
         </Link>
-        메뉴입니다.
+        입니다.
       </p>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((card) => (

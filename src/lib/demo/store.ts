@@ -1,5 +1,5 @@
 import { randomBytes, randomUUID } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { toOwnedListing, toPublicVehicle, visibleReferrals } from "../domain/access";
 import { filterVehicles, type FilterResult } from "../domain/filters";
@@ -15,6 +15,7 @@ import type {
   Member,
   PhotoCategory,
   Quote,
+  SaleStatus,
   QuoteLine,
   SiteSettings,
   TradeMode,
@@ -195,6 +196,28 @@ export function createDemoStore(dir: string) {
         state.vehicles[index] = next;
         return clone(next);
       });
+    },
+    async setVehicleStatus(id: string, status: SaleStatus): Promise<AdminVehicle> {
+      return update((state) => {
+        const vehicle = state.vehicles.find((item) => item.id === id);
+        if (!vehicle) throw new StoreError("not_found");
+        vehicle.status = status;
+        vehicle.updatedAt = nowIso();
+        return clone(vehicle);
+      });
+    },
+    async deleteVehicle(id: string): Promise<void> {
+      const removed = await update((state) => {
+        const index = state.vehicles.findIndex((item) => item.id === id);
+        if (index < 0) throw new StoreError("not_found");
+        const [vehicle] = state.vehicles.splice(index, 1);
+        return vehicle;
+      });
+      await Promise.all(
+        removed.photos
+          .filter((photo) => photo.storage === "file" && photo.path)
+          .map((photo) => unlink(path.join(dir, photo.path as string)).catch(() => undefined)),
+      );
     },
     async addPhoto(
       vehicleId: string,

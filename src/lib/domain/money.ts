@@ -1,5 +1,5 @@
 import type { Lang, PublicVehicle, Quote, QuoteLineKey, TradeMode, VehicleInternal } from "./types";
-import { contentFieldLang, localeTag } from "../i18n/langs";
+import { localeTag } from "../i18n/langs";
 import { copy } from "../i18n";
 
 const unknownText = (lang: Lang) => copy(lang).unknown;
@@ -24,6 +24,13 @@ export function formatMoney(amount: number, currency: string, lang: Lang): strin
   } catch {
     return `${amount.toLocaleString(locale)} ${currency}`;
   }
+}
+
+/** Indicative vehicle-price rate. Shipping is not included. */
+export const KRW_PER_USD = 1400;
+
+export function usdFromKrw(krw: number): number {
+  return Math.round(krw / KRW_PER_USD);
 }
 
 export function formatKm(km: number | null, lang: Lang): string {
@@ -62,29 +69,28 @@ function askPrimary(lang: Lang, listedBy?: string | null): string {
   return company ? `${label} · ${company}` : label;
 }
 
-export function priceView(vehicle: PublicVehicle, mode: TradeMode, lang: Lang, listedBy?: string | null): PriceView {
-  if (mode === "domestic") {
-    if (vehicle.domesticPriceKrw == null) {
-      return { primary: askPrimary(lang, listedBy), basis: null, ask: true };
-    }
+const usdBasis: Record<Exclude<Lang, "ko">, string> = {
+  en: "Vehicle price in USD, converted from the Korean domestic price",
+  es: "Precio del vehículo en USD, convertido del precio nacional en Corea",
+  fr: "Prix du véhicule en USD, converti du prix national coréen",
+  km: "តម្លៃយានយន្តជា USD បម្លែងពីតម្លៃក្នុងស្រុកកូរ៉េ",
+  mn: "Солонгосын дотоод үнээс хөрвүүлсэн ам.долларын үнэ",
+};
+
+export function priceView(vehicle: PublicVehicle, _mode: TradeMode, lang: Lang, listedBy?: string | null): PriceView {
+  if (vehicle.domesticPriceKrw == null) {
+    return { primary: askPrimary(lang, listedBy), basis: null, ask: true };
+  }
+  if (lang === "ko") {
     return {
       primary: formatMoney(vehicle.domesticPriceKrw, "KRW", lang),
       basis: domesticBasis[lang],
       ask: false,
     };
   }
-  if (vehicle.exportPriceAmount == null || !vehicle.exportPriceCurrency) {
-    return { primary: askPrimary(lang, listedBy), basis: null, ask: true };
-  }
-  const field = contentFieldLang(lang);
-  const terms = field === "ko" ? vehicle.exportPriceTermsKo : vehicle.exportPriceTermsEn;
   return {
-    primary: formatMoney(vehicle.exportPriceAmount, vehicle.exportPriceCurrency, lang),
-    basis: terms?.trim()
-      ? terms
-      : lang === "ko"
-        ? `${vehicle.exportPriceCurrency} 수출 가격`
-        : `${vehicle.exportPriceCurrency} export price`,
+    primary: formatMoney(usdFromKrw(vehicle.domesticPriceKrw), "USD", lang),
+    basis: usdBasis[lang],
     ask: false,
   };
 }

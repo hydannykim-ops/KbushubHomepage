@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { VehicleForm } from "@/components/admin/editors";
+import { VehicleOps } from "@/components/admin/vehicle-ops";
 import { getRepository } from "@/lib/data/repository";
 import { internalProfit, formatMoney } from "@/lib/domain/money";
 import { photoCategoryList, photoLabel } from "@/lib/labels";
@@ -14,7 +16,15 @@ export default async function EditVehiclePage({ params }: { params: Promise<{ id
 
   return (
     <div className="grid gap-6">
-      <h1 className="text-2xl font-bold">{vehicle.stockNo}</h1>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <Link href="/admin/vehicles" className="text-sm font-semibold text-muted">
+            매물 목록
+          </Link>
+          <h1 className="mt-1 text-2xl font-bold">{vehicle.stockNo}</h1>
+        </div>
+        <VehicleOps id={vehicle.id} stockNo={vehicle.stockNo} status={vehicle.status} returnTo={`/admin/vehicles/${vehicle.id}`} />
+      </div>
       {vehicle.listingSource === "dealer" ? (
         <p className="text-sm">
           판매 사업자 등록 · {vehicle.sellerCompany ?? "상호 없음"} · {vehicle.sellerName ?? "이름 없음"} · {vehicle.sellerEmail ?? "이메일 없음"}

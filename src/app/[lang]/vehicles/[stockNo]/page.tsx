@@ -113,6 +113,7 @@ export default async function VehicleDetailPage({
           </p>
           <p className="mt-4 text-3xl font-semibold tabular-nums tracking-tight">{price.primary}</p>
           {price.basis ? <p className="mt-1 text-sm text-muted">{price.basis}</p> : null}
+          {lang !== "ko" && !price.ask ? <p className="mt-2 text-sm leading-6 text-muted">{text.shippingExtraNote}</p> : null}
           <p className="mt-2 text-xs text-muted">
             {text.photographed}: {vehicle.photographedOn ?? text.unknown} · {text.stockChecked}: {vehicle.stockCheckedOn ?? text.unknown}
           </p>
