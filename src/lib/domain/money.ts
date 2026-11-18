@@ -26,6 +26,13 @@ export function formatMoney(amount: number, currency: string, lang: Lang): strin
   }
 }
 
+/** Indicative vehicle-price rate. Shipping is not included. */
+export const KRW_PER_USD = 1400;
+
+export function usdFromKrw(krw: number): number {
+  return Math.round(krw / KRW_PER_USD);
+}
+
 export function formatKm(km: number | null, lang: Lang): string {
   if (km == null) return unknownText(lang);
   const locale = localeTag(lang);
@@ -54,6 +61,14 @@ const domesticBasis: Record<Lang, string> = {
   fr: "Prix national",
   km: "តម្លៃក្នុងស្រុក",
   mn: "Дотоод үнэ",
+};
+
+const usdBasis: Record<Exclude<Lang, "ko">, string> = {
+  en: "Vehicle price in USD, converted from the Korean domestic price",
+  es: "Precio del vehículo en USD, convertido del precio nacional en Corea",
+  fr: "Prix du véhicule en USD, converti du prix national coréen",
+  km: "តម្លៃយានយន្តជា USD បម្លែងពីតម្លៃក្នុងស្រុកកូរ៉េ",
+  mn: "Солонгосын дотоод үнээс хөрвүүлсэн ам.долларын үнэ",
 };
 
 function askPrimary(lang: Lang, listedBy?: string | null): string {
@@ -94,15 +109,25 @@ export function priceView(vehicle: PricedVehicle, mode: TradeMode, lang: Lang, l
   };
 }
 
-/** Unified listing/detail pricing after removing the domestic/export browse toggle. */
+/** Unified listing/detail pricing. Korean shows KRW. Other languages show USD converted from that price. */
 export function catalogPriceView(vehicle: PricedVehicle, lang: Lang, listedBy?: string | null): PriceView & { exportLine: string | null } {
+  if (lang !== "ko") {
+    if (vehicle.domesticPriceKrw == null) {
+      return { primary: askPrimary(lang, listedBy), basis: null, ask: true, exportLine: null };
+    }
+    return {
+      primary: formatMoney(usdFromKrw(vehicle.domesticPriceKrw), "USD", lang),
+      basis: usdBasis[lang],
+      ask: false,
+      exportLine: null,
+    };
+  }
   const domestic = priceView(vehicle, "domestic", lang, listedBy);
-  const exported = priceView(vehicle, "export", lang, listedBy);
   return {
     primary: domestic.primary,
     basis: domestic.basis,
     ask: domestic.ask,
-    exportLine: exported.ask ? null : `${exported.primary}${exported.basis ? ` · ${exported.basis}` : ""}`,
+    exportLine: null,
   };
 }
 

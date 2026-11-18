@@ -146,6 +146,7 @@ export default async function VehicleDetailPage({
             <p className="vehicle-summary__label">{text.priceSection}</p>
             <p className="vehicle-summary__price tabular-nums">{price.primary}</p>
             {price.basis ? <p className="mt-1 text-xs text-muted">{price.basis}</p> : null}
+            {lang !== "ko" && !price.ask ? <p className="mt-2 text-xs leading-5 text-muted">{text.shippingExtraNote}</p> : null}
             {price.exportLine ? <p className="mt-2 text-xs leading-5 text-muted">{text.modeExport}: {price.exportLine}</p> : null}
             {inquiryMode === "export" ? <p className="mt-2 text-xs leading-5 text-muted">{text.exportQuoteNote}</p> : null}
             {sold ? <p className="mt-2 text-sm text-ink">{text.soldNote}</p> : null}

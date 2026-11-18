@@ -7,7 +7,8 @@ import { containsInternalKey, inquiryViewerRole, publicJson, visibleReferrals } 
 import { readSession, signSession } from "../src/lib/domain/auth-token";
 import { inquiryTradeModeForCountry, isKoreaCountry } from "../src/lib/domain/country";
 import { filterVehicles, parseVehicleQuery, serializeVehicleQuery } from "../src/lib/domain/filters";
-import { catalogPriceView, internalProfit, summarizeQuote } from "../src/lib/domain/money";
+import { catalogPriceView, internalProfit, summarizeQuote, usdFromKrw } from "../src/lib/domain/money";
+import { standardForModel } from "../src/lib/domain/model-specs";
 import { normalizeReferralCode, referralForInquiry, rememberReferral, whatsappHref, whatsappMessage } from "../src/lib/domain/referral";
 import { acceptOrReject, submissionGate } from "../src/lib/domain/submit";
 import { checkImage } from "../src/lib/domain/uploads";
@@ -71,14 +72,29 @@ test("country nationality routes inquiry trade mode", () => {
   assert.equal(inquiryTradeModeForCountry(null), "domestic");
 });
 
-test("catalog price shows domestic primary with optional export line", () => {
+test("catalog price shows KRW in Korean and USD converted from the domestic price overseas", () => {
   const seed = buildSeed();
   const vehicle = seed.vehicles.find((item) => item.stockNo === "HB-C-01");
   assert.ok(vehicle);
-  const view = catalogPriceView(vehicle, "ko");
-  assert.equal(view.ask, false);
-  assert.match(view.primary, /원|₩|KRW/i);
-  assert.ok(view.exportLine);
+  const korean = catalogPriceView(vehicle, "ko");
+  const english = catalogPriceView(vehicle, "en");
+  assert.equal(korean.ask, false);
+  assert.match(korean.primary, /28,000,000|28000000|원|₩|KRW/i);
+  assert.equal(korean.exportLine, null);
+  assert.equal(english.ask, false);
+  assert.match(english.primary, /20,000|20000/);
+  assert.equal(english.exportLine, null);
+  assert.doesNotMatch(english.primary, /24,000/);
+});
+
+test("model standards fill powertrain and convert 28 million won to 20,000 dollars", () => {
+  const county = standardForModel("카운티");
+  assert.equal(county?.horsepowerPs, 170);
+  assert.equal(county?.displacementCc, 3933);
+  assert.equal(county?.fuel, "diesel");
+  assert.equal(standardForModel("카운티 롱바디")?.longBody, true);
+  assert.equal(standardForModel("유니버스 노블")?.horsepowerPs, 440);
+  assert.equal(usdFromKrw(28_000_000), 20_000);
 });
 
 test("filters and shareable query round-trip", () => {

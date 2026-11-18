@@ -5,6 +5,8 @@ import { DataProblem, VehicleCard, sortHref } from "@/components/catalog";
 import { MarketFilterBar } from "@/components/market-filters";
 import { copy } from "@/lib/i18n";
 import { parseVehicleQuery } from "@/lib/domain/filters";
+import { KRW_PER_USD } from "@/lib/domain/money";
+import type { Lang, VehicleQuery } from "@/lib/domain/types";
 import { makerLabel, makersForClass, modelLabel, seriesForModel, seriesLabel } from "@/lib/domain/vehicle-catalog";
 import type { VehicleClass } from "@/lib/domain/types";
 import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
@@ -25,6 +27,7 @@ export default async function VehiclesPage({
   for (const [key, value] of Object.entries(rawParams)) if (typeof value === "string") sp.set(key, value);
   const ctx = await requestContext(lang, sp);
   const query = parseVehicleQuery(sp);
+  const listedQuery = priceQueryForLang(query, lang);
   const text = copy(lang);
   const site = await loadSite();
   if (!site.ok) return <DataProblem lang={lang} code={site.code} />;
@@ -33,14 +36,14 @@ export default async function VehiclesPage({
   let result;
   let countSource;
   try {
-    result = await site.repo.listPublic(query, ctx.mode);
+    result = await site.repo.listPublic(listedQuery, ctx.mode);
     countSource = await site.repo.listPublic(
       {
         vehicleClass: selectedClass,
         yearMin: query.yearMin,
         yearMax: query.yearMax,
-        priceMin: query.priceMin,
-        priceMax: query.priceMax,
+        priceMin: listedQuery.priceMin,
+        priceMax: listedQuery.priceMax,
         priceCurrency: query.priceCurrency,
         seatsMin: query.seatsMin,
         mileageMax: query.mileageMax,
@@ -137,4 +140,14 @@ export default async function VehiclesPage({
       </div>
     </div>
   );
+}
+
+/** Overseas price boxes are USD. Compare them against the same won price the card converts from. */
+function priceQueryForLang(query: VehicleQuery, lang: Lang): VehicleQuery {
+  if (lang === "ko") return query;
+  return {
+    ...query,
+    priceMin: query.priceMin != null ? query.priceMin * KRW_PER_USD : null,
+    priceMax: query.priceMax != null ? query.priceMax * KRW_PER_USD : null,
+  };
 }

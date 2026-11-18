@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { notifyAdminSaved } from "@/components/admin/saved-toast";
 import { VehicleStatusButton } from "@/components/admin/vehicle-status-button";
+import { usdFromKrw } from "@/lib/domain/money";
 import type { SaleStatus } from "@/lib/domain/types";
 
 export type VehicleAdminRow = {
@@ -18,8 +19,6 @@ export type VehicleAdminRow = {
   sellerEmail: string | null;
   sellerCompany: string | null;
   domesticPriceKrw: number | null;
-  exportPriceAmount: number | null;
-  exportPriceCurrency: string | null;
   coverPhotoId: string | null;
   statusLabel: string;
 };
@@ -132,7 +131,7 @@ export function VehicleAdminTable({ vehicles }: { vehicles: VehicleAdminRow[] })
               <th className="px-3 py-2">출처</th>
               <th className="px-3 py-2">판매자</th>
               <th className="px-3 py-2">국내가</th>
-              <th className="px-3 py-2">수출가</th>
+              <th className="px-3 py-2">해외 표시</th>
               <th className="px-3 py-2">관리</th>
             </tr>
           </thead>
@@ -179,8 +178,8 @@ export function VehicleAdminTable({ vehicles }: { vehicles: VehicleAdminRow[] })
                     </td>
                     <td className="px-3 py-2">{vehicle.domesticPriceKrw ?? "가격 문의"}</td>
                     <td className="px-3 py-2">
-                      {vehicle.exportPriceAmount != null
-                        ? `${vehicle.exportPriceAmount} ${vehicle.exportPriceCurrency}`
+                      {vehicle.domesticPriceKrw != null
+                        ? `US$${usdFromKrw(vehicle.domesticPriceKrw).toLocaleString("en-US")}`
                         : "가격 문의"}
                     </td>
                     <td className="px-3 py-2">

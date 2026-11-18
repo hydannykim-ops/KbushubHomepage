@@ -116,6 +116,7 @@ export function VehicleCard({
             <div>
               <p className="vehicle-card__price">{price.primary}</p>
               {price.basis ? <p className="vehicle-card__note">{price.basis}</p> : null}
+              {lang !== "ko" && !price.ask ? <p className="vehicle-card__note">{text.shippingExtraNote}</p> : null}
               {price.exportLine ? (
                 <p className="vehicle-card__note">
                   {text.modeExport}: {price.exportLine}

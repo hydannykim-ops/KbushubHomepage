@@ -48,8 +48,6 @@ export default async function AdminVehiclesPage({
       sellerEmail: vehicle.sellerEmail,
       sellerCompany: vehicle.sellerCompany,
       domesticPriceKrw: vehicle.domesticPriceKrw,
-      exportPriceAmount: vehicle.exportPriceAmount,
-      exportPriceCurrency: vehicle.exportPriceCurrency,
       coverPhotoId: cover?.id ?? null,
       statusLabel: statusLabel(vehicle.status, "ko"),
     };

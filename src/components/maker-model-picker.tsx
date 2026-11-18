@@ -85,6 +85,7 @@ export function MakerModelPicker({
   allowEmpty = false,
   emptyLabel,
   layout = "default",
+  onModelChange,
 }: {
   lang: Lang;
   makerName?: string;
@@ -96,6 +97,7 @@ export function MakerModelPicker({
   allowEmpty?: boolean;
   emptyLabel?: string;
   layout?: "default" | "market";
+  onModelChange?: (model: string) => void;
 }) {
   const text = copy(lang);
   const market = layout === "market";
@@ -128,6 +130,7 @@ export function MakerModelPicker({
   function pickModel(next: string) {
     setModel(next);
     setStep("done");
+    onModelChange?.(next);
   }
 
   return (
