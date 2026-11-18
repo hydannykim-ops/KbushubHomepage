@@ -8,7 +8,6 @@ import { parseVehicleQuery } from "@/lib/domain/filters";
 import { KRW_PER_USD } from "@/lib/domain/money";
 import type { Lang, VehicleQuery } from "@/lib/domain/types";
 import { makerLabel, makersForClass, modelLabel, seriesForModel, seriesLabel } from "@/lib/domain/vehicle-catalog";
-import type { VehicleClass } from "@/lib/domain/types";
 import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
 import { loadSite } from "@/lib/site-load";
 
@@ -26,20 +25,18 @@ export default async function VehiclesPage({
   const rawParams = await searchParams;
   for (const [key, value] of Object.entries(rawParams)) if (typeof value === "string") sp.set(key, value);
   const ctx = await requestContext(lang, sp);
-  const query = parseVehicleQuery(sp);
+  const query = { ...parseVehicleQuery(sp), vehicleClass: "" as const };
   const listedQuery = priceQueryForLang(query, lang);
   const text = copy(lang);
   const site = await loadSite();
   if (!site.ok) return <DataProblem lang={lang} code={site.code} />;
 
-  const selectedClass = (query.vehicleClass || "") as VehicleClass | "";
   let result;
   let countSource;
   try {
     result = await site.repo.listPublic(listedQuery, ctx.mode);
     countSource = await site.repo.listPublic(
       {
-        vehicleClass: selectedClass,
         yearMin: query.yearMin,
         yearMax: query.yearMax,
         priceMin: listedQuery.priceMin,
@@ -59,7 +56,7 @@ export default async function VehiclesPage({
   }
 
   const counts: Record<string, number> = {};
-  for (const maker of makersForClass(selectedClass)) counts[maker] = 0;
+  for (const maker of makersForClass("")) counts[maker] = 0;
   for (const vehicle of countSource.items) {
     counts[vehicle.maker] = (counts[vehicle.maker] ?? 0) + 1;
   }
@@ -103,13 +100,8 @@ export default async function VehiclesPage({
             </div>
           </div>
 
-          {(query.maker || query.model || selectedClass) && (
+          {(query.maker || query.model) && (
             <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
-              {selectedClass ? (
-                <span className="text-muted">
-                  {selectedClass === "county" ? text.classCounty : selectedClass === "medium" ? text.classMedium : text.classLarge}
-                </span>
-              ) : null}
               {query.maker ? <span className="text-muted">{makerLabel(query.maker, lang)}</span> : null}
               {query.model ? <span className="text-muted">{seriesLabel(seriesForModel(query.model), lang)}</span> : null}
               {query.model && seriesForModel(query.model) !== query.model ? (

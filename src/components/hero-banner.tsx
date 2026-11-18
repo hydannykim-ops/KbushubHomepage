@@ -56,7 +56,7 @@ export function HeroBanner({
 
   return (
     <section
-      className="relative min-h-[70vh] overflow-hidden border border-line bg-[#0f172a] text-white lg:min-h-[32rem]"
+      className="relative min-h-[22rem] overflow-hidden border border-line bg-[#0f172a] text-white md:min-h-[26rem]"
       aria-roledescription="carousel"
       aria-label="K-BUS HUB"
       onMouseEnter={() => setPaused(true)}
@@ -80,7 +80,7 @@ export function HeroBanner({
         </div>
       ))}
 
-      <div className="relative flex min-h-[70vh] max-w-2xl flex-col justify-center px-6 py-14 lg:min-h-[32rem] lg:px-10">
+      <div className="relative flex min-h-[22rem] max-w-2xl flex-col justify-center px-6 py-10 md:min-h-[26rem] md:px-10">
         {active.brand ? (
           <p className="text-3xl font-semibold tracking-tight text-white md:text-4xl">{active.brand}</p>
         ) : (

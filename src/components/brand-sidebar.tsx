@@ -12,7 +12,7 @@ import {
   seriesForModel,
   seriesLabel,
 } from "@/lib/domain/vehicle-catalog";
-import type { Lang, VehicleClass, VehicleQuery } from "@/lib/domain/types";
+import type { Lang, VehicleQuery } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
 import { serializeVehicleQuery } from "@/lib/domain/filters";
 
@@ -92,42 +92,26 @@ export function BrandSidebar({
   counts: Record<string, number>;
 }) {
   const text = copy(lang);
-  const vehicleClass = (query.vehicleClass || "") as VehicleClass | "";
-  const makers = makersForClass(vehicleClass);
+  const makers = makersForClass("");
   const selectedMaker = query.maker ?? "";
   const selectedModel = query.model ?? "";
   const total = Object.values(counts).reduce((sum, value) => sum + value, 0);
 
-  const classLabelMap: Record<VehicleClass | "", string> = {
-    "": text.all,
-    county: text.classCounty,
-    medium: text.classMedium,
-    large: text.classLarge,
-  };
-
-  /** Empty URL = 전체 목록. Only re-enter class pick when the user clears the locked class chip. */
-  const [classPicked, setClassPicked] = useState(true);
   /** Intermediate series pick before a concrete model URL is chosen. */
   const [draftSeries, setDraftSeries] = useState("");
 
   useEffect(() => {
-    if (query.vehicleClass || query.maker || query.model) setClassPicked(true);
-  }, [query.vehicleClass, query.maker, query.model]);
-
-  useEffect(() => {
     setDraftSeries("");
-  }, [selectedMaker, selectedModel, vehicleClass]);
+  }, [selectedMaker, selectedModel]);
 
-  const seriesList = selectedMaker ? seriesForMaker(selectedMaker, vehicleClass) : [];
+  const seriesList = selectedMaker ? seriesForMaker(selectedMaker, "") : [];
   const lockedSeries = selectedModel ? seriesForModel(selectedModel) : draftSeries;
-  const done = Boolean(classPicked && selectedMaker && selectedModel);
-  const pickingClass = !classPicked;
-  const pickingMaker = Boolean(classPicked && !selectedMaker);
-  const pickingSeries = Boolean(classPicked && selectedMaker && !selectedModel && !draftSeries);
+  const done = Boolean(selectedMaker && selectedModel);
+  const pickingMaker = !selectedMaker;
+  const pickingSeries = Boolean(selectedMaker && !selectedModel && !draftSeries);
   /** Always require an explicit model tap, even when the series has only one model. */
-  const pickingVariant = Boolean(classPicked && selectedMaker && draftSeries && !selectedModel);
-  const variants =
-    selectedMaker && lockedSeries ? modelsForSeries(selectedMaker, lockedSeries, vehicleClass) : [];
+  const pickingVariant = Boolean(selectedMaker && draftSeries && !selectedModel);
+  const variants = selectedMaker && lockedSeries ? modelsForSeries(selectedMaker, lockedSeries, "") : [];
 
   const clearAllHref = hrefFor(lang, ctx, query, { vehicleClass: undefined, maker: undefined, model: undefined });
   const clearMakerHref = hrefFor(lang, ctx, query, { maker: undefined, model: undefined });
@@ -141,34 +125,14 @@ export function BrandSidebar({
       <div className="max-h-64 overflow-y-auto px-3 py-4 lg:sticky lg:top-16 lg:max-h-[calc(100vh-4rem)] md:px-4">
         <div className="mb-3 flex items-center justify-between gap-2 px-1">
           <h2 className="text-sm font-semibold text-ink">{text.brandModel}</h2>
-          {(classPicked || selectedMaker || selectedModel || draftSeries) && (
-            <Link
-              href={clearAllHref}
-              className="text-xs font-medium text-muted hover:text-ink"
-              onClick={() => {
-                setClassPicked(true);
-                setDraftSeries("");
-              }}
-            >
+          {(selectedMaker || selectedModel || draftSeries) && (
+            <Link href={clearAllHref} className="text-xs font-medium text-muted hover:text-ink" onClick={() => setDraftSeries("")}>
               {text.reset}
             </Link>
           )}
         </div>
 
         <nav className="grid gap-2.5" aria-label={text.brandModel}>
-          {classPicked ? (
-            <LockedRow
-              href={clearAllHref}
-              label={text.classLabel}
-              value={classLabelMap[vehicleClass]}
-              action={text.changeSelection}
-              onClick={() => {
-                setClassPicked(false);
-                setDraftSeries("");
-              }}
-            />
-          ) : null}
-
           {selectedMaker ? (
             <LockedRow
               href={clearMakerHref}
@@ -207,34 +171,6 @@ export function BrandSidebar({
               action={text.changeSelection}
               onClick={() => setDraftSeries("")}
             />
-          ) : null}
-
-          {pickingClass ? (
-            <Stage label={text.classLabel} stageKey="class">
-              {(["", "county", "medium", "large"] as const).map((value) => {
-                const href = hrefFor(lang, ctx, query, {
-                  vehicleClass: value || undefined,
-                  maker: undefined,
-                  model: undefined,
-                });
-                return (
-                  <Link
-                    key={value || "all"}
-                    href={href}
-                    className="picker-option"
-                    onClick={() => {
-                      setClassPicked(true);
-                      setDraftSeries("");
-                    }}
-                  >
-                    <span>{classLabelMap[value]}</span>
-                    <span aria-hidden className="picker-option__chevron">
-                      ›
-                    </span>
-                  </Link>
-                );
-              })}
-            </Stage>
           ) : null}
 
           {pickingMaker ? (
