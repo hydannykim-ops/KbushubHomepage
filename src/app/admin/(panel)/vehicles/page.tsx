@@ -1,15 +1,10 @@
 import Link from "next/link";
+import { VehicleOps } from "@/components/admin/vehicle-ops";
 import { getRepository } from "@/lib/data/repository";
 import { statusLabel } from "@/lib/labels";
 import type { SaleStatus } from "@/lib/domain/types";
 
-const statusRank: Record<SaleStatus, number> = {
-  review: 0,
-  available: 1,
-  reserved: 2,
-  sold: 3,
-  hidden: 4,
-};
+const statuses = ["available", "reserved", "sold", "hidden", "review"] as const satisfies readonly SaleStatus[];
 
 export default async function AdminVehiclesPage({
   searchParams,
@@ -18,108 +13,106 @@ export default async function AdminVehiclesPage({
 }) {
   const sp = await searchParams;
   const filter = typeof sp.status === "string" ? sp.status : "";
-  const vehicles = (await getRepository().listAdminVehicles()).slice().sort((a, b) => {
-    const rank = statusRank[a.status] - statusRank[b.status];
-    if (rank !== 0) return rank;
-    return b.updatedAt.localeCompare(a.updatedAt);
-  });
-  const visible = filter ? vehicles.filter((vehicle) => vehicle.status === filter) : vehicles;
-  const reviewCount = vehicles.filter((vehicle) => vehicle.status === "review").length;
+  const query = typeof sp.q === "string" ? sp.q.trim() : "";
+  const needle = query.toLowerCase();
+  const vehicles = await getRepository().listAdminVehicles();
+  const counts = Object.fromEntries(statuses.map((status) => [status, vehicles.filter((vehicle) => vehicle.status === status).length])) as Record<
+    SaleStatus,
+    number
+  >;
+  const visible = vehicles
+    .filter((vehicle) => (filter ? vehicle.status === filter : true))
+    .filter((vehicle) => {
+      if (!needle) return true;
+      return [vehicle.stockNo, vehicle.maker, vehicle.model, vehicle.trim, vehicle.location]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase()
+        .includes(needle);
+    })
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  const returnTo = `/admin/vehicles${filter || query ? `?${new URLSearchParams({ ...(filter ? { status: filter } : {}), ...(query ? { q: query } : {}) }).toString()}` : ""}`;
 
   return (
     <div className="grid gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">매물 관리</h1>
-          {reviewCount ? (
-            <p className="mt-1 text-sm text-muted">
-              딜러 등록 대기 <span className="font-semibold text-ink">{reviewCount}</span>건 · 상단에 먼저 보입니다.
-            </p>
-          ) : null}
+          <p className="mt-1 text-sm text-muted">등록·상태 변경·판매 완료·삭제는 이 화면에서 합니다. 공개 회원 매물 등록은 받지 않습니다.</p>
         </div>
-        <Link href="/admin/vehicles/new" className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white">
+        <Link href="/admin/vehicles/new" className="rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-white">
           매물 등록
         </Link>
       </div>
 
+      <form className="flex flex-wrap items-center gap-2" action="/admin/vehicles">
+        {filter ? <input type="hidden" name="status" value={filter} /> : null}
+        <input
+          name="q"
+          defaultValue={query}
+          placeholder="매물번호, 제조사, 모델"
+          className="min-w-56 flex-1 rounded-md border border-line bg-white px-3 py-2 text-sm"
+        />
+        <button className="rounded-md border border-line bg-white px-3 py-2 text-sm font-semibold">검색</button>
+      </form>
+
       <div className="flex flex-wrap gap-2 text-sm">
-        <Link href="/admin/vehicles" className={!filter ? "font-semibold text-ink" : "text-muted hover:text-ink"}>
-          전체
+        <Link href={query ? `/admin/vehicles?q=${encodeURIComponent(query)}` : "/admin/vehicles"} className={!filter ? "rounded-full bg-ink px-3 py-1 font-semibold text-white" : "rounded-full border border-line bg-white px-3 py-1 text-muted"}>
+          전체 {vehicles.length}
         </Link>
-        {(["review", "available", "reserved", "sold", "hidden"] as const).map((status) => (
+        {statuses.map((status) => (
           <Link
             key={status}
-            href={`/admin/vehicles?status=${status}`}
-            className={filter === status ? "font-semibold text-ink" : "text-muted hover:text-ink"}
+            href={`/admin/vehicles?status=${status}${query ? `&q=${encodeURIComponent(query)}` : ""}`}
+            className={filter === status ? "rounded-full bg-ink px-3 py-1 font-semibold text-white" : "rounded-full border border-line bg-white px-3 py-1 text-muted"}
           >
-            {statusLabel(status, "ko")}
+            {statusLabel(status, "ko")} {counts[status]}
           </Link>
         ))}
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-line bg-white">
-        <table className="min-w-full text-left text-sm">
-          <thead className="border-b border-line text-muted">
-            <tr>
-              <th className="px-3 py-2">사진</th>
-              <th className="px-3 py-2">매물번호</th>
-              <th className="px-3 py-2">모델</th>
-              <th className="px-3 py-2">상태</th>
-              <th className="px-3 py-2">출처</th>
-              <th className="px-3 py-2">판매자</th>
-              <th className="px-3 py-2">국내가</th>
-              <th className="px-3 py-2">수출가</th>
-            </tr>
-          </thead>
-          <tbody>
-            {visible.length ? (
-              visible.map((vehicle) => {
-                const cover = vehicle.photos.find((photo) => photo.isCover && !photo.placeholder) ?? vehicle.photos.find((photo) => !photo.placeholder);
-                return (
-                  <tr key={vehicle.id} className="border-b border-line">
-                    <td className="px-3 py-2">
-                      {cover ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={`/api/media/photo/${cover.id}`}
-                          alt=""
-                          className="h-12 w-16 object-cover"
-                        />
-                      ) : (
-                        <span className="inline-flex h-12 w-16 items-center justify-center bg-[#eef1f5] text-[10px] text-muted">없음</span>
-                      )}
-                    </td>
-                    <td className="px-3 py-2">
-                      <Link href={`/admin/vehicles/${vehicle.id}`} className="text-primary">
+      <div className="grid gap-3">
+        {visible.length ? (
+          visible.map((vehicle) => {
+            const cover = vehicle.photos.find((photo) => photo.isCover && !photo.placeholder) ?? vehicle.photos.find((photo) => !photo.placeholder);
+            return (
+              <article key={vehicle.id} className="grid gap-3 rounded-lg border border-line bg-white p-3 md:grid-cols-[5.5rem_minmax(0,1fr)]">
+                <Link href={`/admin/vehicles/${vehicle.id}`} className="block">
+                  {cover ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={`/api/media/photo/${cover.id}`} alt="" className="h-20 w-full rounded-md object-cover md:h-16" />
+                  ) : (
+                    <span className="inline-flex h-20 w-full items-center justify-center rounded-md bg-[#eef1f5] text-[10px] text-muted md:h-16">사진 없음</span>
+                  )}
+                </Link>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <div>
+                      <Link href={`/admin/vehicles/${vehicle.id}`} className="text-base font-semibold text-ink">
                         {vehicle.stockNo}
                       </Link>
-                    </td>
-                    <td className="px-3 py-2">
-                      {vehicle.maker} {vehicle.model}
-                    </td>
-                    <td className="px-3 py-2">{statusLabel(vehicle.status, "ko")}</td>
-                    <td className="px-3 py-2">{vehicle.listingSource === "dealer" ? "딜러" : "회사"}</td>
-                    <td className="px-3 py-2">
-                      {vehicle.listingSource === "dealer"
-                        ? [vehicle.sellerName, vehicle.sellerEmail, vehicle.sellerCompany].filter(Boolean).join(" · ") || "-"
-                        : "-"}
-                    </td>
-                    <td className="px-3 py-2">{vehicle.domesticPriceKrw ?? "가격 문의"}</td>
-                    <td className="px-3 py-2">
-                      {vehicle.exportPriceAmount != null ? `${vehicle.exportPriceAmount} ${vehicle.exportPriceCurrency}` : "가격 문의"}
-                    </td>
-                  </tr>
-                );
-              })
-            ) : (
-              <tr>
-                <td colSpan={8} className="px-3 py-8 text-center text-muted">
-                  표시할 매물이 없습니다.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                      <p className="text-sm text-muted">
+                        {vehicle.maker} {vehicle.model}
+                        {vehicle.trim ? ` ${vehicle.trim}` : ""}
+                        {vehicle.modelYear ? ` · ${vehicle.modelYear}` : ""}
+                        {vehicle.location ? ` · ${vehicle.location}` : ""}
+                      </p>
+                    </div>
+                    <p className="text-sm text-muted">
+                      국내 {vehicle.domesticPriceKrw ?? "문의"} · 수출{" "}
+                      {vehicle.exportPriceAmount != null ? `${vehicle.exportPriceAmount} ${vehicle.exportPriceCurrency}` : "문의"}
+                    </p>
+                  </div>
+                  <div className="mt-3">
+                    <VehicleOps id={vehicle.id} stockNo={vehicle.stockNo} status={vehicle.status} returnTo={returnTo} />
+                  </div>
+                </div>
+              </article>
+            );
+          })
+        ) : (
+          <p className="rounded-lg border border-dashed border-line bg-white px-4 py-10 text-center text-sm text-muted">표시할 매물이 없습니다.</p>
+        )}
       </div>
     </div>
   );

@@ -8,12 +8,12 @@ export default async function RequestsPage() {
     <div className="grid gap-4">
       <h1 className="text-2xl font-bold">차량 요청·매입 상담</h1>
       <p className="text-sm text-muted">
-        여기에는 홈의 <strong className="font-semibold text-ink">원하는 차량 요청</strong>과 게스트{" "}
-        <strong className="font-semibold text-ink">매입 상담</strong>만 모입니다. 로그인 딜러가 올린 매물은{" "}
-        <Link href="/admin/vehicles?status=review" className="font-semibold text-primary underline">
-          매물 관리 → 검토 중
+        홈의 <strong className="font-semibold text-ink">원하는 차량 요청</strong>과{" "}
+        <strong className="font-semibold text-ink">매입 상담</strong>이 모입니다. 실제 매물 등록·판매 완료·삭제는{" "}
+        <Link href="/admin/vehicles" className="font-semibold text-primary underline">
+          매물 관리
         </Link>
-        을 보세요.
+        에서 합니다.
       </p>
       {requests.length ? (
         requests.map((request) => (

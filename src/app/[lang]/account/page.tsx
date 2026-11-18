@@ -114,7 +114,11 @@ export default async function AccountPage({
       {session.role === "dealer" ? (
         <section className="border border-line bg-white p-5">
           <h2 className="text-xl font-semibold">{text.myListings}</h2>
-          <p className="mt-2 text-sm text-muted">{text.reviewNote}</p>
+          <p className="mt-2 text-sm leading-6 text-muted">
+            {lang === "ko"
+              ? "매물 등록은 이제 관리자가 직접 합니다. 이전에 올린 매물만 아래에서 확인할 수 있습니다."
+              : "New listings are added by staff. Previously submitted listings stay listed below."}
+          </p>
           {listings.length ? (
             <ul className="mt-4 divide-y divide-line border-y border-line">
               {listings.map((listing) => (
@@ -129,9 +133,6 @@ export default async function AccountPage({
           ) : (
             <p className="mt-4 text-sm text-muted">{text.noListings}</p>
           )}
-          <Link href={hrefTo(lang, "/sell", ctx)} className="mt-4 inline-flex bg-primary px-4 py-3 text-sm font-semibold text-white">
-            {text.navSell}
-          </Link>
         </section>
       ) : (
         <section className="border border-line bg-white p-5">

@@ -491,3 +491,19 @@ test("catalog labels localize maker model series for non-Korean UI", () => {
   assert.equal(vehicleTitle({ maker: "현대", model: "카운티", trim: "데모" }, "en", { includeTrim: false }), "Hyundai County");
   assert.equal(vehicleTitle({ maker: "현대", model: "카운티" }, "ko"), "현대 카운티");
 });
+
+test("admin can mark a vehicle sold and delete it", async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), "kbus-admin-ops-"));
+  const store = createDemoStore(dir);
+  const [vehicle] = await store.listAdminVehicles();
+  assert.ok(vehicle);
+  const sold = await store.setVehicleStatus(vehicle.id, "sold");
+  assert.equal(sold.status, "sold");
+  assert.equal((await store.getAdminVehicle(vehicle.id))?.status, "sold");
+  await store.deleteVehicle(vehicle.id);
+  assert.equal(await store.getAdminVehicle(vehicle.id), null);
+  await assert.rejects(
+    () => store.deleteVehicle(vehicle.id),
+    (error: unknown) => error instanceof Error && "code" in error && error.code === "not_found",
+  );
+});

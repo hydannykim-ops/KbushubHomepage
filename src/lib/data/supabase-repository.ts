@@ -14,6 +14,7 @@ import type {
   PhotoCategory,
   Quote,
   QuoteLine,
+  SaleStatus,
   SiteSettings,
   TradeMode,
   VehicleInternal,
@@ -443,6 +444,28 @@ export function createSupabaseRepository() {
       const vehicle = await loadAdmin(id);
       if (!vehicle) throw new StoreError("not_found");
       return vehicle;
+    },
+    async setVehicleStatus(id: string, status: SaleStatus): Promise<AdminVehicle> {
+      const service = createServiceClient();
+      const updated = await service.from("vehicles").update({ status, updated_at: new Date().toISOString() }).eq("id", id).select("id");
+      if (updated.error) fail(updated.error, "vehicle_status");
+      if (!updated.data?.length) throw new StoreError("not_found");
+      const vehicle = await loadAdmin(id);
+      if (!vehicle) throw new StoreError("not_found");
+      return vehicle;
+    },
+    async deleteVehicle(id: string): Promise<void> {
+      const service = createServiceClient();
+      const photos = await service.from("vehicle_photos").select("storage_path").eq("vehicle_id", id);
+      if (photos.error) fail(photos.error, "vehicle_delete_photos");
+      const paths = (photos.data ?? []).map((row) => row.storage_path).filter((item): item is string => Boolean(item));
+      if (paths.length) {
+        const removedFiles = await service.storage.from("vehicle-photos").remove(paths);
+        if (removedFiles.error) fail(removedFiles.error, "vehicle_delete_storage");
+      }
+      const removed = await service.from("vehicles").delete().eq("id", id).select("id");
+      if (removed.error) fail(removed.error, "vehicle_delete");
+      if (!removed.data?.length) throw new StoreError("not_found");
     },
     async addPhoto(vehicleId: string, file: { bytes: Buffer; contentType: ImageType; category: PhotoCategory; altKo: string; altEn: string }) {
       const service = createServiceClient();
