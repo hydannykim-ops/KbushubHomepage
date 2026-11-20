@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/session";
 import { getRepository } from "@/lib/data/repository";
+import { StoreError } from "@/lib/demo/store";
 import { checkImage } from "@/lib/domain/uploads";
 import type { PhotoCategory } from "@/lib/domain/types";
 import { absoluteUrl } from "@/lib/http/request-url";
@@ -40,13 +41,21 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const checked = checkImage(bytes);
   if (!checked.ok) return NextResponse.redirect(back, 303);
   const category = String(form.get("category") ?? "exterior");
-  await getRepository().addPhoto(id, {
-    bytes,
-    contentType: checked.contentType,
-    category: categories.has(category) ? (category as PhotoCategory) : "exterior",
-    altKo: String(form.get("altKo") ?? "차량 사진"),
-    altEn: String(form.get("altEn") ?? "Vehicle photo"),
-  });
+  try {
+    await getRepository().addPhoto(id, {
+      bytes,
+      contentType: checked.contentType,
+      category: categories.has(category) ? (category as PhotoCategory) : "exterior",
+      altKo: String(form.get("altKo") ?? "차량 사진"),
+      altEn: String(form.get("altEn") ?? "Vehicle photo"),
+    });
+  } catch (error) {
+    if (error instanceof StoreError && error.code === "too_many_photos") {
+      back.searchParams.set("saved", "photo-limit");
+      return NextResponse.redirect(back, 303);
+    }
+    throw error;
+  }
   back.searchParams.set("saved", "uploaded");
   return NextResponse.redirect(back, 303);
 }

@@ -21,7 +21,7 @@ import type {
   VehicleQuery,
   VehicleRequest,
 } from "../domain/types";
-import { extensionFor, type ImageType } from "../domain/uploads";
+import { extensionFor, MAX_VEHICLE_PHOTOS, type ImageType } from "../domain/uploads";
 import type { DealerListingInput, InquiryInput, InquiryUpdate, PartnerInput, QuoteInput, SellInput, SettingsInput, SignupInput, VehicleInput, WantedInput } from "../domain/validation";
 import { createAnonClient, createServiceClient, createSupabaseServer } from "../supabase/clients";
 import { DataAccessError } from "./errors";
@@ -448,7 +448,7 @@ export function createSupabaseRepository() {
       const service = createServiceClient();
       const existing = await service.from("vehicle_photos").select("id, is_cover").eq("vehicle_id", vehicleId);
       if (existing.error) fail(existing.error, "photo_list");
-      if ((existing.data ?? []).length >= 12) throw new StoreError("too_many_photos");
+      if ((existing.data ?? []).length >= MAX_VEHICLE_PHOTOS) throw new StoreError("too_many_photos");
       const id = randomUUID();
       const storagePath = `${vehicleId}/${id}.${extensionFor(file.contentType)}`;
       const uploaded = await service.storage.from("vehicle-photos").upload(storagePath, file.bytes, { contentType: file.contentType, upsert: false });
