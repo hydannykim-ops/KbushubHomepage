@@ -6,7 +6,7 @@ export type Transmission = "manual" | "automatic" | "unknown";
 export type Fuel = "diesel" | "gasoline" | "lpg" | "cng" | "electric" | "hybrid" | "unknown";
 export type Steering = "lhd" | "rhd" | "unknown";
 /** Domestic Korea bus transfer status used by operators and buyers. */
-export type TransferType = "transfer" | "scrap_replace" | "unknown";
+export type TransferType = "transfer" | "scrap_replace" | "private_export" | "unknown";
 /** Export buyer preference only — staff still quote freight. */
 export type ShippingMethod = "roro" | "container" | "undecided";
 export type PhotoCategory = "front" | "front_side" | "rear" | "exterior" | "interior" | "dashboard" | "engine" | "tires" | "defect";

@@ -167,7 +167,10 @@ function mapVehicle(row: Record<string, unknown>, includeInternal: boolean): Adm
     steering: row.steering as AdminVehicle["steering"],
     longBody: typeof row.long_body === "boolean" ? row.long_body : null,
     transferType:
-      row.transfer_type === "transfer" || row.transfer_type === "scrap_replace" || row.transfer_type === "unknown"
+      row.transfer_type === "transfer" ||
+      row.transfer_type === "scrap_replace" ||
+      row.transfer_type === "private_export" ||
+      row.transfer_type === "unknown"
         ? row.transfer_type
         : "unknown",
     lengthMm: num(row.length_mm),
