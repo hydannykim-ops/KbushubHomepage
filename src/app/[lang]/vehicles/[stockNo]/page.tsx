@@ -82,8 +82,6 @@ export default async function VehicleDetailPage({
   const sold = vehicle.status === "sold";
   const field = contentFieldLang(lang);
   const description = field === "ko" ? vehicle.descriptionKo : vehicle.descriptionEn;
-  const maintenance = field === "ko" ? vehicle.maintenanceKo : vehicle.maintenanceEn;
-  const defects = field === "ko" ? vehicle.defectsKo : vehicle.defectsEn;
   const ctaLabel = ctx.mode === "export" ? text.quote : text.purchase;
   const openConsult = sp.get("consult") === "1" || typeof rawParams.submitted === "string";
   const contactPhone = site.settings.phone ?? site.settings.whatsappE164;
@@ -160,16 +158,6 @@ export default async function VehicleDetailPage({
       <section>
         <h2 className="mb-3 text-xl font-bold">{text.specs}</h2>
         <SpecTable vehicle={vehicle} lang={lang} />
-      </section>
-      <section className="grid gap-4 md:grid-cols-2">
-        <article className="rounded-lg border border-line bg-white p-5">
-          <h2 className="font-bold">{text.maintenance}</h2>
-          <p className="mt-2 whitespace-pre-wrap text-sm leading-6">{showText(maintenance, lang)}</p>
-        </article>
-        <article className="rounded-lg border border-line bg-white p-5">
-          <h2 className="font-bold">{text.defects}</h2>
-          <p className="mt-2 whitespace-pre-wrap text-sm leading-6">{showText(defects, lang)}</p>
-        </article>
       </section>
       <section className="rounded-lg border border-line bg-white p-5">
         <h2 className="font-bold">{text.description}</h2>

@@ -58,10 +58,10 @@ export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
           previousUseKo: inputValue(form, "previousUseKo"),
           previousUseEn: inputValue(form, "previousUseEn"),
           location: inputValue(form, "location"),
-          maintenanceKo: inputValue(form, "maintenanceKo"),
-          maintenanceEn: inputValue(form, "maintenanceEn"),
-          defectsKo: inputValue(form, "defectsKo"),
-          defectsEn: inputValue(form, "defectsEn"),
+          maintenanceKo: v?.maintenanceKo ?? "",
+          maintenanceEn: v?.maintenanceEn ?? "",
+          defectsKo: v?.defectsKo ?? "",
+          defectsEn: v?.defectsEn ?? "",
           descriptionKo: inputValue(form, "descriptionKo"),
           descriptionEn: inputValue(form, "descriptionEn"),
           photographedOn: inputValue(form, "photographedOn"),
@@ -184,10 +184,6 @@ export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
       <Label text="수출 조건 한국어"><input name="exportPriceTermsKo" defaultValue={v?.exportPriceTermsKo ?? ""} className={field} /></Label>
       <Label text="수출 조건 영어"><input name="exportPriceTermsEn" defaultValue={v?.exportPriceTermsEn ?? ""} className={field} /></Label>
       <Label text="영상 https 링크" className="md:col-span-2"><input name="videoUrl" defaultValue={v?.videoUrl ?? ""} className={field} /></Label>
-      <Label text="정비 확인 한국어" className="md:col-span-2"><textarea name="maintenanceKo" defaultValue={v?.maintenanceKo ?? ""} rows={3} className={field} /></Label>
-      <Label text="정비 확인 영어" className="md:col-span-2"><textarea name="maintenanceEn" defaultValue={v?.maintenanceEn ?? ""} rows={3} className={field} /></Label>
-      <Label text="결함 한국어" className="md:col-span-2"><textarea name="defectsKo" defaultValue={v?.defectsKo ?? ""} rows={3} className={field} /></Label>
-      <Label text="결함 영어" className="md:col-span-2"><textarea name="defectsEn" defaultValue={v?.defectsEn ?? ""} rows={3} className={field} /></Label>
       <Label text="설명 한국어" className="md:col-span-2"><textarea name="descriptionKo" defaultValue={v?.descriptionKo ?? ""} rows={4} className={field} /></Label>
       <Label text="설명 영어" className="md:col-span-2"><textarea name="descriptionEn" defaultValue={v?.descriptionEn ?? ""} rows={4} className={field} /></Label>
       <fieldset className="grid gap-3 rounded-lg border border-line p-4 md:col-span-2 md:grid-cols-2">
