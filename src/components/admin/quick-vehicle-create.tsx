@@ -9,7 +9,7 @@ import { parseListingPaste, suggestAdminStockNo, type ListingPasteDraft } from "
 import { standardForModel } from "@/lib/domain/model-specs";
 import { MAX_VEHICLE_PHOTOS } from "@/lib/domain/uploads";
 import { classForModel, makerForModel } from "@/lib/domain/vehicle-catalog";
-import type { Fuel, Steering, Transmission, VehicleClass } from "@/lib/domain/types";
+import type { Fuel, Steering, TransferType, Transmission, VehicleClass } from "@/lib/domain/types";
 
 const field = "rounded-md border border-line px-3 py-2 text-sm font-normal";
 
@@ -26,6 +26,14 @@ function Label({ text, children, className = "" }: { text: string; children: Rea
       {children}
     </label>
   );
+}
+
+function transferFromUse(use: string | null): TransferType {
+  const text = use ?? "";
+  if (text.includes("대폐")) return "scrap_replace";
+  if (text.includes("수출") || text.includes("자가용")) return "private_export";
+  if (text.includes("양도")) return "transfer";
+  return "transfer";
 }
 
 function emptyDraft(): ListingPasteDraft {
@@ -59,6 +67,7 @@ export function QuickVehicleCreate() {
   const [draft, setDraft] = useState<ListingPasteDraft>(emptyDraft);
   const [stockNo, setStockNo] = useState(() => suggestAdminStockNo(null));
   const [status, setStatus] = useState("available");
+  const [transferType, setTransferType] = useState<TransferType>("transfer");
   const [pickerKey, setPickerKey] = useState(0);
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -81,6 +90,7 @@ export function QuickVehicleCreate() {
   function applyPaste() {
     const next = parseListingPaste(paste);
     setDraft(next);
+    setTransferType(transferFromUse(next.previousUseKo));
     setStockNo(suggestAdminStockNo(next.modelYear));
     setPickerKey((value) => value + 1);
     setError(null);
@@ -220,7 +230,7 @@ export function QuickVehicleCreate() {
       displacementCc: draft.displacementCc == null ? "" : String(draft.displacementCc),
       steering: draft.steering,
       longBody: draft.longBody == null ? "" : String(draft.longBody),
-      transferType: "unknown",
+      transferType,
       lengthMm: "",
       widthMm: "",
       heightMm: "",
@@ -378,6 +388,13 @@ export function QuickVehicleCreate() {
             onChange={(event) => setDraft((current) => ({ ...current, mileageKm: event.target.value ? Number(event.target.value) : null }))}
             className={field}
           />
+        </Label>
+        <Label text="양도양수">
+          <select value={transferType} onChange={(event) => setTransferType(event.target.value as TransferType)} className={field}>
+            <option value="transfer">양도양수</option>
+            <option value="scrap_replace">대폐차</option>
+            <option value="private_export">수출용/자가용</option>
+          </select>
         </Label>
         <Label text="기존 용도">
           <input

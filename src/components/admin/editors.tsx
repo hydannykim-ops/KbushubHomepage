@@ -105,10 +105,10 @@ export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
           previousUseKo: inputValue(form, "previousUseKo"),
           previousUseEn: inputValue(form, "previousUseEn"),
           location: inputValue(form, "location"),
-          maintenanceKo: inputValue(form, "maintenanceKo"),
-          maintenanceEn: inputValue(form, "maintenanceEn"),
-          defectsKo: inputValue(form, "defectsKo"),
-          defectsEn: inputValue(form, "defectsEn"),
+          maintenanceKo: v?.maintenanceKo ?? "",
+          maintenanceEn: v?.maintenanceEn ?? "",
+          defectsKo: v?.defectsKo ?? "",
+          defectsEn: v?.defectsEn ?? "",
           descriptionKo: inputValue(form, "descriptionKo"),
           descriptionEn: inputValue(form, "descriptionEn"),
           photographedOn: inputValue(form, "photographedOn"),
@@ -194,10 +194,11 @@ export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
       <Label text="인승"><input name="seats" value={seats} onChange={(event) => setSeats(event.target.value)} className={field} /></Label>
       <Label text="마력 (PS)"><input name="horsepowerPs" value={horsepowerPs} onChange={(event) => setHorsepowerPs(event.target.value)} className={field} /></Label>
       <Label text="양도양수">
-        <select name="transferType" defaultValue={v?.transferType ?? "unknown"} className={field}>
-          <option value="unknown">미확인</option>
+        <select name="transferType" defaultValue={v?.transferType ?? "transfer"} className={field}>
+          {v?.transferType === "unknown" ? <option value="unknown">미확인</option> : null}
           <option value="transfer">양도양수</option>
           <option value="scrap_replace">대폐차</option>
+          <option value="private_export">수출용/자가용</option>
         </select>
       </Label>
       <Label text="변속기">
@@ -245,10 +246,6 @@ export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
       <Label text="기존 용도 한국어"><input name="previousUseKo" defaultValue={v?.previousUseKo ?? ""} className={field} /></Label>
       <Label text="기존 용도 영어"><input name="previousUseEn" defaultValue={v?.previousUseEn ?? ""} className={field} /></Label>
       <Label text="영상 https 링크" className="md:col-span-2"><input name="videoUrl" defaultValue={v?.videoUrl ?? ""} className={field} /></Label>
-      <Label text="정비 확인 한국어" className="md:col-span-2"><textarea name="maintenanceKo" defaultValue={v?.maintenanceKo ?? ""} rows={3} className={field} /></Label>
-      <Label text="정비 확인 영어" className="md:col-span-2"><textarea name="maintenanceEn" defaultValue={v?.maintenanceEn ?? ""} rows={3} className={field} /></Label>
-      <Label text="결함 한국어" className="md:col-span-2"><textarea name="defectsKo" defaultValue={v?.defectsKo ?? ""} rows={3} className={field} /></Label>
-      <Label text="결함 영어" className="md:col-span-2"><textarea name="defectsEn" defaultValue={v?.defectsEn ?? ""} rows={3} className={field} /></Label>
       <Label text="설명 한국어" className="md:col-span-2"><textarea name="descriptionKo" defaultValue={v?.descriptionKo ?? ""} rows={4} className={field} /></Label>
       <Label text="설명 영어" className="md:col-span-2"><textarea name="descriptionEn" defaultValue={v?.descriptionEn ?? ""} rows={4} className={field} /></Label>
       <fieldset className="grid gap-3 rounded-lg border border-line p-4 md:col-span-2 md:grid-cols-2">

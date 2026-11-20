@@ -356,10 +356,10 @@ export function DealerListingForm({ lang }: { lang: Lang }) {
       </label>
       <label className="grid gap-1 text-sm font-medium">
         {text.transferMode}
-        <select name="transferType" className={field} defaultValue="unknown">
-          <option value="unknown">{text.unknown}</option>
+        <select name="transferType" className={field} defaultValue="transfer">
           <option value="transfer">{transferLabel("transfer", lang)}</option>
           <option value="scrap_replace">{transferLabel("scrap_replace", lang)}</option>
+          <option value="private_export">{transferLabel("private_export", lang)}</option>
         </select>
       </label>
       <label className="grid gap-1 text-sm font-medium">

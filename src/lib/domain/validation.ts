@@ -20,7 +20,7 @@ const classes = ["county", "medium", "large"] as const;
 const transmissions = ["manual", "automatic", "unknown"] as const;
 const fuels = ["diesel", "gasoline", "lpg", "cng", "electric", "hybrid", "unknown"] as const;
 const steerings = ["lhd", "rhd", "unknown"] as const;
-const transferTypes = ["transfer", "scrap_replace", "unknown"] as const;
+const transferTypes = ["transfer", "scrap_replace", "private_export", "unknown"] as const;
 const statuses = ["available", "reserved", "sold", "hidden", "review"] as const;
 const photoCategories = ["front", "front_side", "rear", "exterior", "interior", "dashboard", "engine", "tires", "defect"] as const;
 const inquiryKinds = ["purchase", "visit", "quote", "video", "general"] as const;
@@ -555,7 +555,7 @@ export type VehicleInput = {
   displacementCc: number | null;
   steering: Steering;
   longBody: boolean | null;
-  transferType: "transfer" | "scrap_replace" | "unknown";
+  transferType: "transfer" | "scrap_replace" | "private_export" | "unknown";
   lengthMm: number | null;
   widthMm: number | null;
   heightMm: number | null;
@@ -957,7 +957,7 @@ export type DealerListingInput = {
   seats: number | null;
   transmission: Transmission;
   fuel: Fuel;
-  transferType: "transfer" | "scrap_replace" | "unknown";
+  transferType: "transfer" | "scrap_replace" | "private_export" | "unknown";
   location: string | null;
   domesticPriceKrw: number | null;
   descriptionKo: string | null;
@@ -979,7 +979,7 @@ export function parseDealerListing(body: unknown, lang: Lang): { ok: true; data:
       transmission: z.enum(transmissions, { message: text(lang, "변속기를 선택해 주세요.", "Choose a transmission.") }),
       fuel: z.enum(fuels, { message: text(lang, "연료를 선택해 주세요.", "Choose a fuel type.") }),
       transferType: z.enum(transferTypes, {
-        message: text(lang, "양도양수·대폐차 여부를 선택해 주세요.", "Choose transfer or scrap-and-replace."),
+        message: text(lang, "양도양수, 대폐차, 수출용/자가용 중 선택해 주세요.", "Choose transfer, scrap-and-replace, or export/private use."),
       }),
       location: optionalText(120, text(lang, "위치는 120자 이내로 입력해 주세요.", "Location must be 120 characters or fewer.")),
       domesticPriceKrw: optionalInt(0, 5_000_000_000, text(lang, "가격은 숫자(원)로 입력해 주세요.", "Enter price as a whole number in KRW.")),

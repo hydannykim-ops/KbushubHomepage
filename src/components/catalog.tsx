@@ -158,10 +158,7 @@ export function SpecTable({ vehicle, lang }: { vehicle: PublicVehicle | OwnedLis
         : `${vehicle.horsepowerPs.toLocaleString(localeTag(lang))} PS`
       : null;
 
-  const transferValue =
-    vehicle.transferType === "transfer" || vehicle.transferType === "scrap_replace"
-      ? transferLabel(vehicle.transferType, lang)
-      : "";
+  const transferValue = vehicle.transferType === "unknown" ? "" : transferLabel(vehicle.transferType, lang);
 
   const secondary: Array<{ label: string; value: string }> = [
     { label: text.transferMode, value: transferValue },

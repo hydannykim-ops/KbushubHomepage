@@ -94,8 +94,6 @@ export default async function VehicleDetailPage({
   const showConsult = !sold && !ownerPreview && vehicle.status !== "review" && vehicle.status !== "hidden";
   const field = contentFieldLang(lang);
   const description = field === "ko" ? vehicle.descriptionKo : vehicle.descriptionEn;
-  const maintenance = field === "ko" ? vehicle.maintenanceKo : vehicle.maintenanceEn;
-  const defects = field === "ko" ? vehicle.defectsKo : vehicle.defectsEn;
   const contactPhone = site.settings.phone ?? site.settings.whatsappE164;
   const ctaLabel = inquiryMode === "export" ? text.quote : text.purchase;
   const openConsult = sp.get("consult") === "1" || typeof rawParams.submitted === "string";
@@ -207,17 +205,6 @@ export default async function VehicleDetailPage({
         <div className="mt-4">
           <SpecTable vehicle={vehicle} lang={lang} />
         </div>
-      </section>
-
-      <section className="grid gap-6 border border-line bg-white px-4 py-5 sm:px-5 md:grid-cols-2">
-        <article>
-          <h2 className="text-base font-semibold text-ink">{text.maintenance}</h2>
-          <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-muted">{showText(maintenance, lang)}</p>
-        </article>
-        <article>
-          <h2 className="text-base font-semibold text-ink">{text.defects}</h2>
-          <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-muted">{showText(defects, lang)}</p>
-        </article>
       </section>
 
       <section className="border border-line bg-white px-4 py-5 sm:px-5">
