@@ -38,7 +38,7 @@ import type {
   WantedInput,
 } from "../domain/validation";
 import { hashPassword, verifyPassword } from "../domain/password";
-import { extensionFor, type ImageType } from "../domain/uploads";
+import { extensionFor, MAX_VEHICLE_PHOTOS, type ImageType } from "../domain/uploads";
 import { buildSeed } from "./seed";
 import type { DemoState } from "./state";
 
@@ -280,7 +280,7 @@ export function createDemoStore(dir: string) {
       return update((state) => {
         const vehicle = state.vehicles.find((item) => item.id === vehicleId);
         if (!vehicle) throw new StoreError("not_found");
-        if (vehicle.photos.length >= 12) throw new StoreError("too_many_photos");
+        if (vehicle.photos.length >= MAX_VEHICLE_PHOTOS) throw new StoreError("too_many_photos");
         const id = randomUUID();
         const filename = `${id}.${extensionFor(file.contentType)}`;
         const relative = path.join("uploads", filename);

@@ -8,6 +8,7 @@ import { readSession, signSession } from "../src/lib/domain/auth-token";
 import { inquiryTradeModeForCountry, isKoreaCountry } from "../src/lib/domain/country";
 import { filterVehicles, parseVehicleQuery, serializeVehicleQuery } from "../src/lib/domain/filters";
 import { catalogPriceView, internalProfit, summarizeQuote, usdFromKrw } from "../src/lib/domain/money";
+import { parseListingPaste, matchCatalogModel } from "../src/lib/domain/listing-paste";
 import { standardForModel } from "../src/lib/domain/model-specs";
 import { normalizeReferralCode, referralForInquiry, rememberReferral, whatsappHref, whatsappMessage } from "../src/lib/domain/referral";
 import { acceptOrReject, submissionGate } from "../src/lib/domain/submit";
@@ -465,13 +466,24 @@ test("dealer listings publish immediately and customers cannot publish", async (
   assert.equal(JSON.stringify(listing).includes("scrypt"), false);
   assert.equal("internal" in listing, false);
   const listed = await store.listPublic({}, "domestic");
-  assert.equal(listed.items.some((item) => item.stockNo === listing.stockNo), false);
-  assert.equal(publicJson({ ...listing, internal: { purchaseCost: 1, purchaseCurrency: "KRW", actualSaleAmount: null, saleCurrency: null, extraCosts: null, agentFee: null, feeCurrency: null, note: "비밀" }, ownerId: dealer.id, sellerName: dealer.name, sellerEmail: dealer.email, sellerCompany: dealer.company }), null);
+  assert.equal(listed.items.some((item) => item.stockNo === listing.stockNo), true);
+  const leaked = publicJson({
+    ...listing,
+    internal: { purchaseCost: 1, purchaseCurrency: "KRW", actualSaleAmount: null, saleCurrency: null, extraCosts: null, agentFee: null, feeCurrency: null, note: "비밀" },
+    ownerId: dealer.id,
+    sellerName: dealer.name,
+    sellerEmail: dealer.email,
+    sellerCompany: dealer.company,
+  });
+  assert.ok(leaked);
+  assert.equal(leaked!.includes("purchaseCost"), false);
+  assert.equal(leaked!.includes("비밀"), false);
+  assert.equal(leaked!.includes("sellerEmail"), false);
   const owned = await store.listOwned(dealer.id);
   assert.equal(owned[0]?.stockNo, listing.stockNo);
   assert.equal((await store.getOwnedByStockNo(listing.stockNo, dealer.id))?.stockNo, listing.stockNo);
   assert.equal(await store.getOwnedByStockNo(listing.stockNo, customer.id), null);
-  assert.equal(await store.getPublicByStockNo(listing.stockNo), null);
+  assert.equal((await store.getPublicByStockNo(listing.stockNo))?.stockNo, listing.stockNo);
   await store.createInquiry(
     {
       kind: "purchase",
@@ -851,4 +863,27 @@ test("export sell reuses sell requests with optional photos", async () => {
   assert.equal(created.type, "sell");
   assert.equal(created.message, message);
   assert.match(created.message ?? "", /\[수출 매입\]/);
+});
+
+test("listing paste fills universe noble year mileage and catalog specs", () => {
+  assert.deepEqual(matchCatalogModel("현대 유니버스 노블"), { maker: "현대", model: "유니버스 노블" });
+  assert.deepEqual(matchCatalogModel("유니버스노블"), { maker: "현대", model: "유니버스 노블" });
+
+  const draft = parseListingPaste(`● 차명 :유니버스 노블
+● 년식 :13년식
+● 거리 : 670,000KM
+● 기타 :자가용/수출용
+● 전화문의 바랍니다.010-1234-5678`);
+  assert.equal(draft.maker, "현대");
+  assert.equal(draft.model, "유니버스 노블");
+  assert.equal(draft.vehicleClass, "large");
+  assert.equal(draft.modelYear, 2013);
+  assert.equal(draft.mileageKm, 670000);
+  assert.equal(draft.previousUseKo, "자가용/수출용");
+  assert.equal(draft.phone, "010-1234-5678");
+  assert.equal(draft.fuel, "diesel");
+  assert.ok(draft.horsepowerPs != null);
+  assert.equal(standardForModel("유니버스 노블")?.displacementCc, draft.displacementCc);
+  assert.ok((draft.descriptionKo ?? "").includes("전화문의"));
+  assert.equal(draft.warnings.length, 0);
 });
