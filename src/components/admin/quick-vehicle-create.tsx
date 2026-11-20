@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { notifyAdminSaved } from "@/components/admin/saved-toast";
 import { MakerModelPicker } from "@/components/maker-model-picker";
@@ -64,6 +64,11 @@ export function QuickVehicleCreate() {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [progress, setProgress] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const dragDepth = useRef(0);
+  const photosRef = useRef(photos);
+  photosRef.current = photos;
 
   useEffect(() => {
     return () => {
@@ -102,10 +107,14 @@ export function QuickVehicleCreate() {
     }));
   }
 
-  async function onPickFiles(fileList: FileList | null) {
+  async function onPickFiles(fileList: FileList | File[] | null) {
     if (!fileList?.length) return;
-    const incoming = Array.from(fileList).filter((file) => file.type.startsWith("image/"));
-    const room = MAX_VEHICLE_PHOTOS - photos.length;
+    const incoming = Array.from(fileList).filter((file) => file.type.startsWith("image/") || /\.(jpe?g|png|webp)$/i.test(file.name));
+    if (!incoming.length) {
+      setError("이미지 파일(JPEG/PNG/WebP)만 올릴 수 있습니다.");
+      return;
+    }
+    const room = MAX_VEHICLE_PHOTOS - photosRef.current.length;
     if (room <= 0) {
       setError(`사진은 최대 ${MAX_VEHICLE_PHOTOS}장까지입니다.`);
       return;
@@ -126,6 +135,38 @@ export function QuickVehicleCreate() {
     setProgress(null);
     if (incoming.length > room) setError(`최대 ${MAX_VEHICLE_PHOTOS}장만 올립니다. 초과분은 제외했습니다.`);
     else setError(null);
+  }
+
+  function onDragEnter(event: React.DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    dragDepth.current += 1;
+    if (event.dataTransfer.types.includes("Files")) setDragging(true);
+  }
+
+  function onDragOver(event: React.DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.dataTransfer.types.includes("Files")) {
+      event.dataTransfer.dropEffect = "copy";
+      setDragging(true);
+    }
+  }
+
+  function onDragLeave(event: React.DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    dragDepth.current = Math.max(0, dragDepth.current - 1);
+    if (dragDepth.current === 0) setDragging(false);
+  }
+
+  function onDrop(event: React.DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    dragDepth.current = 0;
+    setDragging(false);
+    const files = event.dataTransfer.files;
+    void onPickFiles(files);
   }
 
   function movePhoto(index: number, delta: number) {
@@ -419,12 +460,13 @@ export function QuickVehicleCreate() {
           <div>
             <h2 className="text-lg font-semibold">3. 사진 순서대로 올리기</h2>
             <p className="mt-1 text-sm text-muted">
-              최대 {MAX_VEHICLE_PHOTOS}장. 선택한 순서·아래 화살표 순서가 그대로 등록됩니다. 첫 장이 대표 사진입니다.
+              최대 {MAX_VEHICLE_PHOTOS}장. 드래그하거나 클릭해서 올리세요. 올린 순서·아래 화살표 순서가 그대로 등록됩니다. 첫 장이 대표 사진입니다.
             </p>
           </div>
           <p className="text-sm font-semibold tabular-nums">{filledCount}/{MAX_VEHICLE_PHOTOS}</p>
         </div>
         <input
+          ref={fileInputRef}
           type="file"
           accept="image/jpeg,image/png,image/webp"
           multiple
@@ -432,8 +474,25 @@ export function QuickVehicleCreate() {
             void onPickFiles(event.target.files);
             event.currentTarget.value = "";
           }}
-          className="text-sm"
+          className="sr-only"
+          aria-label="사진 선택"
         />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          onDragEnter={onDragEnter}
+          onDragOver={onDragOver}
+          onDragLeave={onDragLeave}
+          onDrop={onDrop}
+          className={`grid min-h-36 w-full place-items-center rounded-md border-2 border-dashed px-4 py-8 text-center transition ${
+            dragging ? "border-primary bg-[#eef3fb]" : "border-line bg-[#f8f8f6] hover:border-primary/50"
+          }`}
+        >
+          <span className="grid gap-1 text-sm">
+            <span className="font-semibold text-ink">{dragging ? "여기에 놓으면 추가됩니다" : "사진을 여기로 드래그하거나 클릭해서 선택"}</span>
+            <span className="text-muted">JPEG / PNG / WebP · 최대 {MAX_VEHICLE_PHOTOS}장</span>
+          </span>
+        </button>
         {photos.length ? (
           <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {photos.map((photo, index) => (
