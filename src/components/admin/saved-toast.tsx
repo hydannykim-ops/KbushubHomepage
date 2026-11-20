@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { MAX_VEHICLE_PHOTOS } from "@/lib/domain/uploads";
 
 const STORAGE_KEY = "kb-admin-toast";
 const EVENT_NAME = "kb-admin-toast";
@@ -51,6 +52,7 @@ export function AdminToastHost() {
     if (!saved) return;
     if (saved === "deleted") setMessage("삭제되었습니다.");
     else if (saved === "uploaded") setMessage("사진을 올렸습니다.");
+    else if (saved === "photo-limit") setMessage(`사진은 최대 ${MAX_VEHICLE_PHOTOS}장까지 등록할 수 있습니다.`);
     else setMessage("저장되었습니다.");
     const next = new URLSearchParams(searchParams.toString());
     next.delete("saved");

@@ -9,7 +9,7 @@ import { filterVehicles, parseVehicleQuery, serializeVehicleQuery } from "../src
 import { internalProfit, summarizeQuote } from "../src/lib/domain/money";
 import { normalizeReferralCode, referralForInquiry, rememberReferral, whatsappHref, whatsappMessage } from "../src/lib/domain/referral";
 import { acceptOrReject, submissionGate } from "../src/lib/domain/submit";
-import { checkImage } from "../src/lib/domain/uploads";
+import { checkImage, MAX_VEHICLE_PHOTOS } from "../src/lib/domain/uploads";
 import { parseInquiry, parseQuote } from "../src/lib/domain/validation";
 import {
   makerLabel,
@@ -23,7 +23,7 @@ import {
   vehicleTitle,
 } from "../src/lib/domain/vehicle-catalog";
 import { buildSeed } from "../src/lib/demo/seed";
-import { createDemoStore } from "../src/lib/demo/store";
+import { createDemoStore, StoreError } from "../src/lib/demo/store";
 
 test("price sort keeps currencies apart and puts ask-price last", () => {
   const seed = buildSeed();
@@ -479,6 +479,32 @@ test("maker series drill-down groups shared model lines", () => {
     "유니버스 프라임EX",
     "유니버스 럭셔리",
   ]);
+});
+
+test("a vehicle accepts 30 photos and rejects the next one", async () => {
+  assert.equal(MAX_VEHICLE_PHOTOS, 30);
+  const dir = await mkdtemp(path.join(tmpdir(), "kbus-photos-"));
+  const store = createDemoStore(dir);
+  const vehicle = (await store.listAdminVehicles())[0];
+  assert.ok(vehicle);
+  assert.ok(vehicle.photos.length < MAX_VEHICLE_PHOTOS);
+  const file = {
+    bytes: Buffer.from([0xff, 0xd8, 0xff, 0xd9]),
+    contentType: "image/jpeg" as const,
+    category: "exterior" as const,
+    altKo: "추가",
+    altEn: "extra",
+  };
+  const room = MAX_VEHICLE_PHOTOS - vehicle.photos.length;
+  for (let index = 0; index < room; index += 1) {
+    await store.addPhoto(vehicle.id, file);
+  }
+  const filled = await store.getAdminVehicle(vehicle.id);
+  assert.equal(filled?.photos.length, MAX_VEHICLE_PHOTOS);
+  await assert.rejects(
+    () => store.addPhoto(vehicle.id, file),
+    (error: unknown) => error instanceof StoreError && error.code === "too_many_photos",
+  );
 });
 
 test("catalog labels localize maker model series for non-Korean UI", () => {

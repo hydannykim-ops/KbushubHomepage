@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { VehicleForm } from "@/components/admin/editors";
 import { getRepository } from "@/lib/data/repository";
 import { internalProfit, formatMoney } from "@/lib/domain/money";
+import { MAX_VEHICLE_PHOTOS } from "@/lib/domain/uploads";
 import { photoCategoryList, photoLabel } from "@/lib/labels";
 
 export default async function EditVehiclePage({ params }: { params: Promise<{ id: string }> }) {
@@ -38,11 +39,11 @@ export default async function EditVehiclePage({ params }: { params: Promise<{ id
           <div>
             <h2 className="font-bold">사진</h2>
             <p className="mt-1 text-sm text-muted">
-              판매자·관리자가 올린 파일을 여기서 확인합니다. 검토 중 매물도 관리자 로그인 상태로 볼 수 있습니다.
+              판매자·관리자가 올린 파일을 여기서 확인합니다. 차량당 최대 {MAX_VEHICLE_PHOTOS}장까지 등록할 수 있습니다.
             </p>
           </div>
           <p className="text-sm tabular-nums text-muted">
-            실사진 {realPhotos.length} · 플레이스홀더 {placeholders.length}
+            등록 {vehicle.photos.length}/{MAX_VEHICLE_PHOTOS} · 실사진 {realPhotos.length} · 플레이스홀더 {placeholders.length}
           </p>
         </div>
 
@@ -76,6 +77,9 @@ export default async function EditVehiclePage({ params }: { params: Promise<{ id
           </p>
         )}
 
+        {vehicle.photos.length >= MAX_VEHICLE_PHOTOS ? (
+          <p className="mt-5 border-t border-line pt-4 text-sm text-muted">사진은 최대 {MAX_VEHICLE_PHOTOS}장까지 등록할 수 있습니다.</p>
+        ) : (
         <form
           action={`/api/admin/vehicles/${vehicle.id}/photos`}
           method="post"
@@ -93,6 +97,7 @@ export default async function EditVehiclePage({ params }: { params: Promise<{ id
           <input name="altKo" placeholder="한국어 설명" className="rounded-md border border-line px-2 py-2 text-sm" />
           <button className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white">업로드</button>
         </form>
+        )}
 
         <div className="mt-4 grid gap-3">
           {vehicle.photos.map((photo) => (
