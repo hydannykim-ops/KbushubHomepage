@@ -79,13 +79,13 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       suggestions: ["매물 보기", "견적 문의", "내 차 팔기", "회사 연락처"],
     },
     inventory: {
-      text: "회사 확인 매물은 매물 보기에서 차급 → 제조사 → 차종류 → 차모델 순으로 고를 수 있습니다. 국내 거래와 수출은 같은 재고입니다.",
+      text: "회사 확인 매물은 매물 보기에서 한눈에 볼 수 있고, 제조사와 모델로 좁힐 수 있습니다. 국내 거래와 수출은 같은 재고입니다.",
       links: [{ href: "/vehicles", label: "매물 보기" }],
       suggestions: ["카운티", "견적 문의", "가격 문의"],
     },
     county: {
-      text: "현대 E-카운티는 차급에서 카운티를 고른 뒤 제조사·모델로 좁히면 됩니다.",
-      links: [{ href: "/vehicles?class=county", label: "카운티 매물" }],
+      text: "현대 E-카운티는 매물 보기에서 제조사·모델로 찾을 수 있습니다.",
+      links: [{ href: "/vehicles?model=카운티", label: "카운티 매물" }],
       suggestions: ["매물 보기", "원하는 차량 요청"],
     },
     export: {
@@ -153,13 +153,13 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       suggestions: ["Browse inventory", "Request a vehicle", "Ask for a quote", "Company contact"],
     },
     inventory: {
-      text: "Browse company-checked stock under Inventory. Pick class → maker → series → model. Domestic and export share one inventory.",
+      text: "Browse company-checked stock under Inventory. Narrow by maker and model. Domestic and export share one inventory.",
       links: [{ href: "/vehicles", label: "Browse inventory" }],
       suggestions: ["County", "Request a vehicle", "Ask for a quote"],
     },
     county: {
-      text: "For Hyundai E-County, choose the County class first, then maker and model.",
-      links: [{ href: "/vehicles?class=county", label: "County stock" }],
+      text: "Hyundai E-County is in the same inventory. Filter by maker and model.",
+      links: [{ href: "/vehicles?model=카운티", label: "County stock" }],
       suggestions: ["Browse inventory", "Request a vehicle"],
     },
     export: {
@@ -226,13 +226,13 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       suggestions: ["Ver inventario", "Solicitar vehículo", "Pedir cotización", "Contacto"],
     },
     inventory: {
-      text: "En Inventario elija clase → marca → serie → modelo. Hay un solo stock para venta nacional y exportación.",
+      text: "En Inventario se ve todo el stock y se puede acotar por marca y modelo. Hay un solo stock para venta nacional y exportación.",
       links: [{ href: "/vehicles", label: "Ver inventario" }],
       suggestions: ["County", "Solicitar vehículo", "Pedir cotización"],
     },
     county: {
-      text: "Para Hyundai County, elija primero la clase County y después la marca y el modelo.",
-      links: [{ href: "/vehicles?class=county", label: "Stock County" }],
+      text: "Hyundai County está en el mismo inventario. Fíltrelo por marca y modelo.",
+      links: [{ href: "/vehicles?model=카운티", label: "Stock County" }],
       suggestions: ["Ver inventario", "Solicitar vehículo"],
     },
     export: {
@@ -305,13 +305,13 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       suggestions: ["Voir le stock", "Demander un véhicule", "Contact"],
     },
     inventory: {
-      text: "Dans le stock, choisissez classe → marque → série → modèle. Un seul inventaire pour national et export.",
+      text: "Le stock affiche tout l'inventaire. Affinez par marque et modèle. Un seul inventaire pour national et export.",
       links: [{ href: "/vehicles", label: "Voir le stock" }],
       suggestions: ["County", "Demander un véhicule", "Prix"],
     },
     county: {
-      text: "Pour Hyundai County, choisissez d’abord la classe County.",
-      links: [{ href: "/vehicles?class=county", label: "Stock County" }],
+      text: "Le Hyundai County est dans le même inventaire. Filtrez par marque et modèle.",
+      links: [{ href: "/vehicles?model=카운티", label: "Stock County" }],
       suggestions: ["Voir le stock", "Demander un véhicule"],
     },
     export: {
@@ -378,13 +378,13 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       suggestions: ["មើលស្តុក", "ស្នើយានយន្ត", "ទំនាក់ទំនង"],
     },
     inventory: {
-      text: "នៅស្តុក ជ្រើសថ្នាក់ → ក្រុមហ៊ុនផលិត → ប្រភេទ → ម៉ូដែល។ ស្តុកតែមួយសម្រាប់ក្នុងស្រុក និងនាំចេញ។",
+      text: "ស្តុកបង្ហាញរថយន្តទាំងអស់ ហើយអាចច្រោះតាមម៉ាក និងម៉ូដែល។ ស្តុកតែមួយសម្រាប់ក្នុងស្រុក និងនាំចេញ។",
       links: [{ href: "/vehicles", label: "មើលស្តុក" }],
       suggestions: ["County", "ស្នើយានយន្ត", "តម្លៃ"],
     },
     county: {
-      text: "សម្រាប់ Hyundai County ជ្រើសថ្នាក់ County មុន។",
-      links: [{ href: "/vehicles?class=county", label: "ស្តុក County" }],
+      text: "Hyundai County ស្ថិតក្នុងស្តុកតែមួយ។ ច្រោះតាមម៉ាក និងម៉ូដែល។",
+      links: [{ href: "/vehicles?model=카운티", label: "ស្តុក County" }],
       suggestions: ["មើលស្តុក", "ស្នើយានយន្ត"],
     },
     export: {
@@ -451,13 +451,13 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       suggestions: ["Нөөц үзэх", "Хүсэлт илгээх", "Холбоо барих"],
     },
     inventory: {
-      text: "Нөөцөд ангилал → үйлдвэрлэгч → төрөл → загвар сонгоно. Дотоод/экспорт нэг нөөцтэй.",
+      text: "Нөөц бүх машиныг харуулна. Үйлдвэрлэгч, загвараар нарийсгана. Дотоод/экспорт нэг нөөцтэй.",
       links: [{ href: "/vehicles", label: "Нөөц үзэх" }],
       suggestions: ["County", "Хүсэлт илгээх", "Үнэ"],
     },
     county: {
-      text: "Hyundai County-д эхлээд County ангиллыг сонгоно.",
-      links: [{ href: "/vehicles?class=county", label: "County нөөц" }],
+      text: "Hyundai County нэг нөөцөд байна. Үйлдвэрлэгч, загвараар шүүнэ.",
+      links: [{ href: "/vehicles?model=카운티", label: "County нөөц" }],
       suggestions: ["Нөөц үзэх", "Хүсэлт илгээх"],
     },
     export: {

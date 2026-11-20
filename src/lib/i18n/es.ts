@@ -126,7 +126,7 @@ export const es: Messages = {
   "hours": "Horario",
   "applyFilters": "Ver resultados",
   "reset": "Restablecer",
-  "brandModel": "Clase · Marca · Modelo",
+  "brandModel": "Marca · Modelo",
   "moreFilters": "Año · Kilometraje · Precio",
   "resultCount": "{n} vehículos",
   "seatsShort": "asientos",

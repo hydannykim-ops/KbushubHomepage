@@ -8,7 +8,7 @@ import { copy } from "@/lib/i18n";
 import { contentFieldLang, localeTag } from "@/lib/i18n/langs";
 import { photoUrl } from "@/lib/domain/photo-url";
 import { makerLabel, modelLabel, vehicleTitle } from "@/lib/domain/vehicle-catalog";
-import { classLabel, fuelLabel, statusLabel, transferLabel, transmissionLabel } from "@/lib/labels";
+import { fuelLabel, statusLabel, transferLabel, transmissionLabel } from "@/lib/labels";
 import { whatsappHref, whatsappMessage } from "@/lib/domain/referral";
 
 export function DemoBanner({ lang }: { lang: Lang }) {
@@ -100,7 +100,6 @@ export function VehicleCard({
       <Link href={href} className="vehicle-card__link">
         <PhotoFrame vehicle={vehicle} lang={lang} transfer={transfer} />
         <div className="vehicle-card__body">
-          <p className="vehicle-card__eyebrow">{classLabel(vehicle.vehicleClass, lang)}</p>
           <h2 className="vehicle-card__title">
             {vehicleTitle(vehicle, lang, { includeTrim: false })}
             {vehicle.trim ? <span className="vehicle-card__trim">{vehicle.trim}</span> : null}
@@ -165,7 +164,6 @@ export function SpecTable({ vehicle, lang }: { vehicle: PublicVehicle | OwnedLis
 
   const secondary: Array<{ label: string; value: string }> = [
     { label: text.transferMode, value: transferValue },
-    { label: text.classLabel, value: classLabel(vehicle.vehicleClass, lang) },
     vehicle.seats != null ? { label: text.seats, value: String(vehicle.seats) } : null,
     horsepower ? { label: text.horsepower, value: horsepower } : null,
     vehicle.transmission !== "unknown" ? { label: text.transmission, value: transmissionLabel(vehicle.transmission, lang) } : null,

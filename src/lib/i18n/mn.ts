@@ -126,7 +126,7 @@ export const mn: Messages = {
   "hours": "Цагийн хуваарь",
   "applyFilters": "Үр дүн харах",
   "reset": "Дахин тохируулах",
-  "brandModel": "Ангилал · Үйлдвэрлэгч · Загвар",
+  "brandModel": "Үйлдвэрлэгч · Загвар",
   "moreFilters": "Он · Гүйлт · Үнэ",
   "resultCount": "{n} машин",
   "seatsShort": "суудал",

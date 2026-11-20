@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { notifyAdminSaved } from "@/components/admin/saved-toast";
 import { MakerModelPicker } from "@/components/maker-model-picker";
 import { standardForModel } from "@/lib/domain/model-specs";
-import type { AdminVehicle, Agent, Fuel, Inquiry, InquiryStatus, Steering, Transmission, VehicleClass } from "@/lib/domain/types";
+import type { AdminVehicle, Agent, Fuel, Inquiry, InquiryStatus, Steering, Transmission } from "@/lib/domain/types";
 import { classForModel } from "@/lib/domain/vehicle-catalog";
 import type { QuoteInput } from "@/lib/domain/validation";
 import { fuelLabel, inquiryStatusLabel } from "@/lib/labels";
@@ -38,7 +38,6 @@ export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
   const [pending, setPending] = useState(false);
   const [specNote, setSpecNote] = useState<string | null>(null);
   const v = vehicle;
-  const [vehicleClass, setVehicleClass] = useState<VehicleClass>(v?.vehicleClass ?? "county");
   const [seats, setSeats] = useState<number | string>(v?.seats ?? "");
   const [horsepowerPs, setHorsepowerPs] = useState<number | string>(v?.horsepowerPs ?? "");
   const [transmission, setTransmission] = useState<Transmission>(v?.transmission ?? "unknown");
@@ -50,8 +49,6 @@ export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
 
   function applyStandard(model: string) {
     const standard = standardForModel(model);
-    const nextClass = classForModel(model);
-    if (nextClass) setVehicleClass(nextClass);
     if (!standard) {
       setSpecNote("이 모델의 표준 제원은 없습니다. 마력·변속기·배기량은 직접 입력해 주세요.");
       return;
@@ -75,7 +72,8 @@ export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
         setError(null);
         setPending(true);
         const form = new FormData(event.currentTarget);
-        if (!inputValue(form, "maker") || !inputValue(form, "model")) {
+        const model = inputValue(form, "model");
+        if (!inputValue(form, "maker") || !model) {
           setError("제조사와 모델을 선택해 주세요.");
           setPending(false);
           return;
@@ -83,9 +81,9 @@ export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
         const payload = {
           stockNo: inputValue(form, "stockNo"),
           status: inputValue(form, "status"),
-          vehicleClass: inputValue(form, "vehicleClass"),
+          vehicleClass: classForModel(model) ?? v?.vehicleClass ?? "county",
           maker: inputValue(form, "maker"),
-          model: inputValue(form, "model"),
+          model,
           trim: inputValue(form, "trim"),
           modelYear: inputValue(form, "modelYear"),
           firstRegisteredOn: inputValue(form, "firstRegisteredOn"),
@@ -163,18 +161,10 @@ export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
           <option value="review">검토 중</option>
         </select>
       </Label>
-      <Label text="차급">
-        <select name="vehicleClass" value={vehicleClass} onChange={(event) => setVehicleClass(event.target.value as VehicleClass)} className={field}>
-          <option value="county">카운티</option>
-          <option value="medium">중형</option>
-          <option value="large">대형</option>
-        </select>
-      </Label>
       <MakerModelPicker
         key={`${v?.id ?? "new"}-${v?.maker ?? ""}-${v?.model ?? ""}`}
         lang="ko"
         required
-        vehicleClass={vehicleClass}
         defaultMaker={v?.maker ?? ""}
         defaultModel={v?.model ?? ""}
         onModelChange={applyStandard}

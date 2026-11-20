@@ -27,14 +27,8 @@ export default async function HomePage({
   if (!site.ok) return <DataProblem lang={lang} code={site.code} />;
 
   const listed = await site.repo.listPublic({}, ctx.mode);
-  const fresh = listed.items.filter((vehicle) => vehicle.status !== "sold").slice(0, 4);
-  const featured = listed.items.filter((vehicle) => vehicle.featured).slice(0, 4);
+  const stock = listed.items.filter((vehicle) => vehicle.status !== "sold");
   const cardHref = (vehicle: PublicVehicle) => hrefTo(lang, `/vehicles/${vehicle.stockNo}`, ctx);
-  const classes = [
-    [text.classCounty, text.classCountyBody, text.mediaCounty, hrefTo(lang, "/vehicles", ctx, { class: "county" })],
-    [text.classMedium, text.classMediumBody, text.mediaMedium, hrefTo(lang, "/vehicles", ctx, { class: "medium" })],
-    [text.classLarge, text.classLargeBody, text.mediaLarge, hrefTo(lang, "/vehicles", ctx, { class: "large" })],
-  ] as const;
 
   const slides = [
     {
@@ -46,7 +40,7 @@ export default async function HomePage({
       body: text.heroBody,
       tone: "hub" as const,
       primary: { href: hrefTo(lang, "/vehicles", ctx), label: text.browseInventory },
-      secondary: { href: hrefTo(lang, "/vehicles", ctx, { class: "county" }), label: text.classCounty },
+      secondary: { href: hrefTo(lang, "/wanted", ctx), label: text.navWanted },
     },
     ...(lang === "ko"
       ? [
@@ -93,49 +87,14 @@ export default async function HomePage({
   ];
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-16 px-4 py-10 md:py-14">
+    <div className="mx-auto grid max-w-6xl gap-10 px-4 py-6 md:py-8">
       <HeroBanner prevLabel={text.heroPrev} nextLabel={text.heroNext} slides={slides} />
 
-      <section className="grid gap-4 md:grid-cols-3">
-        {(
-          [
-            [...classes[0], "/demo/county-cover.jpg"],
-            [...classes[1], "/demo/medium-cover.jpg"],
-            [...classes[2], "/demo/large-cover.jpg"],
-          ] as const
-        ).map(([title, body, slot, href, image]) => (
-          <Link key={title} href={href} className="class-card group">
-            <div className="class-card__media">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={image} alt={slot} />
-              <span className="class-card__accent" />
-            </div>
-            <div className="class-card__body">
-              <h2 className="class-card__title">{title}</h2>
-              <p>{body}</p>
-            </div>
-          </Link>
-        ))}
-      </section>
-
       <section>
-        <h2 className="section-title text-2xl font-semibold tracking-tight text-ink">{text.newArrivals}</h2>
-        {fresh.length ? (
-          <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-            {fresh.map((vehicle) => (
-              <VehicleCard key={vehicle.id} vehicle={vehicle} lang={lang} href={cardHref(vehicle)} listedBy={site.settings.companyName} />
-            ))}
-          </div>
-        ) : (
-          <p className="mt-4 text-muted">{text.noVehicles}</p>
-        )}
-      </section>
-
-      <section className="-mx-4 bg-primary-soft/70 px-4 py-8 md:mx-0 md:rounded-2xl md:px-6">
-        <h2 className="section-title text-2xl font-semibold tracking-tight text-ink">{text.featured}</h2>
-        {featured.length ? (
-          <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-            {featured.map((vehicle) => (
+        <h2 className="section-title text-2xl font-semibold tracking-tight text-ink">{text.navVehicles}</h2>
+        {stock.length ? (
+          <div className="mt-4 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {stock.map((vehicle) => (
               <VehicleCard key={vehicle.id} vehicle={vehicle} lang={lang} href={cardHref(vehicle)} listedBy={site.settings.companyName} />
             ))}
           </div>

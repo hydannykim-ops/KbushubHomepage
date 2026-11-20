@@ -126,7 +126,7 @@ export const km: Messages = {
   "hours": "ម៉ោងធ្វើការ",
   "applyFilters": "បង្ហាញលទ្ធផល",
   "reset": "កំណត់ឡើងវិញ",
-  "brandModel": "ថ្នាក់ · ម៉ាក · ម៉ូដែល",
+  "brandModel": "ម៉ាក · ម៉ូដែល",
   "moreFilters": "ឆ្នាំ · គីឡូម៉ែត្រ · តម្លៃ",
   "resultCount": "យានយន្ត {n}",
   "seatsShort": "កៅអី",

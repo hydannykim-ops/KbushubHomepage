@@ -126,7 +126,7 @@ export const ko: Messages = {
   "hours": "영업시간",
   "applyFilters": "매물 보기",
   "reset": "초기화",
-  "brandModel": "차급 · 제조사 · 모델",
+  "brandModel": "제조사 · 모델",
   "moreFilters": "연식 · 주행 · 가격",
   "resultCount": "{n}대",
   "seatsShort": "인승",
