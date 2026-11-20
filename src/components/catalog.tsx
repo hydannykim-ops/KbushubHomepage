@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { preload } from "react-dom";
 import { MediaSlot } from "./media-slot";
 import { GalleryClient } from "./gallery-client";
 import { catalogPriceView, formatKm } from "@/lib/domain/money";
@@ -135,11 +136,16 @@ export function Gallery({ photos, lang }: { photos: VehiclePhoto[]; lang: Lang }
   const text = copy(lang);
   if (!photos.length) {
     return (
-      <div className="aspect-[16/10] overflow-hidden border border-line bg-white">
+      <div className="aspect-[19.5/9] overflow-hidden border border-line bg-black">
         <MediaSlot label={text.mediaCover} hint={text.photoNone} />
       </div>
     );
   }
+  const warm = [...photos].sort((a, b) => a.sortOrder - b.sortOrder).filter((photo) => photo.path && !photo.placeholder).slice(0, 4);
+  warm.forEach((photo, index) => {
+    const src = photoUrl(photo, 1200);
+    if (src) preload(src, { as: "image", fetchPriority: index === 0 ? "high" : "low" });
+  });
   return <GalleryClient photos={photos} lang={lang} />;
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { MediaSlot } from "@/components/media-slot";
 import { photoUrl } from "@/lib/domain/photo-url";
 import type { Lang, VehiclePhoto } from "@/lib/domain/types";
@@ -8,11 +8,26 @@ import { copy } from "@/lib/i18n";
 import { contentFieldLang } from "@/lib/i18n/langs";
 import { photoLabel } from "@/lib/labels";
 
-function preload(src: string) {
-  if (typeof window === "undefined" || !src) return;
-  const img = new window.Image();
-  img.decoding = "async";
-  img.src = src;
+/** Same size the stage shows, so a flip reuses a file that is already in the browser cache. */
+const STAGE_WIDTH = 1200;
+/** Modern phone screens in landscape (about 19.5:9, such as 2340×1080). */
+const STAGE_FRAME = "relative aspect-[19.5/9] bg-black";
+/** How many photos on either side stay mounted and downloading while the current one is on screen. */
+const LOOKAHEAD = 3;
+
+function ringDistance(from: number, to: number, length: number) {
+  const raw = Math.abs(from - to);
+  return Math.min(raw, length - raw);
+}
+
+function warmIndexes(index: number, length: number) {
+  const indexes = new Set<number>();
+  if (length <= 0) return indexes;
+  for (let step = 0; step <= LOOKAHEAD; step += 1) {
+    indexes.add((index + step) % length);
+    indexes.add((index - step + length) % length);
+  }
+  return indexes;
 }
 
 export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: Lang }) {
@@ -20,28 +35,48 @@ export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: 
   const visible = useMemo(() => [...photos].sort((a, b) => a.sortOrder - b.sortOrder), [photos]);
   const [index, setIndex] = useState(0);
   const [lightbox, setLightbox] = useState(false);
+  const [ready, setReady] = useState<Record<string, true>>({});
+  const [sharp, setSharp] = useState<Record<string, true>>({});
+  const [hold, setHold] = useState(0);
   const safeIndex = Math.min(index, Math.max(visible.length - 1, 0));
   const current = visible[safeIndex];
   const field = contentFieldLang(lang);
-  const mainSrc = current ? photoUrl(current, 1200) : null;
-  const fullSrc = current ? photoUrl(current, 1600) : null;
   const many = visible.length > 1;
+  const currentReady = !current || isPlaceholder(current) || Boolean(ready[current.id]);
+  const displayIndex = currentReady ? safeIndex : Math.min(hold, Math.max(visible.length - 1, 0));
+  const shown = visible[displayIndex];
 
-  function goPrev() {
-    setIndex((value) => (value - 1 + visible.length) % visible.length);
-  }
-  function goNext() {
-    setIndex((value) => (value + 1) % visible.length);
-  }
+  const markReady = useCallback((id: string) => {
+    setReady((prev) => (prev[id] ? prev : { ...prev, [id]: true }));
+  }, []);
 
   useEffect(() => {
-    for (const photo of visible) {
-      const thumb = photoUrl(photo, 320);
-      const full = photoUrl(photo, 1600);
-      if (thumb) preload(thumb);
-      if (full) preload(full);
-    }
-  }, [visible]);
+    if (currentReady) setHold(safeIndex);
+  }, [currentReady, safeIndex]);
+
+  const goPrev = useCallback(() => {
+    setIndex((value) => (value - 1 + visible.length) % visible.length);
+  }, [visible.length]);
+  const goNext = useCallback(() => {
+    setIndex((value) => (value + 1) % visible.length);
+  }, [visible.length]);
+
+  useEffect(() => {
+    if (!lightbox || !current || isPlaceholder(current)) return;
+    if (sharp[current.id]) return;
+    const src = photoUrl(current, 1600);
+    if (!src) return;
+    let cancel = false;
+    const img = new window.Image();
+    img.decoding = "async";
+    img.onload = () => {
+      if (!cancel) setSharp((prev) => (prev[current.id] ? prev : { ...prev, [current.id]: true }));
+    };
+    img.src = src;
+    return () => {
+      cancel = true;
+    };
+  }, [lightbox, current, sharp]);
 
   useEffect(() => {
     if (!lightbox) return;
@@ -51,35 +86,37 @@ export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: 
       if (event.key === "ArrowRight" && many) goNext();
     };
     window.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
+    const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
+      document.body.style.overflow = prevOverflow;
     };
-  }, [lightbox, visible.length, many]);
+  }, [lightbox, many, goPrev, goNext]);
+
+  const mounted = warmIndexes(safeIndex, visible.length);
+  mounted.add(displayIndex);
 
   return (
     <div>
-      {!current || !mainSrc ? (
-        <div className="aspect-[16/10] overflow-hidden border border-line bg-white">
+      {!shown ? (
+        <div className={`${STAGE_FRAME} overflow-hidden border border-line`}>
           <MediaSlot label={text.mediaCover} hint={text.photoNone} />
         </div>
       ) : (
-        <figure className="overflow-hidden border border-line bg-white">
-          <div className="relative aspect-[16/10] bg-[#f3f5f8]">
-            {current.placeholder && !current.path ? (
-              <MediaSlot label={photoLabel(current.category, lang)} hint={text.mediaCoverHint} />
-            ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={mainSrc}
-                alt={field === "ko" ? current.altKo : current.altEn}
-                className="pointer-events-none h-full w-full object-cover"
-                decoding="async"
-                fetchPriority="high"
+        <figure className="overflow-hidden border border-line bg-black">
+          <div className={STAGE_FRAME}>
+            {[...mounted].map((photoIndex) => (
+              <StagePhoto
+                key={visible[photoIndex].id}
+                photo={visible[photoIndex]}
+                lang={lang}
+                field={field}
+                visible={photoIndex === displayIndex}
+                priority={photoIndex === safeIndex ? "high" : ringDistance(photoIndex, safeIndex, visible.length) === 1 ? "auto" : "low"}
+                onReady={markReady}
               />
-            )}
+            ))}
             {many ? (
               <>
                 <button
@@ -143,13 +180,13 @@ export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: 
                   setLightbox(true);
                 }}
               >
-                {photo.placeholder && !photo.path ? (
+                {isPlaceholder(photo) ? (
                   <span className="flex aspect-[16/10] items-center justify-center bg-[#f3f5f8] text-xs font-semibold text-muted">
                     {photoIndex + 1}
                   </span>
                 ) : thumb ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={thumb} alt="" className="aspect-[16/10] w-full object-cover" loading="lazy" decoding="async" />
+                  <img src={thumb} alt="" className="aspect-[16/10] w-full object-cover" loading="lazy" decoding="async" fetchPriority="low" />
                 ) : null}
               </button>
             );
@@ -157,7 +194,7 @@ export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: 
         </div>
       ) : null}
 
-      {lightbox && current && fullSrc ? (
+      {lightbox && shown ? (
         <div
           className="fixed inset-0 z-[80] flex items-center justify-center bg-black/85 p-3 sm:p-8"
           role="dialog"
@@ -195,16 +232,69 @@ export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: 
               />
             </>
           ) : null}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={fullSrc}
-            alt={field === "ko" ? current.altKo : current.altEn}
-            className="pointer-events-none relative z-0 max-h-[90vh] max-w-full object-contain"
-            decoding="async"
-            fetchPriority="high"
+          <LightboxPhoto
+            photo={displayIndex === safeIndex && current && sharp[current.id] ? current : shown}
+            width={displayIndex === safeIndex && current && sharp[current.id] ? 1600 : STAGE_WIDTH}
+            field={field}
           />
         </div>
       ) : null}
     </div>
+  );
+}
+
+function isPlaceholder(photo: VehiclePhoto) {
+  return photo.placeholder && !photo.path;
+}
+
+function StagePhoto({
+  photo,
+  lang,
+  field,
+  visible,
+  priority,
+  onReady,
+}: {
+  photo: VehiclePhoto;
+  lang: Lang;
+  field: "ko" | "en";
+  visible: boolean;
+  priority: "high" | "low" | "auto";
+  onReady: (id: string) => void;
+}) {
+  const text = copy(lang);
+  if (isPlaceholder(photo)) {
+    return visible ? <MediaSlot label={photoLabel(photo.category, lang)} hint={text.mediaCoverHint} /> : null;
+  }
+  const src = photoUrl(photo, STAGE_WIDTH);
+  if (!src) return null;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={visible ? (field === "ko" ? photo.altKo : photo.altEn) : ""}
+      className={`absolute inset-0 h-full w-full object-contain ${visible ? "opacity-100" : "pointer-events-none opacity-0"}`}
+      decoding="async"
+      fetchPriority={priority}
+      ref={(element) => {
+        if (element?.complete && element.naturalWidth > 0) onReady(photo.id);
+      }}
+      onLoad={() => onReady(photo.id)}
+    />
+  );
+}
+
+function LightboxPhoto({ photo, width, field }: { photo: VehiclePhoto; width: 1200 | 1600; field: "ko" | "en" }) {
+  if (isPlaceholder(photo)) return null;
+  const src = photoUrl(photo, width);
+  if (!src) return null;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={field === "ko" ? photo.altKo : photo.altEn}
+      className="pointer-events-none relative z-0 max-h-[90vh] max-w-full object-contain"
+      decoding="async"
+    />
   );
 }
