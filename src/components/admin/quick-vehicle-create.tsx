@@ -277,21 +277,29 @@ export function QuickVehicleCreate() {
       }
 
       if (photos.length) {
-        setProgress(`사진 업로드 중… 0/${photos.length}`);
-        const form = new FormData();
-        for (const photo of photos) form.append("files", photo.file, photo.file.name);
-        const uploaded = await fetch(`/api/admin/vehicles/${createdBody.id}/photos/batch`, {
-          method: "POST",
-          body: form,
-          headers: { accept: "application/json" },
-        });
-        const uploadBody = (await uploaded.json()) as { ok?: boolean; code?: string; count?: number };
-        if (!uploaded.ok || !uploadBody.ok) {
-          setError(uploadBody.code || "photo_upload_failed");
-          router.push(`/admin/vehicles/${createdBody.id}?saved=1`);
-          return;
+        // Keep each request under the platform body limit. Compressed photos are about 280KB.
+        const chunkSize = 8;
+        let uploadedCount = 0;
+        for (let offset = 0; offset < photos.length; offset += chunkSize) {
+          const slice = photos.slice(offset, offset + chunkSize);
+          setProgress(`사진 업로드 중… ${uploadedCount}/${photos.length}`);
+          const form = new FormData();
+          form.set("sortBase", String(offset));
+          for (const photo of slice) form.append("files", photo.file, photo.file.name);
+          const uploaded = await fetch(`/api/admin/vehicles/${createdBody.id}/photos/batch`, {
+            method: "POST",
+            body: form,
+            headers: { accept: "application/json" },
+          });
+          const uploadBody = (await uploaded.json()) as { ok?: boolean; code?: string; count?: number };
+          if (!uploaded.ok || !uploadBody.ok) {
+            setError(uploadBody.code || "photo_upload_failed");
+            router.push(`/admin/vehicles/${createdBody.id}?saved=1`);
+            return;
+          }
+          uploadedCount += uploadBody.count ?? slice.length;
         }
-        setProgress(`사진 ${uploadBody.count ?? photos.length}장 업로드 완료`);
+        setProgress(`사진 ${uploadedCount}장 업로드 완료`);
       }
 
       notifyAdminSaved("빠른 등록이 완료되었습니다.");

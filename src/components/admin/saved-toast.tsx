@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { MAX_VEHICLE_PHOTOS } from "@/lib/domain/uploads";
 
 const STORAGE_KEY = "kb-admin-toast";
 const EVENT_NAME = "kb-admin-toast";
@@ -54,7 +55,7 @@ export function AdminToastHost() {
       const errorLabel: Record<string, string> = {
         photo_required: "사진 파일을 선택해 주세요.",
         invalid_image: "이미지 파일이 아니거나 지원하지 않는 형식입니다.",
-        too_many_photos: "사진은 최대 12장까지 올릴 수 있습니다.",
+        too_many_photos: `사진은 최대 ${MAX_VEHICLE_PHOTOS}장까지 올릴 수 있습니다.`,
         photo_update_failed: "사진 정보를 저장하지 못했습니다.",
         photo_upload_failed: "사진을 올리지 못했습니다.",
       };

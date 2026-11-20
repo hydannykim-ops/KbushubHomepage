@@ -27,6 +27,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (files.length > MAX_VEHICLE_PHOTOS) {
     return NextResponse.json({ ok: false, code: "too_many_photos", max: MAX_VEHICLE_PHOTOS }, { status: 400 });
   }
+  const sortBaseRaw = Number(form.get("sortBase") ?? 0);
+  const sortBase = Number.isFinite(sortBaseRaw) && sortBaseRaw > 0 ? Math.floor(sortBaseRaw) : 0;
 
   const repo = getRepository();
   const uploaded: string[] = [];
@@ -38,17 +40,18 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       if (!checked.ok) {
         return NextResponse.json({ ok: false, code: "invalid_image", index }, { status: 400 });
       }
+      const order = sortBase + index;
       const photo = await repo.addPhoto(id, {
         bytes,
         contentType: checked.contentType,
-        category: categoryForIndex(index),
-        altKo: `차량 사진 ${index + 1}`,
-        altEn: `Vehicle photo ${index + 1}`,
+        category: categoryForIndex(order),
+        altKo: `차량 사진 ${order + 1}`,
+        altEn: `Vehicle photo ${order + 1}`,
       });
       // Keep the client arrangement even if the vehicle already had photos.
       await repo.updatePhoto(id, photo.id, {
-        sortOrder: index,
-        isCover: index === 0,
+        sortOrder: order,
+        isCover: order === 0,
       });
       uploaded.push(photo.id);
     }
