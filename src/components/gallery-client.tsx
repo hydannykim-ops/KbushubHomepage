@@ -10,8 +10,8 @@ import { photoLabel } from "@/lib/labels";
 
 /** Same size the stage shows, so a flip reuses a file that is already in the browser cache. */
 const STAGE_WIDTH = 1200;
-/** Modern phone screens in landscape (about 19.5:9, such as 2340×1080). */
-const STAGE_FRAME = "relative aspect-[19.5/9] bg-black";
+/** Side gutters stay black so the photo can grow to the top and bottom and the arrows sit beside it. */
+const GUTTER = "px-10 sm:px-14";
 /** How many photos on either side stay mounted and downloading while the current one is on screen. */
 const LOOKAHEAD = 3;
 
@@ -100,12 +100,12 @@ export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: 
   return (
     <div>
       {!shown ? (
-        <div className={`${STAGE_FRAME} overflow-hidden border border-line`}>
+        <div className="flex min-h-52 items-center justify-center overflow-hidden border border-line bg-black">
           <MediaSlot label={text.mediaCover} hint={text.photoNone} />
         </div>
       ) : (
-        <figure className="overflow-hidden border border-line bg-black">
-          <div className={STAGE_FRAME}>
+        <figure className="-mx-4 overflow-hidden border border-line bg-white sm:mx-0">
+          <div className={`relative flex items-center justify-center bg-black ${GUTTER}`}>
             {[...mounted].map((photoIndex) => (
               <StagePhoto
                 key={visible[photoIndex].id}
@@ -117,33 +117,22 @@ export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: 
                 onReady={markReady}
               />
             ))}
+            <button
+              type="button"
+              className="absolute inset-y-0 left-10 right-10 z-[5] bg-transparent sm:left-14 sm:right-14"
+              aria-label={text.photos}
+              onClick={() => setLightbox(true)}
+            />
             {many ? (
               <>
-                <button
-                  type="button"
-                  className="absolute inset-y-0 left-0 z-10 w-1/2 cursor-w-resize bg-transparent"
-                  aria-label="previous"
-                  onClick={goPrev}
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 z-10 w-1/2 cursor-e-resize bg-transparent"
-                  aria-label="next"
-                  onClick={goNext}
-                />
+                <FlipButton side="left" label="previous" onClick={goPrev} />
+                <FlipButton side="right" label="next" onClick={goNext} />
               </>
-            ) : (
-              <button
-                type="button"
-                className="absolute inset-0 z-10 bg-transparent"
-                aria-label={text.photos}
-                onClick={() => setLightbox(true)}
-              />
-            )}
+            ) : null}
             {many ? (
               <button
                 type="button"
-                className="absolute bottom-2 right-2 z-20 rounded bg-black/55 px-2.5 py-1 text-xs font-medium text-white"
+                className="absolute top-2 left-1/2 z-20 -translate-x-1/2 rounded bg-black/55 px-2.5 py-1 text-xs font-medium text-white"
                 onClick={() => setLightbox(true)}
               >
                 {text.photos}
@@ -212,19 +201,17 @@ export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: 
           </button>
           {many ? (
             <>
-              <button
-                type="button"
-                className="absolute inset-y-0 left-0 z-[1] w-1/2 cursor-w-resize bg-transparent"
-                aria-label="previous"
+              <FlipButton
+                side="left"
+                label="previous"
                 onClick={(event) => {
                   event.stopPropagation();
                   goPrev();
                 }}
               />
-              <button
-                type="button"
-                className="absolute inset-y-0 right-0 z-[1] w-1/2 cursor-e-resize bg-transparent"
-                aria-label="next"
+              <FlipButton
+                side="right"
+                label="next"
                 onClick={(event) => {
                   event.stopPropagation();
                   goNext();
@@ -273,7 +260,11 @@ function StagePhoto({
     <img
       src={src}
       alt={visible ? (field === "ko" ? photo.altKo : photo.altEn) : ""}
-      className={`absolute inset-0 h-full w-full object-contain ${visible ? "opacity-100" : "pointer-events-none opacity-0"}`}
+      className={
+        visible
+          ? "relative z-0 block h-auto max-h-[85vh] w-auto max-w-full"
+          : "pointer-events-none absolute inset-y-0 left-10 right-10 z-0 mx-auto h-full max-w-[calc(100%-5rem)] object-contain opacity-0 sm:left-14 sm:right-14 sm:max-w-[calc(100%-7rem)]"
+      }
       decoding="async"
       fetchPriority={priority}
       ref={(element) => {
@@ -281,6 +272,38 @@ function StagePhoto({
       }}
       onLoad={() => onReady(photo.id)}
     />
+  );
+}
+
+function FlipButton({
+  side,
+  label,
+  onClick,
+}: {
+  side: "left" | "right";
+  label: string;
+  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={`absolute inset-y-0 z-10 flex w-10 items-center justify-center text-white sm:w-14 ${side === "left" ? "left-0" : "right-0"}`}
+      aria-label={label}
+      onClick={onClick}
+    >
+      <span className="grid h-11 w-11 place-items-center rounded-full bg-white/20">
+        <svg viewBox="0 0 24 24" className="h-7 w-7" aria-hidden="true">
+          <path
+            d={side === "left" ? "M14.5 5.5 8 12l6.5 6.5" : "M9.5 5.5 16 12l-6.5 6.5"}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </span>
+    </button>
   );
 }
 
