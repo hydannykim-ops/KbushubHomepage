@@ -18,7 +18,7 @@ const classes = ["county", "medium", "large"] as const;
 const transmissions = ["manual", "automatic", "unknown"] as const;
 const fuels = ["diesel", "gasoline", "lpg", "cng", "electric", "hybrid", "unknown"] as const;
 const steerings = ["lhd", "rhd", "unknown"] as const;
-const transferTypes = ["transfer", "scrap_replace", "unknown"] as const;
+const transferTypes = ["transfer", "scrap_replace", "private_export", "unknown"] as const;
 const statuses = ["available", "reserved", "sold", "hidden", "review"] as const;
 const photoCategories = ["front", "front_side", "rear", "exterior", "interior", "dashboard", "engine", "tires", "defect"] as const;
 const inquiryKinds = ["purchase", "visit", "quote", "video", "general"] as const;
@@ -486,7 +486,7 @@ export type VehicleInput = {
   displacementCc: number | null;
   steering: Steering;
   longBody: boolean | null;
-  transferType: "transfer" | "scrap_replace" | "unknown";
+  transferType: "transfer" | "scrap_replace" | "private_export" | "unknown";
   lengthMm: number | null;
   widthMm: number | null;
   heightMm: number | null;

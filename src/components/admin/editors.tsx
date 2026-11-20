@@ -131,10 +131,11 @@ export function VehicleForm({ vehicle }: { vehicle: AdminVehicle | null }) {
       <Label text="인승"><input name="seats" defaultValue={v?.seats ?? ""} className={field} /></Label>
       <Label text="마력 (PS)"><input name="horsepowerPs" defaultValue={v?.horsepowerPs ?? ""} className={field} /></Label>
       <Label text="양도양수">
-        <select name="transferType" defaultValue={v?.transferType ?? "unknown"} className={field}>
-          <option value="unknown">미확인</option>
+        <select name="transferType" defaultValue={v?.transferType ?? "transfer"} className={field}>
+          {v?.transferType === "unknown" ? <option value="unknown">미확인</option> : null}
           <option value="transfer">양도양수</option>
           <option value="scrap_replace">대폐차</option>
+          <option value="private_export">수출용/자가용</option>
         </select>
       </Label>
       <Label text="변속기">
