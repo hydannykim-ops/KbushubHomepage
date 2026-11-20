@@ -133,7 +133,7 @@ export function MarketFilterBar({
     { key: "transmission", label: transmissionActive ? transmissionLabel(query.transmission as "automatic", lang) : text.transmission, active: transmissionActive },
     {
       key: "transfer",
-      label: transferActive ? transferLabel(query.transferType as "transfer", lang) : text.transferType,
+      label: transferActive && query.transferType ? transferLabel(query.transferType, lang) : text.transferType,
       active: transferActive,
     },
     { key: "status", label: statusActive ? statusLabel(query.status as "available", lang) : text.status, active: statusActive },
@@ -323,7 +323,7 @@ export function MarketFilterBar({
 
           {openKey === "transfer" ? (
             <div className="grid max-w-sm gap-1">
-              {(["", "transfer", "scrap_replace", "unknown"] as const).map((value) => (
+              {(["", "transfer", "scrap_replace", "private_export"] as const).map((value) => (
                 <button
                   key={value || "all"}
                   type="button"

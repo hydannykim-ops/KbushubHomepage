@@ -5,7 +5,7 @@ const statuses = new Set<SaleStatus>(["available", "reserved", "sold", "hidden",
 const classes = new Set(["county", "medium", "large"]);
 const transmissions = new Set(["manual", "automatic", "unknown"]);
 const fuels = new Set(["diesel", "gasoline", "lpg", "cng", "electric", "hybrid", "unknown"]);
-const transfers = new Set(["transfer", "scrap_replace", "unknown"]);
+const transfers = new Set(["transfer", "scrap_replace", "private_export", "unknown"]);
 const sorts = new Set<SortKey>(["newest", "year_desc", "year_asc", "price_asc", "price_desc", "mileage_asc"]);
 
 function num(value: string | null): number | null {
