@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BrandSidebar } from "@/components/brand-sidebar";
@@ -10,7 +11,13 @@ import type { Lang, VehicleQuery } from "@/lib/domain/types";
 import { makerLabel, makersForClass, modelLabel, seriesForModel, seriesLabel } from "@/lib/domain/vehicle-catalog";
 import type { VehicleClass } from "@/lib/domain/types";
 import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
+import { buildPageMetadata, pageSeo } from "@/lib/seo";
 import { loadSite } from "@/lib/site-load";
+
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const lang = parseLang((await params).lang) ?? "ko";
+  return buildPageMetadata(lang, "vehicles", "/vehicles");
+}
 
 export default async function VehiclesPage({
   params,
@@ -29,6 +36,7 @@ export default async function VehiclesPage({
   const query = parseVehicleQuery(sp);
   const listedQuery = priceQueryForLang(query, lang);
   const text = copy(lang);
+  const seo = pageSeo(lang, "vehicles");
   const site = await loadSite();
   if (!site.ok) return <DataProblem lang={lang} code={site.code} />;
 
@@ -71,7 +79,8 @@ export default async function VehiclesPage({
 
         <div className="min-w-0 px-4 py-5 md:px-6 md:py-6">
           <div className="mb-4">
-            <h1 className="text-2xl font-bold tracking-tight text-ink md:text-3xl">{text.navVehicles}</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-ink md:text-3xl">{seo.h1 ?? text.navVehicles}</h1>
+            {seo.lead ? <p className="mt-2 max-w-3xl text-sm leading-6 text-muted md:text-base">{seo.lead}</p> : null}
           </div>
 
           <div className="mb-5">

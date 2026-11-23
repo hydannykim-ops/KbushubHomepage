@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DataProblem } from "@/components/catalog";
@@ -7,7 +8,13 @@ import { PhotoSlotUploader } from "@/components/photo-slot-uploader";
 import { StickyQuoteLayout } from "@/components/sticky-quote-layout";
 import { copy } from "@/lib/i18n";
 import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
+import { buildPageMetadata, pageSeo } from "@/lib/seo";
 import { loadSite } from "@/lib/site-load";
+
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const lang = parseLang((await params).lang) ?? "ko";
+  return buildPageMetadata(lang, "export-sell", "/export-sell");
+}
 
 export default async function ExportSellPage({
   params,
@@ -25,13 +32,14 @@ export default async function ExportSellPage({
   const site = await loadSite();
   if (!site.ok) return <DataProblem lang={lang} code={site.code} />;
   const text = copy(lang);
+  const seo = pageSeo(lang, "export-sell");
 
   if (lang !== "ko") {
     return (
       <div className="page-tone -mx-4 px-4 py-10" data-tone="export">
         <div className="mx-auto max-w-xl">
           <p className="tone-text text-xs font-semibold tracking-[0.16em]">K-BUS HUB</p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink">{text.exportSellTitle}</h1>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink">{seo.h1 ?? text.exportSellTitle}</h1>
           <p className="mt-3 text-sm leading-6 text-muted">{text.exportSellDomesticOnly}</p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link href={hrefTo(lang, "/vehicles", ctx)} className="tone-cta inline-flex px-4 py-3 text-sm font-semibold text-white">
@@ -106,8 +114,8 @@ export default async function ExportSellPage({
   const intro = (
     <div>
       <p className="tone-text text-xs font-semibold tracking-[0.16em]">K-BUS HUB</p>
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink md:text-4xl">{text.exportSellTitle}</h1>
-      <p className="mt-4 max-w-xl text-base leading-7 text-muted">{text.exportSellBody}</p>
+      <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink md:text-4xl">{seo.h1 ?? text.exportSellTitle}</h1>
+      <p className="mt-4 max-w-xl text-base leading-7 text-muted">{seo.lead ?? text.exportSellBody}</p>
       <ul className="mt-5 grid gap-2.5 text-sm text-ink">
         <li className="flex gap-2">
           <span className="tone-dot mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" />

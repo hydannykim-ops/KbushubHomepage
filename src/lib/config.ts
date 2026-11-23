@@ -21,9 +21,23 @@ export function getDataSource(): ResolvedSource {
   return "misconfigured";
 }
 
+/** Public canonical origin used in sitemap, Open Graph, and share links. */
+export const CANONICAL_SITE_URL = "https://www.kbushub.com";
+
 export function siteUrl(): string {
-  const value = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "http://localhost:3000";
-  return value.replace(/\/$/, "");
+  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (raw) {
+    const cleaned = raw.replace(/\/$/, "");
+    try {
+      // Production must not publish vercel.app hosts in sitemap/canonical tags.
+      if (new URL(cleaned).hostname.endsWith(".vercel.app")) return CANONICAL_SITE_URL;
+    } catch {
+      return CANONICAL_SITE_URL;
+    }
+    return cleaned;
+  }
+  if (process.env.VERCEL_ENV === "production") return CANONICAL_SITE_URL;
+  return "http://localhost:3000";
 }
 
 export function demoCredentials() {

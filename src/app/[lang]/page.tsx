@@ -5,6 +5,7 @@ import { HeroBanner } from "@/components/hero-banner";
 import { copy } from "@/lib/i18n";
 import { contentFieldLang } from "@/lib/i18n/langs";
 import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
+import { organizationJsonLd } from "@/lib/seo";
 import { loadSite } from "@/lib/site-load";
 import type { PublicVehicle } from "@/lib/domain/types";
 
@@ -94,6 +95,9 @@ export default async function HomePage({
 
   return (
     <div className="mx-auto grid max-w-6xl gap-16 px-4 py-10 md:py-14">
+      {lang === "ko" ? (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd()) }} />
+      ) : null}
       <HeroBanner prevLabel={text.heroPrev} nextLabel={text.heroNext} slides={slides} />
 
       <section className="grid gap-4 md:grid-cols-3">

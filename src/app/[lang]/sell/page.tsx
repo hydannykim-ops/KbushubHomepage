@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DataProblem } from "@/components/catalog";
@@ -7,7 +8,13 @@ import { PhotoSlotUploader } from "@/components/photo-slot-uploader";
 import { getSession } from "@/lib/auth/session";
 import { copy } from "@/lib/i18n";
 import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
+import { buildPageMetadata, pageSeo } from "@/lib/seo";
 import { loadSite } from "@/lib/site-load";
+
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const lang = parseLang((await params).lang) ?? "ko";
+  return buildPageMetadata(lang, "sell", "/sell");
+}
 
 export default async function SellPage({
   params,
@@ -25,6 +32,7 @@ export default async function SellPage({
   const site = await loadSite();
   if (!site.ok) return <DataProblem lang={lang} code={site.code} />;
   const text = copy(lang);
+  const seo = pageSeo(lang, "sell");
   const session = await getSession();
 
   // Domestic purchase intake only — hide for overseas languages.
@@ -33,7 +41,7 @@ export default async function SellPage({
       <div className="page-tone -mx-4 px-4 py-10" data-tone="sell">
         <div className="mx-auto max-w-xl">
           <p className="tone-text text-xs font-semibold tracking-[0.16em]">K-BUS HUB</p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink">{text.sellTitle}</h1>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink">{seo.h1 ?? text.sellTitle}</h1>
           <p className="mt-3 text-sm leading-6 text-muted">{text.sellDomesticOnly}</p>
           <Link href={hrefTo(lang, "/vehicles", ctx)} className="tone-cta mt-6 inline-flex px-4 py-3 text-sm font-semibold text-white">
             {text.browseInventory}
@@ -48,8 +56,8 @@ export default async function SellPage({
       <div className="mx-auto grid max-w-xl gap-8">
         <div>
           <p className="tone-text text-xs font-semibold tracking-[0.16em]">K-BUS HUB</p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink">{text.sellTitle}</h1>
-          <p className="mt-3 text-sm leading-6 text-muted">{text.sellLead}</p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink">{seo.h1 ?? text.sellTitle}</h1>
+          <p className="mt-3 text-sm leading-6 text-muted">{seo.lead ?? text.sellLead}</p>
           <ul className="mt-4 grid gap-2 text-sm text-ink">
             <li className="flex gap-2">
               <span className="tone-dot mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" />

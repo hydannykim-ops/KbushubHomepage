@@ -26,8 +26,14 @@ export async function generateMetadata({
   if (!site.ok) return { title: stockNo, robots: { index: false, follow: false } };
   const vehicle = await site.repo.getPublicByStockNo(stockNo);
   if (!vehicle) return { title: stockNo, robots: { index: false, follow: false } };
-  const title = `${vehicleTitle(vehicle, lang)} ${vehicle.modelYear ?? ""} ${vehicle.stockNo}`.replace(/\s+/g, " ").trim();
-  const description = (contentFieldLang(lang) === "ko" ? vehicle.descriptionKo : vehicle.descriptionEn) || title;
+  const labeled = `${vehicleTitle(vehicle, lang)} ${vehicle.modelYear ?? ""} ${vehicle.stockNo}`.replace(/\s+/g, " ").trim();
+  const title = lang === "ko" ? `${labeled} 중고버스` : labeled;
+  const body = (contentFieldLang(lang) === "ko" ? vehicle.descriptionKo : vehicle.descriptionEn)?.trim();
+  const description =
+    body ||
+    (lang === "ko"
+      ? `${labeled} 중고버스 매물입니다. K-BUS HUB에서 중고버스 매매·버스수출 상담을 안내합니다.`
+      : labeled);
   const cover = vehicle.photos.find((photo) => photo.isCover && !photo.placeholder);
   return {
     title,

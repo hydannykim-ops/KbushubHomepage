@@ -887,3 +887,24 @@ test("listing paste fills universe noble year mileage and catalog specs", () => 
   assert.ok((draft.descriptionKo ?? "").includes("전화문의"));
   assert.equal(draft.warnings.length, 0);
 });
+
+test("siteUrl prefers www.kbushub.com over vercel.app hosts", async () => {
+  const { siteUrl, CANONICAL_SITE_URL } = await import("../src/lib/config");
+  const previous = process.env.NEXT_PUBLIC_SITE_URL;
+  process.env.NEXT_PUBLIC_SITE_URL = "https://kbushubhomepage.vercel.app";
+  assert.equal(siteUrl(), CANONICAL_SITE_URL);
+  process.env.NEXT_PUBLIC_SITE_URL = "https://www.kbushub.com/";
+  assert.equal(siteUrl(), "https://www.kbushub.com");
+  if (previous === undefined) delete process.env.NEXT_PUBLIC_SITE_URL;
+  else process.env.NEXT_PUBLIC_SITE_URL = previous;
+});
+
+test("Korean SEO titles include target search phrases", async () => {
+  const { pageSeo } = await import("../src/lib/seo");
+  const home = pageSeo("ko", "home");
+  assert.match(home.title, /중고버스/);
+  assert.match(home.description, /버스수출/);
+  assert.match(pageSeo("ko", "vehicles").h1 ?? "", /중고버스/);
+  assert.match(pageSeo("ko", "sell").title, /매매/);
+  assert.match(pageSeo("ko", "export-sell").title, /버스수출/);
+});

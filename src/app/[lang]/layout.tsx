@@ -4,9 +4,8 @@ import { notFound } from "next/navigation";
 import { Footer, Header } from "@/components/chrome";
 import { SiteChat } from "@/components/site-chat";
 import { getSession } from "@/lib/auth/session";
-import { getDataSource } from "@/lib/config";
-import { copy } from "@/lib/i18n";
 import { parseLang, requestContext } from "@/lib/request-context";
+import { buildPageMetadata } from "@/lib/seo";
 import { loadSite } from "@/lib/site-load";
 
 export const dynamic = "force-dynamic";
@@ -14,11 +13,8 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang: raw } = await params;
   const lang = parseLang(raw) ?? "ko";
-  const demo = getDataSource() !== "supabase";
-  return {
-    description: copy(lang).metaDescription,
-    robots: demo ? { index: false, follow: false } : { index: true, follow: true },
-  };
+  // Default for lang routes; leaf pages override with their own generateMetadata.
+  return buildPageMetadata(lang, "home");
 }
 
 export default async function LangLayout({
