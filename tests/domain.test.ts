@@ -908,3 +908,17 @@ test("Korean SEO titles include target search phrases", async () => {
   assert.match(pageSeo("ko", "sell").title, /매매/);
   assert.match(pageSeo("ko", "export-sell").title, /버스수출/);
 });
+
+test("photo tabs map legacy categories onto gallery groups", async () => {
+  const { photoTabForCategory, photoMatchesTab } = await import("../src/lib/domain/photo-categories");
+  assert.equal(photoTabForCategory("front"), "exterior");
+  assert.equal(photoTabForCategory("dashboard"), "interior");
+  assert.equal(photoTabForCategory("defect"), "other");
+  assert.equal(photoTabForCategory("registration"), "registration");
+  assert.equal(photoMatchesTab("tires", "exterior"), true);
+  assert.equal(photoMatchesTab("tires", "interior"), false);
+
+  const none = await readGuidedPhotos(new FormData(), "ko", 20, { requireRequiredSlots: false });
+  assert.equal(none.ok, true);
+  if (none.ok) assert.equal(none.shots.length, 0);
+});

@@ -22,7 +22,19 @@ const fuels = ["diesel", "gasoline", "lpg", "cng", "electric", "hybrid", "unknow
 const steerings = ["lhd", "rhd", "unknown"] as const;
 const transferTypes = ["transfer", "scrap_replace", "private_export", "unknown"] as const;
 const statuses = ["available", "reserved", "sold", "hidden", "review"] as const;
-const photoCategories = ["front", "front_side", "rear", "exterior", "interior", "dashboard", "engine", "tires", "defect"] as const;
+const photoCategories = [
+  "front",
+  "front_side",
+  "rear",
+  "exterior",
+  "interior",
+  "dashboard",
+  "engine",
+  "tires",
+  "defect",
+  "other",
+  "registration",
+] as const;
 const inquiryKinds = ["purchase", "visit", "quote", "video", "general"] as const;
 const inquiryStatuses = ["new", "consulting", "quoted", "negotiating", "contracted", "closed"] as const;
 const modes = ["domestic", "export"] as const;

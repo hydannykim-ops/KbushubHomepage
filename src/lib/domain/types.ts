@@ -9,7 +9,18 @@ export type Steering = "lhd" | "rhd" | "unknown";
 export type TransferType = "transfer" | "scrap_replace" | "private_export" | "unknown";
 /** Export buyer preference only — staff still quote freight. */
 export type ShippingMethod = "roro" | "container" | "undecided";
-export type PhotoCategory = "front" | "front_side" | "rear" | "exterior" | "interior" | "dashboard" | "engine" | "tires" | "defect";
+export type PhotoCategory =
+  | "front"
+  | "front_side"
+  | "rear"
+  | "exterior"
+  | "interior"
+  | "dashboard"
+  | "engine"
+  | "tires"
+  | "defect"
+  | "other"
+  | "registration";
 export type MemberRole = "customer" | "dealer";
 export type ListingSource = "company" | "dealer";
 export type InquiryKind = "purchase" | "visit" | "quote" | "video" | "general";

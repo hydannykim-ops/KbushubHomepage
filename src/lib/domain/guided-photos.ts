@@ -1,9 +1,9 @@
-import { PHOTO_SLOTS, type PhotoSlotId } from "@/lib/domain/photo-slots";
+import { PHOTO_TAB_FIELD, PHOTO_TABS, type PhotoTab } from "@/lib/domain/photo-categories";
 import type { PhotoCategory } from "@/lib/domain/types";
-import { checkImage, MAX_EXTRA_PHOTOS, MAX_VEHICLE_PHOTOS, type ImageType } from "@/lib/domain/uploads";
+import { checkImage, MAX_VEHICLE_PHOTOS, type ImageType } from "@/lib/domain/uploads";
 
 export type GuidedPhotoShot = {
-  slot: PhotoSlotId | `extra-${number}`;
+  slot: string;
   bytes: Buffer;
   contentType: ImageType;
   category: PhotoCategory;
@@ -11,78 +11,77 @@ export type GuidedPhotoShot = {
   label: string;
 };
 
-const labelsKo: Record<PhotoSlotId, string> = {
-  front: "정면",
-  left: "좌측",
-  right: "우측",
-  rear: "후면",
+const tabLabelKo: Record<PhotoTab, string> = {
+  exterior: "외부",
   interior: "내부",
-  dashboard: "계기판",
-  wheel1: "바퀴1",
-  wheel2: "바퀴2",
-  wheel3: "바퀴3",
-  wheel4: "바퀴4",
+  other: "기타",
+  registration: "등록증",
 };
 
-const labelsEn: Record<PhotoSlotId, string> = {
-  front: "Front",
-  left: "Left",
-  right: "Right",
-  rear: "Rear",
+const tabLabelEn: Record<PhotoTab, string> = {
+  exterior: "Exterior",
   interior: "Interior",
-  dashboard: "Dashboard",
-  wheel1: "Wheel 1",
-  wheel2: "Wheel 2",
-  wheel3: "Wheel 3",
-  wheel4: "Wheel 4",
+  other: "Other",
+  registration: "Registration",
 };
 
+/**
+ * Read photos grouped by upload tabs.
+ * Field names: photos_exterior / photos_interior / photos_other / photos_registration.
+ * Legacy `extra` files (unguided bulk) are treated as "other".
+ */
 export async function readGuidedPhotos(
   form: FormData,
   lang: string,
   maxTotal: number = MAX_VEHICLE_PHOTOS,
   options?: { requireRequiredSlots?: boolean },
 ): Promise<{ ok: true; shots: GuidedPhotoShot[] } | { ok: false; code: "missing_required" | "invalid_image" }> {
-  const requireRequiredSlots = options?.requireRequiredSlots !== false;
+  const requireAtLeastOne = options?.requireRequiredSlots === true;
   const shots: GuidedPhotoShot[] = [];
-  for (const slot of PHOTO_SLOTS) {
-    const value = form.get(slot.field);
-    if (!(value instanceof File) || value.size === 0) {
-      if (requireRequiredSlots && slot.required) return { ok: false, code: "missing_required" };
-      continue;
+  const labelOf = (tab: PhotoTab, index: number) => {
+    const base = lang === "ko" ? tabLabelKo[tab] : tabLabelEn[tab];
+    return `${base} ${index + 1}`;
+  };
+
+  for (const tab of PHOTO_TABS) {
+    const files = form
+      .getAll(PHOTO_TAB_FIELD[tab])
+      .filter((value): value is File => value instanceof File && value.size > 0);
+    for (const [index, file] of files.entries()) {
+      if (shots.length >= maxTotal) break;
+      const bytes = Buffer.from(await file.arrayBuffer());
+      const checked = checkImage(bytes);
+      if (!checked.ok) return { ok: false, code: "invalid_image" };
+      shots.push({
+        slot: `${tab}-${index + 1}`,
+        bytes,
+        contentType: checked.contentType,
+        category: tab,
+        cover: shots.length === 0,
+        label: labelOf(tab, index),
+      });
     }
-    const bytes = Buffer.from(await value.arrayBuffer());
-    const checked = checkImage(bytes);
-    if (!checked.ok) return { ok: false, code: "invalid_image" };
-    shots.push({
-      slot: slot.id,
-      bytes,
-      contentType: checked.contentType,
-      category: slot.category,
-      cover: Boolean(slot.cover),
-      label: lang === "ko" ? labelsKo[slot.id] : labelsEn[slot.id],
-    });
   }
 
+  // Legacy bulk field from older clients → other.
   const extras = form
     .getAll("extra")
-    .filter((value): value is File => value instanceof File && value.size > 0)
-    .slice(0, MAX_EXTRA_PHOTOS);
-
+    .filter((value): value is File => value instanceof File && value.size > 0);
   for (const [index, file] of extras.entries()) {
     if (shots.length >= maxTotal) break;
     const bytes = Buffer.from(await file.arrayBuffer());
     const checked = checkImage(bytes);
     if (!checked.ok) return { ok: false, code: "invalid_image" };
     shots.push({
-      slot: `extra-${index + 1}`,
+      slot: `other-legacy-${index + 1}`,
       bytes,
       contentType: checked.contentType,
-      category: "exterior",
-      cover: false,
-      label: lang === "ko" ? `추가 ${index + 1}` : `Extra ${index + 1}`,
+      category: "other",
+      cover: shots.length === 0,
+      label: labelOf("other", index),
     });
   }
 
+  if (requireAtLeastOne && shots.length === 0) return { ok: false, code: "missing_required" };
   return { ok: true, shots };
 }

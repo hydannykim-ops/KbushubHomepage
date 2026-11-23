@@ -2,11 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { MediaSlot } from "@/components/media-slot";
+import { PHOTO_TABS, photoMatchesTab, photoTabForCategory, type PhotoTab } from "@/lib/domain/photo-categories";
 import { photoUrl } from "@/lib/domain/photo-url";
 import type { Lang, VehiclePhoto } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
 import { contentFieldLang } from "@/lib/i18n/langs";
-import { photoLabel } from "@/lib/labels";
+import { photoLabel, photoTabLabel } from "@/lib/labels";
 
 /** Same size the stage shows, so a flip reuses a file that is already in the browser cache. */
 const STAGE_WIDTH = 1200;
@@ -16,6 +17,8 @@ const GUTTER = "px-10 sm:px-14";
 const LOOKAHEAD = 3;
 /** Thumbnail strip shows one row of this many at a time. */
 const THUMBS_PER_PAGE = 6;
+
+type GalleryTab = "all" | PhotoTab;
 
 function ringDistance(from: number, to: number, length: number) {
   const raw = Math.abs(from - to);
@@ -34,12 +37,19 @@ function warmIndexes(index: number, length: number) {
 
 export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: Lang }) {
   const text = copy(lang);
-  const visible = useMemo(() => [...photos].sort((a, b) => a.sortOrder - b.sortOrder), [photos]);
+  const sorted = useMemo(() => [...photos].sort((a, b) => a.sortOrder - b.sortOrder), [photos]);
+  const [tab, setTab] = useState<GalleryTab>("all");
   const [index, setIndex] = useState(0);
   const [lightbox, setLightbox] = useState(false);
   const [ready, setReady] = useState<Record<string, true>>({});
   const [sharp, setSharp] = useState<Record<string, true>>({});
   const [hold, setHold] = useState(0);
+  const visible = useMemo(() => sorted.filter((photo) => photoMatchesTab(photo.category, tab)), [sorted, tab]);
+  const tabCounts = useMemo(() => {
+    const counts: Record<GalleryTab, number> = { all: sorted.length, exterior: 0, interior: 0, other: 0, registration: 0 };
+    for (const photo of sorted) counts[photoTabForCategory(photo.category)] += 1;
+    return counts;
+  }, [sorted]);
   const safeIndex = Math.min(index, Math.max(visible.length - 1, 0));
   const current = visible[safeIndex];
   const field = contentFieldLang(lang);
@@ -51,6 +61,12 @@ export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: 
   const thumbPage = Math.min(Math.floor(safeIndex / THUMBS_PER_PAGE), thumbPageCount - 1);
   const pageThumbs = visible.slice(thumbPage * THUMBS_PER_PAGE, thumbPage * THUMBS_PER_PAGE + THUMBS_PER_PAGE);
   const canPageThumbs = visible.length > THUMBS_PER_PAGE;
+
+  function selectTab(next: GalleryTab) {
+    setTab(next);
+    setIndex(0);
+    setHold(0);
+  }
 
   const markReady = useCallback((id: string) => {
     setReady((prev) => (prev[id] ? prev : { ...prev, [id]: true }));
@@ -159,8 +175,34 @@ export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: 
         </figure>
       )}
 
-      {many ? (
+      {sorted.length > 1 ? (
         <div className="mt-3">
+          <div className="mb-2 flex flex-wrap gap-1">
+            {(["all", ...PHOTO_TABS] as GalleryTab[]).map((item) => {
+              const count = tabCounts[item];
+              if (item !== "all" && count === 0) return null;
+              const selected = tab === item;
+              return (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => selectTab(item)}
+                  className={`rounded px-2 py-0.5 text-[11px] font-semibold ${
+                    selected ? "bg-primary text-white" : "border border-line bg-white text-muted hover:text-ink"
+                  }`}
+                >
+                  {photoTabLabel(item, lang)}
+                  {count ? ` ${count}` : ""}
+                </button>
+              );
+            })}
+          </div>
+          {visible.length === 0 ? (
+            <p className="rounded border border-dashed border-line px-3 py-6 text-center text-sm text-muted">
+              {lang === "ko" ? "이 분류의 사진이 없습니다." : "No photos in this category."}
+            </p>
+          ) : null}
+          {visible.length > 0 ? (
           <div className="grid grid-cols-6 gap-2">
             {pageThumbs.map((photo, offset) => {
               const photoIndex = thumbPage * THUMBS_PER_PAGE + offset;
@@ -184,6 +226,7 @@ export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: 
               );
             })}
           </div>
+          ) : null}
           {canPageThumbs ? (
             <div className="mt-2 flex items-center justify-center gap-1 text-sm text-muted">
               <button

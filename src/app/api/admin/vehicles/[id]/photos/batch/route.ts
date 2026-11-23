@@ -8,11 +8,10 @@ import type { PhotoCategory } from "@/lib/domain/types";
 
 export const runtime = "nodejs";
 
-function categoryForIndex(index: number): PhotoCategory {
-  if (index === 0) return "front";
-  if (index === 1) return "front_side";
-  if (index === 2) return "rear";
-  return "exterior";
+function categoryFromForm(form: FormData): PhotoCategory {
+  const raw = String(form.get("category") ?? "other").trim();
+  if (raw === "exterior" || raw === "interior" || raw === "other" || raw === "registration") return raw;
+  return "other";
 }
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
@@ -29,6 +28,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   }
   const sortBaseRaw = Number(form.get("sortBase") ?? 0);
   const sortBase = Number.isFinite(sortBaseRaw) && sortBaseRaw > 0 ? Math.floor(sortBaseRaw) : 0;
+  const category = categoryFromForm(form);
 
   const repo = getRepository();
   const uploaded: string[] = [];
@@ -44,7 +44,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       const photo = await repo.addPhoto(id, {
         bytes,
         contentType: checked.contentType,
-        category: categoryForIndex(order),
+        category,
         altKo: `차량 사진 ${order + 1}`,
         altEn: `Vehicle photo ${order + 1}`,
       });

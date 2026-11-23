@@ -285,6 +285,7 @@ export function QuickVehicleCreate() {
           setProgress(`사진 업로드 중… ${uploadedCount}/${photos.length}`);
           const form = new FormData();
           form.set("sortBase", String(offset));
+          form.set("category", "other");
           for (const photo of slice) form.append("files", photo.file, photo.file.name);
           const uploaded = await fetch(`/api/admin/vehicles/${createdBody.id}/photos/batch`, {
             method: "POST",

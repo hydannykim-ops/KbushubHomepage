@@ -20,7 +20,20 @@ const ko = {
   steering: { lhd: "좌핸들", rhd: "우핸들", unknown: "미확인" },
   transfer: { transfer: "양도양수", scrap_replace: "대폐차", private_export: "수출용/자가용", unknown: "미확인" },
   shipping: { roro: "RoRo", container: "컨테이너", undecided: "미정" },
-  photo: { front: "정면", front_side: "좌측", rear: "후면", exterior: "우측·외관", interior: "실내·좌석", dashboard: "계기판", engine: "엔진룸·하부", tires: "타이어", defect: "결함" },
+  photo: {
+    front: "정면",
+    front_side: "좌측",
+    rear: "후면",
+    exterior: "외부",
+    interior: "내부",
+    dashboard: "계기판",
+    engine: "엔진룸·하부",
+    tires: "타이어",
+    defect: "결함",
+    other: "기타",
+    registration: "등록증",
+  },
+  photoTab: { all: "전체", exterior: "외부", interior: "내부", other: "기타", registration: "등록증" },
   inquiry: { new: "신규", consulting: "상담 중", quoted: "견적 발송", negotiating: "협의 중", contracted: "계약", closed: "종료" },
   longBody: { yes: "롱바디", no: "숏바디", unknown: "미확인" },
 } as const;
@@ -33,7 +46,20 @@ const en = {
   steering: { lhd: "Left-hand drive", rhd: "Right-hand drive", unknown: "Not confirmed" },
   transfer: { transfer: "License transfer", scrap_replace: "Scrap-and-replace", private_export: "Export / private use", unknown: "Not confirmed" },
   shipping: { roro: "RoRo", container: "Container", undecided: "Undecided" },
-  photo: { front: "Front", front_side: "Front three-quarter", rear: "Rear", exterior: "Exterior", interior: "Interior and seats", dashboard: "Dashboard", engine: "Engine bay and underside", tires: "Tires", defect: "Defects" },
+  photo: {
+    front: "Front",
+    front_side: "Front three-quarter",
+    rear: "Rear",
+    exterior: "Exterior",
+    interior: "Interior",
+    dashboard: "Dashboard",
+    engine: "Engine bay and underside",
+    tires: "Tires",
+    defect: "Defects",
+    other: "Other",
+    registration: "Registration",
+  },
+  photoTab: { all: "All", exterior: "Exterior", interior: "Interior", other: "Other", registration: "Registration" },
   inquiry: { new: "New", consulting: "In consultation", quoted: "Quote sent", negotiating: "Negotiating", contracted: "Contract", closed: "Closed" },
   longBody: { yes: "Long body", no: "Short body", unknown: "Not confirmed" },
 } as const;
@@ -46,7 +72,20 @@ const es = {
   steering: { lhd: "Volante a la izquierda", rhd: "Volante a la derecha", unknown: "No confirmado" },
   transfer: { transfer: "Cesión de licencia", scrap_replace: "Sustitución por chatarrización", private_export: "Exportación / uso particular", unknown: "No confirmado" },
   shipping: { roro: "RoRo", container: "Contenedor", undecided: "Sin decidir" },
-  photo: { front: "Frontal", front_side: "Tres cuartos delantera", rear: "Trasera", exterior: "Exterior", interior: "Interior y asientos", dashboard: "Tablero", engine: "Motor y bajos", tires: "Llantas", defect: "Defectos" },
+  photo: {
+    front: "Frontal",
+    front_side: "Tres cuartos delantera",
+    rear: "Trasera",
+    exterior: "Exterior",
+    interior: "Interior",
+    dashboard: "Tablero",
+    engine: "Motor y bajos",
+    tires: "Llantas",
+    defect: "Defectos",
+    other: "Otros",
+    registration: "Registro",
+  },
+  photoTab: { all: "Todas", exterior: "Exterior", interior: "Interior", other: "Otros", registration: "Registro" },
   inquiry: { new: "Nueva", consulting: "En consulta", quoted: "Cotización enviada", negotiating: "Negociando", contracted: "Contrato", closed: "Cerrada" },
   longBody: { yes: "Carrocería larga", no: "Carrocería corta", unknown: "No confirmado" },
 } as const;
@@ -59,7 +98,20 @@ const fr = {
   steering: { lhd: "Conduite à gauche", rhd: "Conduite à droite", unknown: "Non confirmé" },
   transfer: { transfer: "Transfert de licence", scrap_replace: "Remplacement après mise au rebut", private_export: "Export / usage privé", unknown: "Non confirmé" },
   shipping: { roro: "RoRo", container: "Conteneur", undecided: "Non décidé" },
-  photo: { front: "Avant", front_side: "Trois-quarts avant", rear: "Arrière", exterior: "Extérieur", interior: "Intérieur et sièges", dashboard: "Tableau de bord", engine: "Moteur et dessous", tires: "Pneus", defect: "Défauts" },
+  photo: {
+    front: "Avant",
+    front_side: "Trois-quarts avant",
+    rear: "Arrière",
+    exterior: "Extérieur",
+    interior: "Intérieur",
+    dashboard: "Tableau de bord",
+    engine: "Moteur et dessous",
+    tires: "Pneus",
+    defect: "Défauts",
+    other: "Autres",
+    registration: "Carte grise",
+  },
+  photoTab: { all: "Toutes", exterior: "Extérieur", interior: "Intérieur", other: "Autres", registration: "Carte grise" },
   inquiry: { new: "Nouvelle", consulting: "En consultation", quoted: "Devis envoyé", negotiating: "Négociation", contracted: "Contrat", closed: "Clôturée" },
   longBody: { yes: "Carrosserie longue", no: "Carrosserie courte", unknown: "Non confirmé" },
 } as const;
@@ -72,7 +124,20 @@ const km = {
   steering: { lhd: "ចង្កូតឆ្វេង", rhd: "ចង្កូតស្តាំ", unknown: "មិនបានបញ្ជាក់" },
   transfer: { transfer: "ផ្ទេរអាជ្ញាប័ណ្ណ", scrap_replace: "ជំនួសបន្ទាប់ពីកម្ទេច", private_export: "នាំចេញ / ប្រើផ្ទាល់ខ្លួន", unknown: "មិនបានបញ្ជាក់" },
   shipping: { roro: "RoRo", container: "កុងតឺន័រ", undecided: "មិនទាន់សម្រេច" },
-  photo: { front: "ខាងមុខ", front_side: "ខាងមុខបីភាគបួន", rear: "ខាងក្រោយ", exterior: "ខាងក្រៅ", interior: "ខាងក្នុង និងកៅអី", dashboard: "ផ្ទាំងគ្រប់គ្រង", engine: "បន្ទប់ម៉ាស៊ីន និងផ្នែកក្រោម", tires: "សំបកកង់", defect: "ពិការភាព" },
+  photo: {
+    front: "ខាងមុខ",
+    front_side: "ខាងមុខបីភាគបួន",
+    rear: "ខាងក្រោយ",
+    exterior: "ខាងក្រៅ",
+    interior: "ខាងក្នុង",
+    dashboard: "ផ្ទាំងគ្រប់គ្រង",
+    engine: "បន្ទប់ម៉ាស៊ីន និងផ្នែកក្រោម",
+    tires: "សំបកកង់",
+    defect: "ពិការភាព",
+    other: "ផ្សេងៗ",
+    registration: "ប័ណ្ណចុះឈ្មោះ",
+  },
+  photoTab: { all: "ទាំងអស់", exterior: "ខាងក្រៅ", interior: "ខាងក្នុង", other: "ផ្សេងៗ", registration: "ប័ណ្ណចុះឈ្មោះ" },
   inquiry: { new: "ថ្មី", consulting: "កំពុងពិគ្រោះ", quoted: "បានផ្ញើសម្រង់", negotiating: "កំពុងចរចា", contracted: "កិច្ចសន្យា", closed: "បិទ" },
   longBody: { yes: "តួវែង", no: "តួខ្លី", unknown: "មិនបានបញ្ជាក់" },
 } as const;
@@ -85,14 +150,42 @@ const mn = {
   steering: { lhd: "Зүүн жолоо", rhd: "Баруун жолоо", unknown: "Баталгаажаагүй" },
   transfer: { transfer: "Зөвшөөрөл шилжүүлэх", scrap_replace: "Хаягдал солилцох", private_export: "Экспорт / хувийн хэрэглээ", unknown: "Баталгаажаагүй" },
   shipping: { roro: "RoRo", container: "Чингэлэг", undecided: "Шийдэгдээгүй" },
-  photo: { front: "Урд", front_side: "Урд гурван дөрөвний нэг", rear: "Ард", exterior: "Гадна", interior: "Дотор ба суудал", dashboard: "Самбар", engine: "Хөдөлгүүр ба доод хэсэг", tires: "Дугуй", defect: "Гэмтэл" },
+  photo: {
+    front: "Урд",
+    front_side: "Урд гурван дөрөвний нэг",
+    rear: "Ард",
+    exterior: "Гадна",
+    interior: "Дотор",
+    dashboard: "Самбар",
+    engine: "Хөдөлгүүр ба доод хэсэг",
+    tires: "Дугуй",
+    defect: "Гэмтэл",
+    other: "Бусад",
+    registration: "Бүртгэлийн үнэмлэх",
+  },
+  photoTab: { all: "Бүгд", exterior: "Гадна", interior: "Дотор", other: "Бусад", registration: "Бүртгэл" },
   inquiry: { new: "Шинэ", consulting: "Зөвлөгөөнд", quoted: "Үнийн санал илгээсэн", negotiating: "Хэлэлцэж байна", contracted: "Гэрээ", closed: "Хаагдсан" },
   longBody: { yes: "Урт их бие", no: "Богино их бие", unknown: "Баталгаажаагүй" },
 } as const;
 
 const catalog = { ko, en, es, fr, km, mn } as const;
 
-export const photoCategoryList: PhotoCategory[] = ["front", "front_side", "rear", "exterior", "interior", "dashboard", "engine", "tires", "defect"];
+export const photoCategoryList: PhotoCategory[] = [
+  "exterior",
+  "interior",
+  "other",
+  "registration",
+  "front",
+  "front_side",
+  "rear",
+  "dashboard",
+  "engine",
+  "tires",
+  "defect",
+];
+
+/** Preferred categories when uploading new photos. */
+export const photoUploadCategoryList: PhotoCategory[] = ["exterior", "interior", "other", "registration"];
 
 export function labels(lang: Lang) {
   return catalog[lang] ?? catalog[contentFieldLang(lang)];
@@ -120,6 +213,10 @@ export function steeringLabel(value: Steering, lang: Lang) {
 
 export function photoLabel(value: PhotoCategory, lang: Lang) {
   return labels(lang).photo[value];
+}
+
+export function photoTabLabel(value: "all" | "exterior" | "interior" | "other" | "registration", lang: Lang) {
+  return labels(lang).photoTab[value];
 }
 
 export function inquiryStatusLabel(value: InquiryStatus, lang: Lang) {
