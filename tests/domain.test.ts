@@ -909,6 +909,20 @@ test("Korean SEO titles include target search phrases", async () => {
   assert.match(pageSeo("ko", "export-sell").title, /버스수출/);
 });
 
+test("page metadata exposes hreflang languages including x-default Korean", async () => {
+  process.env.DATA_SOURCE = "supabase";
+  process.env.NEXT_PUBLIC_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://example.supabase.co";
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "anon";
+  process.env.SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "service";
+  process.env.NEXT_PUBLIC_SITE_URL = "https://www.kbushub.com";
+  const { buildPageMetadata } = await import("../src/lib/seo");
+  const meta = buildPageMetadata("ko", "home");
+  const languages = meta.alternates?.languages as Record<string, string> | undefined;
+  assert.equal(languages?.["x-default"], "https://www.kbushub.com/ko");
+  assert.equal(languages?.["ko-KR"], "https://www.kbushub.com/ko");
+  assert.equal(languages?.["en-GH"], "https://www.kbushub.com/en");
+});
+
 test("photo tabs map legacy categories onto gallery groups", async () => {
   const { photoTabForCategory, photoMatchesTab } = await import("../src/lib/domain/photo-categories");
   assert.equal(photoTabForCategory("front"), "exterior");

@@ -8,17 +8,32 @@ export const dynamic = "force-dynamic";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (getDataSource() !== "supabase") return [];
   const base = siteUrl();
+  const now = new Date();
   const paths = ["", "/vehicles", "/buses", "/sell", "/export-sell", "/scrap", "/wanted", "/privacy", "/inquiry"];
   const entries: MetadataRoute.Sitemap = [];
-  for (const lang of langs) {
+  // Korean first — primary search market for 중고버스 매매 / 버스수출.
+  const orderedLangs = ["ko", ...langs.filter((lang) => lang !== "ko")];
+  for (const lang of orderedLangs) {
     for (const path of paths) {
-      entries.push({ url: `${base}/${lang}${path}`, changeFrequency: "weekly", priority: path === "" ? 1 : 0.6 });
+      const isHome = path === "";
+      const isKo = lang === "ko";
+      entries.push({
+        url: `${base}/${lang}${path}`,
+        lastModified: now,
+        changeFrequency: isHome ? "daily" : "weekly",
+        priority: isHome ? (isKo ? 1 : 0.8) : isKo ? 0.8 : 0.5,
+      });
     }
   }
   const listed = await getRepository().listPublic({}, "domestic");
   for (const vehicle of listed.items) {
-    for (const lang of langs) {
-      entries.push({ url: `${base}/${lang}/vehicles/${encodeURIComponent(vehicle.stockNo)}`, changeFrequency: "daily", priority: 0.8 });
+    for (const lang of orderedLangs) {
+      entries.push({
+        url: `${base}/${lang}/vehicles/${encodeURIComponent(vehicle.stockNo)}`,
+        lastModified: now,
+        changeFrequency: "daily",
+        priority: lang === "ko" ? 0.9 : 0.6,
+      });
     }
   }
   return entries;
