@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { getDataSource, siteUrl } from "@/lib/config";
-import type { Lang } from "@/lib/domain/types";
+import type { Lang, SiteSettings } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
+import { langs, langMeta } from "@/lib/i18n/langs";
 
 export type SeoPage = "home" | "vehicles" | "sell" | "export-sell" | "buses";
 
@@ -96,13 +97,18 @@ export function buildPageMetadata(lang: Lang, page: SeoPage, pathSuffix = ""): M
   const seo = pageSeo(lang, page);
   const demo = getDataSource() !== "supabase";
   const path = pathSuffix.startsWith("/") ? pathSuffix : pathSuffix ? `/${pathSuffix}` : "";
-  const url = `${siteUrl()}/${lang}${path}`;
+  const base = siteUrl();
+  const url = `${base}/${lang}${path}`;
   const absoluteTitle = lang === "ko" ? `${seo.title} | K-BUS HUB` : undefined;
+  const languages: Record<string, string> = { "x-default": `${base}/ko${path}` };
+  for (const code of langs) {
+    languages[langMeta[code].locale] = `${base}/${code}${path}`;
+  }
   return {
     title: absoluteTitle ? { absolute: absoluteTitle } : seo.title,
     description: seo.description,
     robots: demo ? { index: false, follow: false } : { index: true, follow: true },
-    alternates: { canonical: url },
+    alternates: { canonical: url, languages },
     openGraph: {
       title: absoluteTitle ?? `${seo.title} · K-BUS HUB`,
       description: seo.description,
@@ -114,7 +120,7 @@ export function buildPageMetadata(lang: Lang, page: SeoPage, pathSuffix = ""): M
   };
 }
 
-export function organizationJsonLd() {
+export function organizationJsonLd(settings?: Pick<SiteSettings, "phone" | "email" | "address"> | null) {
   const base = siteUrl();
   return {
     "@context": "https://schema.org",
@@ -126,5 +132,18 @@ export function organizationJsonLd() {
     areaServed: ["KR", "Worldwide"],
     availableLanguage: ["ko", "en", "es", "fr", "km", "mn"],
     sameAs: [base],
+    ...(settings?.phone ? { telephone: settings.phone } : {}),
+    ...(settings?.email ? { email: settings.email } : {}),
+    ...(settings?.address
+      ? {
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: settings.address,
+            addressLocality: "Osan-si",
+            addressRegion: "Gyeonggi-do",
+            addressCountry: "KR",
+          },
+        }
+      : {}),
   };
 }

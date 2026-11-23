@@ -96,7 +96,18 @@ export default async function HomePage({
   return (
     <div className="mx-auto grid max-w-6xl gap-16 px-4 py-10 md:py-14">
       {lang === "ko" ? (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd()) }} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(
+              organizationJsonLd({
+                phone: site.settings.phone,
+                email: site.settings.email,
+                address: site.settings.address,
+              }),
+            ),
+          }}
+        />
       ) : null}
       <HeroBanner prevLabel={text.heroPrev} nextLabel={text.heroNext} slides={slides} />
 
