@@ -14,6 +14,8 @@ const STAGE_WIDTH = 1200;
 const GUTTER = "px-10 sm:px-14";
 /** How many photos on either side stay mounted and downloading while the current one is on screen. */
 const LOOKAHEAD = 3;
+/** Thumbnail strip shows one row of this many at a time. */
+const THUMBS_PER_PAGE = 6;
 
 function ringDistance(from: number, to: number, length: number) {
   const raw = Math.abs(from - to);
@@ -45,6 +47,10 @@ export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: 
   const currentReady = !current || isPlaceholder(current) || Boolean(ready[current.id]);
   const displayIndex = currentReady ? safeIndex : Math.min(hold, Math.max(visible.length - 1, 0));
   const shown = visible[displayIndex];
+  const thumbPageCount = Math.max(1, Math.ceil(visible.length / THUMBS_PER_PAGE));
+  const thumbPage = Math.min(Math.floor(safeIndex / THUMBS_PER_PAGE), thumbPageCount - 1);
+  const pageThumbs = visible.slice(thumbPage * THUMBS_PER_PAGE, thumbPage * THUMBS_PER_PAGE + THUMBS_PER_PAGE);
+  const canPageThumbs = visible.length > THUMBS_PER_PAGE;
 
   const markReady = useCallback((id: string) => {
     setReady((prev) => (prev[id] ? prev : { ...prev, [id]: true }));
@@ -60,6 +66,12 @@ export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: 
   const goNext = useCallback(() => {
     setIndex((value) => (value + 1) % visible.length);
   }, [visible.length]);
+  const pageThumbsPrev = useCallback(() => {
+    setIndex(Math.max(0, thumbPage - 1) * THUMBS_PER_PAGE);
+  }, [thumbPage]);
+  const pageThumbsNext = useCallback(() => {
+    setIndex(Math.min(thumbPageCount - 1, thumbPage + 1) * THUMBS_PER_PAGE);
+  }, [thumbPage, thumbPageCount]);
 
   useEffect(() => {
     if (!lightbox || !current || isPlaceholder(current)) return;
@@ -140,46 +152,63 @@ export function GalleryClient({ photos, lang }: { photos: VehiclePhoto[]; lang: 
             ) : null}
           </div>
           {many ? (
-            <figcaption className="flex items-center justify-end gap-3 px-3 py-2 text-sm text-muted">
-              <span>
-                <button type="button" className="px-2" onClick={goPrev} aria-label="previous">
-                  ‹
-                </button>
-                {safeIndex + 1} / {visible.length}
-                <button type="button" className="px-2" onClick={goNext} aria-label="next">
-                  ›
-                </button>
-              </span>
+            <figcaption className="px-3 py-2 text-right text-sm tabular-nums text-muted">
+              {safeIndex + 1} / {visible.length}
             </figcaption>
           ) : null}
         </figure>
       )}
 
       {many ? (
-        <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-6">
-          {visible.map((photo, photoIndex) => {
-            const thumb = photoUrl(photo, 320);
-            return (
+        <div className="mt-3">
+          <div className="grid grid-cols-6 gap-2">
+            {pageThumbs.map((photo, offset) => {
+              const photoIndex = thumbPage * THUMBS_PER_PAGE + offset;
+              const thumb = photoUrl(photo, 320);
+              return (
+                <button
+                  key={photo.id}
+                  type="button"
+                  className={`overflow-hidden rounded border ${photo.id === current?.id ? "border-primary" : "border-line"}`}
+                  onClick={() => setIndex(photoIndex)}
+                >
+                  {isPlaceholder(photo) ? (
+                    <span className="flex aspect-[16/10] items-center justify-center bg-[#f3f5f8] text-xs font-semibold text-muted">
+                      {photoIndex + 1}
+                    </span>
+                  ) : thumb ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={thumb} alt="" className="aspect-[16/10] w-full object-cover" loading="lazy" decoding="async" fetchPriority="low" />
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
+          {canPageThumbs ? (
+            <div className="mt-2 flex items-center justify-center gap-1 text-sm text-muted">
               <button
-                key={photo.id}
                 type="button"
-                className={`overflow-hidden rounded border ${photo.id === current?.id ? "border-primary" : "border-line"}`}
-                onClick={() => {
-                  setIndex(photoIndex);
-                  setLightbox(true);
-                }}
+                className="px-2 py-1 disabled:opacity-30"
+                onClick={pageThumbsPrev}
+                disabled={thumbPage <= 0}
+                aria-label="previous thumbnails"
               >
-                {isPlaceholder(photo) ? (
-                  <span className="flex aspect-[16/10] items-center justify-center bg-[#f3f5f8] text-xs font-semibold text-muted">
-                    {photoIndex + 1}
-                  </span>
-                ) : thumb ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={thumb} alt="" className="aspect-[16/10] w-full object-cover" loading="lazy" decoding="async" fetchPriority="low" />
-                ) : null}
+                ‹
               </button>
-            );
-          })}
+              <span className="min-w-[5.5rem] text-center tabular-nums">
+                {thumbPage * THUMBS_PER_PAGE + 1}–{Math.min((thumbPage + 1) * THUMBS_PER_PAGE, visible.length)} / {visible.length}
+              </span>
+              <button
+                type="button"
+                className="px-2 py-1 disabled:opacity-30"
+                onClick={pageThumbsNext}
+                disabled={thumbPage >= thumbPageCount - 1}
+                aria-label="next thumbnails"
+              >
+                ›
+              </button>
+            </div>
+          ) : null}
         </div>
       ) : null}
 
