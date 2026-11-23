@@ -8,6 +8,7 @@ import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
 import { organizationJsonLd } from "@/lib/seo";
 import { loadSite } from "@/lib/site-load";
 import type { PublicVehicle } from "@/lib/domain/types";
+import { formatContactPhone } from "@/lib/domain/phone-display";
 
 export default async function HomePage({
   params,
@@ -189,7 +190,12 @@ export default async function HomePage({
           <div className="mt-4 text-sm text-muted">
             {site.settings.address ? <p>{site.settings.address}</p> : null}
             {site.settings.phone ? <p>{text.phone} {site.settings.phone}</p> : null}
-            {site.settings.whatsappE164 ? <p>{text.whatsapp} {site.settings.phone ?? `+${site.settings.whatsappE164}`}</p> : null}
+            {site.settings.whatsappE164 ? (
+              <p>
+                {text.whatsapp}{" "}
+                {formatContactPhone(site.settings.whatsappE164, "international") ?? `+${site.settings.whatsappE164}`}
+              </p>
+            ) : null}
             {site.settings.email ? <p>{site.settings.email}</p> : null}
             {site.settings.businessHours ? (
               <p>

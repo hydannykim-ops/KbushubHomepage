@@ -175,7 +175,7 @@ export default async function VehicleDetailPage({
               ) : null}
               {contacts.whatsapp ? (
                 <a className="border border-line px-3 py-2 hover:border-ink" href={contacts.whatsapp} rel="noreferrer">
-                  {text.whatsapp} {contacts.phone ?? ""}
+                  {text.whatsapp} {contacts.whatsappDisplay ?? ""}
                 </a>
               ) : null}
               {contacts.whatsapp ? <p className="text-xs text-muted">{text.whatsappNote}</p> : null}

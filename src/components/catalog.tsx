@@ -10,6 +10,7 @@ import { contentFieldLang, localeTag } from "@/lib/i18n/langs";
 import { photoUrl } from "@/lib/domain/photo-url";
 import { makerLabel, modelLabel, vehicleTitle } from "@/lib/domain/vehicle-catalog";
 import { classLabel, fuelLabel, statusLabel, transferLabel, transmissionLabel } from "@/lib/labels";
+import { formatContactPhone } from "@/lib/domain/phone-display";
 import { whatsappHref, whatsappMessage } from "@/lib/domain/referral";
 
 export function DemoBanner({ lang }: { lang: Lang }) {
@@ -241,11 +242,15 @@ export function contactActions(input: {
   });
   const phoneDigits = input.phone?.replace(/[^\d+]/g, "") ?? "";
   const phoneHref = phoneDigits.length >= 8 ? `tel:${phoneDigits.startsWith("+") ? phoneDigits : phoneDigits}` : null;
+  const whatsappDisplay = input.whatsappE164
+    ? formatContactPhone(input.whatsappE164, "international") ?? `+${input.whatsappE164}`
+    : null;
   return {
     phone: input.phone,
     phoneHref,
     kakao: input.kakaoUrl,
     whatsapp: input.whatsappE164 ? whatsappHref(input.whatsappE164, message) : null,
+    whatsappDisplay,
   };
 }
 
