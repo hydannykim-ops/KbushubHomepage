@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DataProblem, VehicleCard } from "@/components/catalog";
 import { HeroBanner } from "@/components/hero-banner";
+import { HomeMobile } from "@/components/home-mobile";
 import { copy } from "@/lib/i18n";
 import { contentFieldLang } from "@/lib/i18n/langs";
 import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
@@ -28,8 +29,12 @@ export default async function HomePage({
   if (!site.ok) return <DataProblem lang={lang} code={site.code} />;
 
   const listed = await site.repo.listPublic({}, ctx.mode);
-  const fresh = listed.items.filter((vehicle) => vehicle.status !== "sold").slice(0, 4);
-  const featured = listed.items.filter((vehicle) => vehicle.featured).slice(0, 4);
+  const available = listed.items.filter((vehicle) => vehicle.status !== "sold");
+  const fresh = available.slice(0, 4);
+  const freshRail = available.slice(0, 8);
+  const featuredAll = listed.items.filter((vehicle) => vehicle.featured);
+  const featured = featuredAll.slice(0, 4);
+  const featuredRail = featuredAll.slice(0, 8);
   const cardHref = (vehicle: PublicVehicle) => hrefTo(lang, `/vehicles/${vehicle.stockNo}`, ctx);
   const classes = [
     [text.classCounty, text.classCountyBody, text.mediaCounty, hrefTo(lang, "/vehicles", ctx, { class: "county" })],
@@ -94,10 +99,27 @@ export default async function HomePage({
   ];
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-16 px-4 py-10 md:py-14">
-      {lang === "ko" ? (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd()) }} />
-      ) : null}
+    <>
+    {lang === "ko" ? (
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd()) }} />
+    ) : null}
+    <div className="overflow-x-clip md:hidden">
+      <HomeMobile
+        lang={lang}
+        text={text}
+        vehiclesHref={hrefTo(lang, "/vehicles", ctx)}
+        sellHref={hrefTo(lang, "/sell", ctx)}
+        exportHref={hrefTo(lang, "/export-sell", ctx)}
+        scrapHref={hrefTo(lang, "/scrap", ctx)}
+        wantedHref={hrefTo(lang, "/wanted", ctx)}
+        classes={classes.map(([title, , , href]) => ({ title, href }))}
+        fresh={freshRail}
+        featured={featuredRail}
+        cardHref={cardHref}
+        settings={site.settings}
+      />
+    </div>
+    <div className="mx-auto hidden max-w-6xl gap-16 px-4 py-10 md:grid md:py-14">
       <HeroBanner prevLabel={text.heroPrev} nextLabel={text.heroNext} slides={slides} />
 
       <section className="grid gap-4 md:grid-cols-3">
@@ -201,5 +223,6 @@ export default async function HomePage({
         </div>
       </section>
     </div>
+    </>
   );
 }

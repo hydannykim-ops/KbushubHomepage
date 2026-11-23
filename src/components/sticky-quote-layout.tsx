@@ -15,7 +15,7 @@ export function StickyQuoteLayout({
   tone?: PageTone;
 }) {
   return (
-    <div className="page-tone -mx-4 px-4 py-8 md:py-10" data-tone={tone}>
+    <div className="page-tone px-5 py-8 sm:px-6 md:py-10" data-tone={tone}>
       <div className="mx-auto max-w-6xl">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,28rem)] lg:items-start lg:gap-x-10">
           <div className="min-w-0">{intro}</div>

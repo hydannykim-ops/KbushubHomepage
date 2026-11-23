@@ -52,15 +52,10 @@ export function SiteChat({ lang, refCode }: { lang: Lang; refCode: string | null
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, open]);
 
-  // Hide on admin routes.
+  // Hide on admin routes. Mobile keyboards push a fixed panel off-screen, so the chatbot stays desktop-only.
   if (pathname.startsWith("/admin")) return null;
 
-  // Vehicle detail has a fixed mobile CTA bar (~90px) — clear it with room for the FAB height.
-  const onVehicleDetail = /\/vehicles\/[^/]+$/.test(pathname);
-  const shellClass = [
-    "pointer-events-none fixed right-4 z-50 flex flex-col items-end gap-3 md:right-6",
-    onVehicleDetail ? "bottom-28 md:bottom-6" : "bottom-4 md:bottom-6",
-  ].join(" ");
+  const shellClass = "pointer-events-none fixed bottom-6 right-6 z-50 hidden flex-col items-end gap-3 md:flex";
 
   async function ask(text: string) {
     const trimmed = text.trim();

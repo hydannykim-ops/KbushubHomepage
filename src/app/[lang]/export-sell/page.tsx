@@ -36,7 +36,7 @@ export default async function ExportSellPage({
 
   if (lang !== "ko") {
     return (
-      <div className="page-tone -mx-4 px-4 py-10" data-tone="export">
+      <div className="page-tone px-5 py-10 sm:px-6" data-tone="export">
         <div className="mx-auto max-w-xl">
           <p className="tone-text text-xs font-semibold tracking-[0.16em]">K-BUS HUB</p>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink">{seo.h1 ?? text.exportSellTitle}</h1>
