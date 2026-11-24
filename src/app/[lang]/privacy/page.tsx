@@ -1,9 +1,16 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { DataProblem } from "@/components/catalog";
 import { copy } from "@/lib/i18n";
 import { contentFieldLang } from "@/lib/i18n/langs";
 import { parseLang } from "@/lib/request-context";
+import { buildPageMetadata } from "@/lib/seo";
 import { loadSite } from "@/lib/site-load";
+
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const lang = parseLang((await params).lang) ?? "ko";
+  return buildPageMetadata(lang, "privacy", "/privacy");
+}
 
 export default async function PrivacyPage({ params }: { params: Promise<{ lang: string }> }) {
   const lang = parseLang((await params).lang);

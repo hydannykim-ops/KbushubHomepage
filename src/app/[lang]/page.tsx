@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DataProblem, VehicleCard } from "@/components/catalog";
@@ -6,9 +7,14 @@ import { HomeMobile } from "@/components/home-mobile";
 import { copy } from "@/lib/i18n";
 import { contentFieldLang } from "@/lib/i18n/langs";
 import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
-import { organizationJsonLd } from "@/lib/seo";
+import { buildPageMetadata, organizationJsonLd } from "@/lib/seo";
 import { loadSite } from "@/lib/site-load";
 import type { PublicVehicle } from "@/lib/domain/types";
+
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const lang = parseLang((await params).lang) ?? "ko";
+  return buildPageMetadata(lang, "home");
+}
 
 export default async function HomePage({
   params,

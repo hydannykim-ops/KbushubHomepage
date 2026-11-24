@@ -917,6 +917,21 @@ test("siteUrl prefers www.kbushub.com over vercel.app hosts", async () => {
   else process.env.NEXT_PUBLIC_SITE_URL = previous;
 });
 
+test("each public page keeps its own canonical and Korean is the default language", async () => {
+  const previous = process.env.NEXT_PUBLIC_SITE_URL;
+  process.env.NEXT_PUBLIC_SITE_URL = "https://www.kbushub.com";
+  const { buildPageMetadata, languageAlternates, INDEXNOW_KEY } = await import("../src/lib/seo");
+  const scrap = buildPageMetadata("ko", "scrap", "/scrap");
+  assert.equal(scrap.alternates && "canonical" in scrap.alternates ? scrap.alternates.canonical : null, "https://www.kbushub.com/ko/scrap");
+  const languages = languageAlternates("/vehicles/GB15-010884");
+  assert.equal(languages.ko, "https://www.kbushub.com/ko/vehicles/GB15-010884");
+  assert.equal(languages["x-default"], languages.ko);
+  assert.equal(languages.en, "https://www.kbushub.com/en/vehicles/GB15-010884");
+  assert.equal(INDEXNOW_KEY, "kbushub7f3a1c9e4b27");
+  if (previous === undefined) delete process.env.NEXT_PUBLIC_SITE_URL;
+  else process.env.NEXT_PUBLIC_SITE_URL = previous;
+});
+
 test("Korean SEO titles include target search phrases", async () => {
   const { pageSeo } = await import("../src/lib/seo");
   const home = pageSeo("ko", "home");

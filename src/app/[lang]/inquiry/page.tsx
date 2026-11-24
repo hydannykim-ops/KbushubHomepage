@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { DataProblem } from "@/components/catalog";
 import { Consent, EnhanceForm, Field, Honeypot, SubmitBanner } from "@/components/forms";
@@ -7,7 +8,13 @@ import { inquiryTradeModeForCountry, isKoreaCountry } from "@/lib/domain/country
 import type { InquiryKind } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
 import { parseLang } from "@/lib/request-context";
+import { buildPageMetadata } from "@/lib/seo";
 import { loadSite } from "@/lib/site-load";
+
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const lang = parseLang((await params).lang) ?? "ko";
+  return buildPageMetadata(lang, "inquiry", "/inquiry");
+}
 
 export default async function InquiryPage({
   params,
