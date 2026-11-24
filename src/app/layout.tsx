@@ -18,8 +18,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
-  title: { default: "중고버스 매매·버스수출 | K-BUS HUB", template: "%s · K-BUS HUB" },
-  description: "중고버스 매매·중고버스매매·버스수출 매물을 소개하는 K-BUS HUB입니다.",
+  title: { default: "케이버스허브 · 중고버스 매매·버스수출 | K-BUS HUB", template: "%s · K-BUS HUB" },
+  description: "케이버스허브(K-BUS HUB)는 중고버스 매매·버스수출 매물을 소개합니다.",
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
