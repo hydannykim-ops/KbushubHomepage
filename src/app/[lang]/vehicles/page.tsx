@@ -93,16 +93,16 @@ export default async function VehiclesPage({
             </p>
           ) : null}
 
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <p className="text-lg font-bold tabular-nums text-ink">{text.resultCount.replace("{n}", String(result.items.length))}</p>
-            <div className="flex flex-wrap gap-1 text-sm">
+            <div className="-mx-4 flex gap-1 overflow-x-auto px-4 text-sm [scrollbar-width:none] md:mx-0 md:flex-wrap md:justify-end md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
               {(["newest", "year_desc", "year_asc", "price_asc", "price_desc", "mileage_asc"] as const).map((sort) => {
                 const active = query.sort === sort || (!query.sort && sort === "newest");
                 return (
                   <Link
                     key={sort}
                     href={sortHref(`/${lang}/vehicles`, query, sort, ctx)}
-                    className={["shrink-0 px-2.5 py-1.5 font-medium", active ? "text-ink" : "text-muted hover:text-ink"].join(" ")}
+                    className={["shrink-0 whitespace-nowrap px-2.5 py-1.5 font-medium", active ? "text-ink" : "text-muted hover:text-ink"].join(" ")}
                     aria-current={active ? "true" : undefined}
                   >
                     {text.sorts[sort]}

@@ -140,7 +140,7 @@ export function MarketFilterBar({
 
   return (
     <div className="relative z-20" data-market-filter-bar ref={rootRef}>
-      <div className="flex flex-wrap gap-2">
+      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] md:mx-0 md:flex-wrap md:overflow-visible md:px-0 md:pb-0 [&::-webkit-scrollbar]:hidden">
         {chips.map((chip) => (
           <button
             key={chip.key}
