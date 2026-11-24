@@ -50,6 +50,7 @@ export default async function AdminVehiclesPage({
       domesticPriceKrw: vehicle.domesticPriceKrw,
       coverPhotoId: cover?.id ?? null,
       statusLabel: statusLabel(vehicle.status, "ko"),
+      createdAt: vehicle.createdAt,
     };
   });
 

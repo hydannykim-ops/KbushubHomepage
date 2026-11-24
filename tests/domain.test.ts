@@ -927,6 +927,12 @@ test("Korean SEO titles include target search phrases", async () => {
   assert.match(pageSeo("ko", "export-sell").title, /버스수출/);
 });
 
+test("seoul date time shows the Korea clock", async () => {
+  const { seoulDateTime } = await import("../src/lib/domain/seoul-time");
+  assert.equal(seoulDateTime("2026-11-24T15:30:00.000Z"), "2026-11-25 00:30");
+  assert.equal(seoulDateTime("not-a-date"), "-");
+});
+
 test("admin photo batches keep category order and chunk offsets", async () => {
   const { adminPhotoBatches } = await import("../src/lib/domain/admin-photo-batches");
   const batches = adminPhotoBatches(
