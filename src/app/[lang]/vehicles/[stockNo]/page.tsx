@@ -14,6 +14,7 @@ import { fuelLabel, statusLabel, transferLabel, transmissionLabel } from "@/lib/
 import { hrefTo, parseLang, requestContext } from "@/lib/request-context";
 import { loadSite } from "@/lib/site-load";
 import { getDataSource, siteUrl } from "@/lib/config";
+import { languageAlternates, vehicleJsonLd } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -35,13 +36,17 @@ export async function generateMetadata({
       ? `${labeled} 중고버스 매물입니다. K-BUS HUB에서 중고버스 매매·버스수출 상담을 안내합니다.`
       : labeled);
   const cover = vehicle.photos.find((photo) => photo.isCover && !photo.placeholder);
+  const path = `/vehicles/${encodeURIComponent(vehicle.stockNo)}`;
+  const url = `${siteUrl()}/${lang}${path}`;
   return {
     title,
     description,
     robots: getDataSource() === "supabase" ? { index: true, follow: true } : { index: false, follow: false },
+    alternates: { canonical: url, languages: languageAlternates(path) },
     openGraph: {
       title,
       description,
+      url,
       images: cover ? [`${siteUrl()}/api/media/photo/${cover.id}`] : undefined,
     },
   };
@@ -120,6 +125,9 @@ export default async function VehicleDetailPage({
 
   return (
     <div className={`mx-auto grid max-w-6xl gap-7 px-4 py-7 ${showConsult || sold ? "pb-28 md:pb-10" : "pb-10"}`}>
+      {publicVehicle && lang === "ko" ? (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(vehicleJsonLd(publicVehicle)) }} />
+      ) : null}
       <SubmitBanner lang={lang} submitted={typeof rawParams.submitted === "string" ? rawParams.submitted : undefined} error={typeof rawParams.error === "string" ? rawParams.error : undefined} />
       {ownerPreview ? (
         <p className="rounded-md border border-line bg-[#e8eef8] px-4 py-3 text-sm text-ink" role="status">

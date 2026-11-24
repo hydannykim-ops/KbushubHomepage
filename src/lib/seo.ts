@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import { getDataSource, siteUrl } from "@/lib/config";
-import type { Lang } from "@/lib/domain/types";
+import type { Lang, PublicVehicle } from "@/lib/domain/types";
 import { copy } from "@/lib/i18n";
+import { langs } from "@/lib/i18n/langs";
 
-export type SeoPage = "home" | "vehicles" | "sell" | "export-sell" | "buses";
+export type SeoPage = "home" | "vehicles" | "sell" | "export-sell" | "buses" | "scrap" | "wanted" | "privacy" | "inquiry";
+
+/** Public IndexNow key. The matching file is served at `/${INDEXNOW_KEY}.txt`. */
+export const INDEXNOW_KEY = "kbushub7f3a1c9e4b27";
 
 type PageSeo = {
   title: string;
@@ -55,6 +59,17 @@ export function pageSeo(lang: Lang, page: SeoPage): PageSeo {
           h1: "중형·대형 중고버스",
           lead: "중형과 대형 중고버스를 같은 재고에서 차급으로 나눠 볼 수 있습니다.",
         };
+      case "scrap":
+        return { title: text.scrapTitle, description: text.scrapBody, h1: text.scrapTitle, lead: text.scrapBody };
+      case "wanted":
+        return { title: text.wantedTitle, description: text.wantedBody, h1: text.wantedTitle, lead: text.wantedBody };
+      case "privacy":
+        return { title: text.privacyTitle, description: `${text.privacyTitle}. ${text.metaDescription}` };
+      case "inquiry":
+        return {
+          title: "중고버스 문의",
+          description: "중고버스 구매·수출 문의를 K-BUS HUB에 남겨 주세요. 담당자가 확인합니다.",
+        };
     }
   }
 
@@ -89,7 +104,24 @@ export function pageSeo(lang: Lang, page: SeoPage): PageSeo {
         h1: text.busesTitle,
         lead: text.busesBody,
       };
+    case "scrap":
+      return { title: text.scrapTitle, description: text.scrapBody, h1: text.scrapTitle, lead: text.scrapBody };
+    case "wanted":
+      return { title: text.wantedTitle, description: text.wantedBody, h1: text.wantedTitle, lead: text.wantedBody };
+    case "privacy":
+      return { title: text.privacyTitle, description: text.metaDescription };
+    case "inquiry":
+      return { title: text.inquiry, description: text.metaDescription };
   }
+}
+
+/** hreflang map. Korean is the default document for every path. */
+export function languageAlternates(pathSuffix = ""): Record<string, string> {
+  const path = pathSuffix.startsWith("/") ? pathSuffix : pathSuffix ? `/${pathSuffix}` : "";
+  const languages: Record<string, string> = {};
+  for (const code of langs) languages[code] = `${siteUrl()}/${code}${path}`;
+  languages["x-default"] = `${siteUrl()}/ko${path}`;
+  return languages;
 }
 
 export function buildPageMetadata(lang: Lang, page: SeoPage, pathSuffix = ""): Metadata {
@@ -102,7 +134,7 @@ export function buildPageMetadata(lang: Lang, page: SeoPage, pathSuffix = ""): M
     title: absoluteTitle ? { absolute: absoluteTitle } : seo.title,
     description: seo.description,
     robots: demo ? { index: false, follow: false } : { index: true, follow: true },
-    alternates: { canonical: url },
+    alternates: { canonical: url, languages: languageAlternates(path) },
     openGraph: {
       title: absoluteTitle ?? `${seo.title} · K-BUS HUB`,
       description: seo.description,
@@ -110,6 +142,7 @@ export function buildPageMetadata(lang: Lang, page: SeoPage, pathSuffix = ""): M
       siteName: "K-BUS HUB",
       locale: lang === "ko" ? "ko_KR" : undefined,
       type: "website",
+      images: [{ url: "/brand/kbus-hub-logo.jpg", alt: "K-BUS HUB" }],
     },
   };
 }
@@ -121,10 +154,45 @@ export function organizationJsonLd() {
     "@type": "AutoDealer",
     name: "K-BUS HUB",
     url: base,
+    image: `${base}/brand/kbus-hub-logo.jpg`,
     description:
       "한국 중고버스 매매·중고버스매매·버스수출 매물을 소개하는 K-BUS HUB입니다.",
     areaServed: ["KR", "Worldwide"],
     availableLanguage: ["ko", "en", "es", "fr", "km", "mn"],
     sameAs: [base],
   };
+}
+
+/** Korean vehicle page structured data. Omits price when the listing is ask-only. */
+export function vehicleJsonLd(vehicle: PublicVehicle) {
+  const base = siteUrl();
+  const url = `${base}/ko/vehicles/${encodeURIComponent(vehicle.stockNo)}`;
+  const cover = vehicle.photos.find((photo) => photo.isCover && !photo.placeholder) ?? vehicle.photos.find((photo) => !photo.placeholder);
+  const name = [vehicle.maker, vehicle.model, vehicle.modelYear ? String(vehicle.modelYear) : ""].filter(Boolean).join(" ");
+  const data: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Vehicle",
+    name,
+    brand: { "@type": "Brand", name: vehicle.maker },
+    model: vehicle.model,
+    url,
+    itemCondition: "https://schema.org/UsedCondition",
+  };
+  if (vehicle.modelYear) data.vehicleModelDate = String(vehicle.modelYear);
+  if (vehicle.mileageKm != null) {
+    data.mileageFromOdometer = { "@type": "QuantitativeValue", value: vehicle.mileageKm, unitCode: "KMT" };
+  }
+  if (vehicle.seats != null) data.seatingCapacity = vehicle.seats;
+  if (cover) data.image = `${base}/api/media/photo/${cover.id}`;
+  if (vehicle.descriptionKo) data.description = vehicle.descriptionKo.slice(0, 300);
+  if (vehicle.domesticPriceKrw != null) {
+    data.offers = {
+      "@type": "Offer",
+      priceCurrency: "KRW",
+      price: vehicle.domesticPriceKrw,
+      availability: vehicle.status === "sold" ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
+      url,
+    };
+  }
+  return data;
 }

@@ -3,6 +3,15 @@ import { NextResponse, type NextRequest } from "next/server";
 import { normalizeReferralCode } from "@/lib/domain/referral";
 
 export async function proxy(request: NextRequest) {
+  const host = request.headers.get("host")?.split(":")[0]?.toLowerCase();
+  if (host === "kbushub.com") {
+    const url = request.nextUrl.clone();
+    url.protocol = "https:";
+    url.hostname = "www.kbushub.com";
+    url.port = "";
+    return NextResponse.redirect(url, 301);
+  }
+
   const { pathname, searchParams } = request.nextUrl;
   if (pathname === "/") {
     const url = request.nextUrl.clone();

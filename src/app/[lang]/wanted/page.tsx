@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { DataProblem } from "@/components/catalog";
@@ -6,7 +7,13 @@ import { MakerModelPicker } from "@/components/maker-model-picker";
 import { StickyQuoteLayout } from "@/components/sticky-quote-layout";
 import { copy } from "@/lib/i18n";
 import { parseLang, requestContext } from "@/lib/request-context";
+import { buildPageMetadata } from "@/lib/seo";
 import { loadSite } from "@/lib/site-load";
+
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const lang = parseLang((await params).lang) ?? "ko";
+  return buildPageMetadata(lang, "wanted", "/wanted");
+}
 
 function FormSection({ title, children }: { title: string; children: ReactNode }) {
   return (
