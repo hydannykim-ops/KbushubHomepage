@@ -1,23 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AdminPhotoGroups, uploadAdminPhotos, type AdminPhotoGroupsHandle } from "@/components/admin/photo-groups";
 import { notifyAdminSaved } from "@/components/admin/saved-toast";
 import { MakerModelPicker } from "@/components/maker-model-picker";
-import { compressImageFile } from "@/lib/domain/compress-image-client";
 import { parseListingPaste, suggestAdminStockNo, type ListingPasteDraft } from "@/lib/domain/listing-paste";
 import { standardForModel } from "@/lib/domain/model-specs";
-import { MAX_VEHICLE_PHOTOS } from "@/lib/domain/uploads";
 import { classForModel, makerForModel } from "@/lib/domain/vehicle-catalog";
 import type { Fuel, Steering, TransferType, Transmission, VehicleClass } from "@/lib/domain/types";
 
 const field = "rounded-md border border-line px-3 py-2 text-sm font-normal";
-
-type PhotoItem = {
-  id: string;
-  file: File;
-  preview: string;
-};
 
 function Label({ text, children, className = "" }: { text: string; children: React.ReactNode; className?: string }) {
   return (
@@ -69,23 +62,10 @@ export function QuickVehicleCreate() {
   const [status, setStatus] = useState("available");
   const [transferType, setTransferType] = useState<TransferType>("transfer");
   const [pickerKey, setPickerKey] = useState(0);
-  const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [progress, setProgress] = useState<string | null>(null);
-  const [dragging, setDragging] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const dragDepth = useRef(0);
-  const photosRef = useRef(photos);
-  photosRef.current = photos;
-
-  useEffect(() => {
-    return () => {
-      for (const photo of photos) URL.revokeObjectURL(photo.preview);
-    };
-  }, [photos]);
-
-  const filledCount = useMemo(() => photos.length, [photos]);
+  const photoRef = useRef<AdminPhotoGroupsHandle>(null);
 
   function applyPaste() {
     const next = parseListingPaste(paste);
@@ -115,87 +95,6 @@ export function QuickVehicleCreate() {
       longBody: standard?.longBody ?? current.longBody,
       warnings: current.warnings.filter((item) => !item.includes("차명")),
     }));
-  }
-
-  async function onPickFiles(fileList: FileList | File[] | null) {
-    if (!fileList?.length) return;
-    const incoming = Array.from(fileList).filter((file) => file.type.startsWith("image/") || /\.(jpe?g|png|webp)$/i.test(file.name));
-    if (!incoming.length) {
-      setError("이미지 파일(JPEG/PNG/WebP)만 올릴 수 있습니다.");
-      return;
-    }
-    const room = MAX_VEHICLE_PHOTOS - photosRef.current.length;
-    if (room <= 0) {
-      setError(`사진은 최대 ${MAX_VEHICLE_PHOTOS}장까지입니다.`);
-      return;
-    }
-    const sliced = incoming.slice(0, room);
-    setProgress(`사진 압축 중… 0/${sliced.length}`);
-    const next: PhotoItem[] = [];
-    for (let index = 0; index < sliced.length; index += 1) {
-      const compressed = await compressImageFile(sliced[index]);
-      next.push({
-        id: `${Date.now()}-${index}-${Math.random().toString(36).slice(2, 7)}`,
-        file: compressed,
-        preview: URL.createObjectURL(compressed),
-      });
-      setProgress(`사진 압축 중… ${index + 1}/${sliced.length}`);
-    }
-    setPhotos((current) => [...current, ...next]);
-    setProgress(null);
-    if (incoming.length > room) setError(`최대 ${MAX_VEHICLE_PHOTOS}장만 올립니다. 초과분은 제외했습니다.`);
-    else setError(null);
-  }
-
-  function onDragEnter(event: React.DragEvent) {
-    event.preventDefault();
-    event.stopPropagation();
-    dragDepth.current += 1;
-    if (event.dataTransfer.types.includes("Files")) setDragging(true);
-  }
-
-  function onDragOver(event: React.DragEvent) {
-    event.preventDefault();
-    event.stopPropagation();
-    if (event.dataTransfer.types.includes("Files")) {
-      event.dataTransfer.dropEffect = "copy";
-      setDragging(true);
-    }
-  }
-
-  function onDragLeave(event: React.DragEvent) {
-    event.preventDefault();
-    event.stopPropagation();
-    dragDepth.current = Math.max(0, dragDepth.current - 1);
-    if (dragDepth.current === 0) setDragging(false);
-  }
-
-  function onDrop(event: React.DragEvent) {
-    event.preventDefault();
-    event.stopPropagation();
-    dragDepth.current = 0;
-    setDragging(false);
-    const files = event.dataTransfer.files;
-    void onPickFiles(files);
-  }
-
-  function movePhoto(index: number, delta: number) {
-    setPhotos((current) => {
-      const target = index + delta;
-      if (target < 0 || target >= current.length) return current;
-      const copy = [...current];
-      const [item] = copy.splice(index, 1);
-      copy.splice(target, 0, item);
-      return copy;
-    });
-  }
-
-  function removePhoto(id: string) {
-    setPhotos((current) => {
-      const found = current.find((item) => item.id === id);
-      if (found) URL.revokeObjectURL(found.preview);
-      return current.filter((item) => item.id !== id);
-    });
   }
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -276,31 +175,14 @@ export function QuickVehicleCreate() {
         return;
       }
 
+      const photos = photoRef.current?.files() ?? [];
       if (photos.length) {
-        // Keep each request under the platform body limit. Compressed photos are about 280KB.
-        const chunkSize = 8;
-        let uploadedCount = 0;
-        for (let offset = 0; offset < photos.length; offset += chunkSize) {
-          const slice = photos.slice(offset, offset + chunkSize);
-          setProgress(`사진 업로드 중… ${uploadedCount}/${photos.length}`);
-          const form = new FormData();
-          form.set("sortBase", String(offset));
-          form.set("category", "other");
-          for (const photo of slice) form.append("files", photo.file, photo.file.name);
-          const uploaded = await fetch(`/api/admin/vehicles/${createdBody.id}/photos/batch`, {
-            method: "POST",
-            body: form,
-            headers: { accept: "application/json" },
-          });
-          const uploadBody = (await uploaded.json()) as { ok?: boolean; code?: string; count?: number };
-          if (!uploaded.ok || !uploadBody.ok) {
-            setError(uploadBody.code || "photo_upload_failed");
-            router.push(`/admin/vehicles/${createdBody.id}?saved=1`);
-            return;
-          }
-          uploadedCount += uploadBody.count ?? slice.length;
+        const uploaded = await uploadAdminPhotos(createdBody.id, photos, 0, setProgress);
+        if (!uploaded.ok) {
+          setError(uploaded.code);
+          router.push(`/admin/vehicles/${createdBody.id}?saved=1`);
+          return;
         }
-        setProgress(`사진 ${uploadedCount}장 업로드 완료`);
       }
 
       notifyAdminSaved("빠른 등록이 완료되었습니다.");
@@ -482,74 +364,11 @@ export function QuickVehicleCreate() {
       </section>
 
       <section className="grid gap-3 rounded-lg border border-line bg-white p-4">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold">3. 사진 순서대로 올리기</h2>
-            <p className="mt-1 text-sm text-muted">
-              최대 {MAX_VEHICLE_PHOTOS}장. 드래그하거나 클릭해서 올리세요. 올린 순서·아래 화살표 순서가 그대로 등록됩니다. 첫 장이 대표 사진입니다.
-            </p>
-          </div>
-          <p className="text-sm font-semibold tabular-nums">{filledCount}/{MAX_VEHICLE_PHOTOS}</p>
+        <div>
+          <h2 className="text-lg font-semibold">3. 사진 올리기</h2>
+          <p className="mt-1 text-sm text-muted">칸마다 여러 장 올릴 수 있습니다. 나중에 상세 화면에서도 같은 칸으로 추가할 수 있습니다.</p>
         </div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          multiple
-          onChange={(event) => {
-            void onPickFiles(event.target.files);
-            event.currentTarget.value = "";
-          }}
-          className="sr-only"
-          aria-label="사진 선택"
-        />
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          onDragEnter={onDragEnter}
-          onDragOver={onDragOver}
-          onDragLeave={onDragLeave}
-          onDrop={onDrop}
-          className={`grid min-h-36 w-full place-items-center rounded-md border-2 border-dashed px-4 py-8 text-center transition ${
-            dragging ? "border-primary bg-[#eef3fb]" : "border-line bg-[#f8f8f6] hover:border-primary/50"
-          }`}
-        >
-          <span className="grid gap-1 text-sm">
-            <span className="font-semibold text-ink">{dragging ? "여기에 놓으면 추가됩니다" : "사진을 여기로 드래그하거나 클릭해서 선택"}</span>
-            <span className="text-muted">JPEG / PNG / WebP · 최대 {MAX_VEHICLE_PHOTOS}장</span>
-          </span>
-        </button>
-        {photos.length ? (
-          <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {photos.map((photo, index) => (
-              <li key={photo.id} className="overflow-hidden rounded-md border border-line bg-[#f8f8f6]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photo.preview} alt="" className="aspect-[4/3] w-full object-cover" />
-                <div className="flex items-center justify-between gap-2 px-2 py-1.5 text-xs">
-                  <span className="font-semibold tabular-nums">{index + 1}번{index === 0 ? " · 대표" : ""}</span>
-                  <span className="flex gap-1">
-                    <button type="button" className="rounded border border-line px-2 py-1" onClick={() => movePhoto(index, -1)} disabled={index === 0}>
-                      ↑
-                    </button>
-                    <button
-                      type="button"
-                      className="rounded border border-line px-2 py-1"
-                      onClick={() => movePhoto(index, 1)}
-                      disabled={index === photos.length - 1}
-                    >
-                      ↓
-                    </button>
-                    <button type="button" className="rounded border border-line px-2 py-1 text-[#9f1239]" onClick={() => removePhoto(photo.id)}>
-                      삭제
-                    </button>
-                  </span>
-                </div>
-              </li>
-            ))}
-          </ol>
-        ) : (
-          <p className="text-sm text-muted">사진을 아직 고르지 않았습니다. 나중에 상세 화면에서도 올릴 수 있습니다.</p>
-        )}
+        <AdminPhotoGroups ref={photoRef} disabled={pending} />
       </section>
 
       {error ? <p className="text-sm text-[#9f1239]">{error}</p> : null}

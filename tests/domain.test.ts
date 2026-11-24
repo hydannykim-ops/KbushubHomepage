@@ -927,6 +927,30 @@ test("Korean SEO titles include target search phrases", async () => {
   assert.match(pageSeo("ko", "export-sell").title, /버스수출/);
 });
 
+test("admin photo batches keep category order and chunk offsets", async () => {
+  const { adminPhotoBatches } = await import("../src/lib/domain/admin-photo-batches");
+  const batches = adminPhotoBatches(
+    {
+      exterior: ["e1", "e2"],
+      interior: ["i1"],
+      other: Array.from({ length: 9 }, (_, index) => `o${index}`),
+      registration: ["r1"],
+    },
+    8,
+    3,
+  );
+  assert.deepEqual(
+    batches.map((batch) => ({ category: batch.category, sortBase: batch.sortBase, count: batch.items.length })),
+    [
+      { category: "exterior", sortBase: 3, count: 2 },
+      { category: "interior", sortBase: 5, count: 1 },
+      { category: "other", sortBase: 6, count: 8 },
+      { category: "other", sortBase: 14, count: 1 },
+      { category: "registration", sortBase: 15, count: 1 },
+    ],
+  );
+});
+
 test("photo tabs map legacy categories onto gallery groups", async () => {
   const { photoTabForCategory, photoMatchesTab } = await import("../src/lib/domain/photo-categories");
   assert.equal(photoTabForCategory("front"), "exterior");
