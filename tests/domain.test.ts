@@ -579,11 +579,23 @@ test("maker series drill-down groups shared model lines", () => {
   assert.equal(seriesHasVariants("현대", "쏠라티", "county"), false);
   assert.deepEqual([...modelsForSeries("현대", "유니버스", "large")], [
     "유니버스",
-    "유니버스 노블",
-    "유니버스 노블EX",
+    "유니버스 엘레강스",
+    "유니버스 럭셔리",
     "유니버스 프라임",
     "유니버스 프라임EX",
-    "유니버스 럭셔리",
+    "유니버스 노블",
+    "유니버스 노블EX",
+    "유니버스 프레스티지",
+    "유니버스 프레스티지EX",
+  ]);
+  assert.deepEqual([...modelsForSeries("기아", "그랜버드", "large")], [
+    "그랜버드",
+    "뉴그랜버드 그린필드",
+    "뉴그랜버드 파크웨이",
+    "뉴그랜버드 썬샤인",
+    "뉴그랜버드 블루스카이",
+    "뉴그랜버드 실크로드 캄",
+    "뉴그랜버드 실크로드",
   ]);
 });
 
@@ -868,6 +880,12 @@ test("export sell reuses sell requests with optional photos", async () => {
 test("listing paste fills universe noble year mileage and catalog specs", () => {
   assert.deepEqual(matchCatalogModel("현대 유니버스 노블"), { maker: "현대", model: "유니버스 노블" });
   assert.deepEqual(matchCatalogModel("유니버스노블"), { maker: "현대", model: "유니버스 노블" });
+  assert.deepEqual(matchCatalogModel("유니버스 엘레강스"), { maker: "현대", model: "유니버스 엘레강스" });
+  assert.deepEqual(matchCatalogModel("그랜버드 그린필드"), { maker: "기아", model: "뉴그랜버드 그린필드" });
+  assert.deepEqual(matchCatalogModel("뉴그랜버드 실크로드 캄"), { maker: "기아", model: "뉴그랜버드 실크로드 캄" });
+  assert.equal(standardForModel("유니버스 엘레강스")?.horsepowerPs, 440);
+  assert.equal(standardForModel("뉴그랜버드 그린필드")?.horsepowerPs, 440);
+  assert.equal(standardForModel("유니버스 프레스티지"), null);
 
   const draft = parseListingPaste(`● 차명 :유니버스 노블
 ● 년식 :13년식
