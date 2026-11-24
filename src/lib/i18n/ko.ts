@@ -1,7 +1,7 @@
 import type { Messages } from "./messages";
 
 export const ko: Messages = {
-  "metaDescription": "중고버스 매매·중고버스매매·버스수출 매물을 소개하는 K-BUS HUB입니다. 현대 E-카운티와 한국 중고버스를 국내 판매와 수출로 안내합니다.",
+  "metaDescription": "케이버스허브(K-BUS HUB)는 중고버스 매매·버스수출 매물을 소개합니다. 현대 E-카운티와 한국 중고버스를 국내 판매와 수출로 안내합니다.",
   "skip": "본문으로 이동",
   "navVehicles": "매물 보기",
   "navCounty": "카운티",

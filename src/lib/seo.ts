@@ -23,9 +23,9 @@ export function pageSeo(lang: Lang, page: SeoPage): PageSeo {
     switch (page) {
       case "home":
         return {
-          title: "중고버스 매매·버스수출",
+          title: "케이버스허브 · 중고버스 매매·버스수출",
           description:
-            "K-BUS HUB에서 중고버스 매매, 중고버스매매, 버스수출 매물을 확인하세요. 현대 E-카운티와 한국 중고버스를 국내 판매·수출로 소개합니다.",
+            "케이버스허브(K-BUS HUB)에서 중고버스 매매, 중고버스매매, 버스수출 매물을 확인하세요. 현대 E-카운티와 한국 중고버스를 국내 판매·수출로 소개합니다.",
         };
       case "vehicles":
         return {
@@ -152,11 +152,12 @@ export function organizationJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "AutoDealer",
-    name: "K-BUS HUB",
+    name: "케이버스허브",
+    alternateName: "K-BUS HUB",
     url: base,
     image: `${base}/brand/kbus-hub-logo.jpg`,
     description:
-      "한국 중고버스 매매·중고버스매매·버스수출 매물을 소개하는 K-BUS HUB입니다.",
+      "케이버스허브(K-BUS HUB)는 한국 중고버스 매매·버스수출 매물을 소개합니다.",
     areaServed: ["KR", "Worldwide"],
     availableLanguage: ["ko", "en", "es", "fr", "km", "mn"],
     sameAs: [base],

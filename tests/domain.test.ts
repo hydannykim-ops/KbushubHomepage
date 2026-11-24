@@ -935,6 +935,7 @@ test("each public page keeps its own canonical and Korean is the default languag
 test("Korean SEO titles include target search phrases", async () => {
   const { pageSeo } = await import("../src/lib/seo");
   const home = pageSeo("ko", "home");
+  assert.match(home.title, /케이버스허브/);
   assert.match(home.title, /중고버스/);
   assert.match(home.description, /버스수출/);
   assert.match(pageSeo("ko", "vehicles").h1 ?? "", /중고버스/);

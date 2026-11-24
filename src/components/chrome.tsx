@@ -164,9 +164,12 @@ export function Header({
     <header className="sticky top-0 z-[60] overflow-visible border-b border-line bg-white">
       <div className="relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3.5 sm:py-4">
         <div className="flex min-w-0 flex-1 items-center gap-6 lg:gap-8">
-          <Link href={href("")} className="flex min-w-0 shrink-0 items-center gap-3 text-foreground sm:gap-3.5" aria-label="K-BUS HUB">
+          <Link href={href("")} className="flex min-w-0 shrink-0 items-center gap-3 text-foreground sm:gap-3.5" aria-label={lang === "ko" ? "케이버스허브" : "K-BUS HUB"}>
             <BrandLogo size="lg" priority />
-            <BrandWordmark size="lg" />
+            <span className="grid gap-0.5">
+              <BrandWordmark size="lg" />
+              {lang === "ko" ? <span className="text-[11px] font-medium leading-none text-muted">케이버스허브</span> : null}
+            </span>
           </Link>
           <nav className="hidden items-center gap-4 text-sm font-medium lg:gap-5 md:flex" aria-label="main">
             {links.map(([label, hrefValue, match]) => {
@@ -249,7 +252,8 @@ export function Footer({
             <BrandLogo size="sm" />
             <BrandWordmark className="text-white" />
           </div>
-          <p className="mt-3 max-w-xs leading-6 text-white/70">{text.footerNote}</p>
+          {lang === "ko" ? <p className="mt-3 font-medium text-white">케이버스허브</p> : null}
+          <p className={`${lang === "ko" ? "mt-1" : "mt-3"} max-w-xs leading-6 text-white/70`}>{text.footerNote}</p>
         </div>
         <div className="grid content-start gap-2">
           <Link href={href("/vehicles")}>{text.navVehicles}</Link>
