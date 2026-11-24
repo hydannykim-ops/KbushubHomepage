@@ -109,6 +109,7 @@ export function BrandSidebar({
   const [classPicked, setClassPicked] = useState(true);
   /** Intermediate series pick before a concrete model URL is chosen. */
   const [draftSeries, setDraftSeries] = useState("");
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     if (query.vehicleClass || query.maker || query.model) setClassPicked(true);
@@ -133,11 +134,34 @@ export function BrandSidebar({
   const clearMakerHref = hrefFor(lang, ctx, query, { maker: undefined, model: undefined });
   const clearSeriesHref = hrefFor(lang, ctx, query, { maker: selectedMaker, model: undefined });
 
+  const summary = [
+    classLabelMap[vehicleClass],
+    selectedMaker ? makerLabel(selectedMaker, lang) : null,
+    selectedModel ? modelLabel(selectedModel, lang) : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
   return (
     <aside
       className="border-b border-[#d8dde6]/80 bg-[#eef2f7]/70 lg:border-b-0 lg:border-r lg:border-[#d8dde6]/80"
       data-brand-sidebar
     >
+      <button
+        type="button"
+        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left lg:hidden"
+        aria-expanded={mobileOpen}
+        onClick={() => setMobileOpen((open) => !open)}
+      >
+        <span className="min-w-0">
+          <span className="block text-xs font-medium text-muted">{text.brandModel}</span>
+          <span className="mt-0.5 block truncate text-sm font-semibold text-ink">{summary}</span>
+        </span>
+        <span aria-hidden className="text-muted">
+          {mobileOpen ? "▴" : "▾"}
+        </span>
+      </button>
+      <div className={mobileOpen ? "block" : "hidden lg:block"}>
       <div className="max-h-64 overflow-y-auto px-3 py-4 lg:sticky lg:top-16 lg:max-h-[calc(100vh-4rem)] md:px-4">
         <div className="mb-3 flex items-center justify-between gap-2 px-1">
           <h2 className="text-sm font-semibold text-ink">{text.brandModel}</h2>
@@ -320,6 +344,7 @@ export function BrandSidebar({
             </Stage>
           ) : null}
         </nav>
+      </div>
       </div>
     </aside>
   );

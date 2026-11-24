@@ -95,6 +95,7 @@ const specs: Record<string, ModelStandard> = {
   에어로타운: aeroTown,
   "에어로타운 롱바디": { ...aeroTown, seats: 37, longBody: true },
   유니버스: universe,
+  "유니버스 엘레강스": universe,
   "유니버스 노블": universe,
   "유니버스 프라임": universe,
   "유니버스 노블EX": universeLong,
@@ -102,9 +103,12 @@ const specs: Record<string, ModelStandard> = {
   "유니버스 럭셔리": universe,
   일렉시티: elecCity,
   그랜버드: granbird,
-  "뉴그랜버드 실크로드": granbird,
+  "뉴그랜버드 그린필드": granbird,
   "뉴그랜버드 파크웨이": granbird,
   "뉴그랜버드 썬샤인": granbird,
+  "뉴그랜버드 블루스카이": granbird,
+  "뉴그랜버드 실크로드 캄": granbird,
+  "뉴그랜버드 실크로드": granbird,
 };
 
 export function standardForModel(model: string): ModelStandard | null {

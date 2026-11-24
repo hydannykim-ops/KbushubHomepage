@@ -74,6 +74,11 @@ function parsePhone(raw: string): string | null {
 }
 
 /** Prefer longer catalog model names so "유니버스 노블" wins over "유니버스". */
+function modelNeedles(model: string): string[] {
+  const compact = model.replace(/\s+/g, "");
+  return compact.startsWith("뉴") ? [compact, compact.slice(1)] : [compact];
+}
+
 function allCatalogModels(): string[] {
   const models = new Set<string>();
   for (const maker of busMakers) {
@@ -94,13 +99,12 @@ export function matchCatalogModel(raw: string): { maker: BusMaker | ""; model: s
   }
   const compact = text.replace(/\s+/g, "");
   for (const model of allCatalogModels()) {
-    if (text === model || compact === model.replace(/\s+/g, "")) {
+    if (text === model || modelNeedles(model).includes(compact)) {
       return { maker: makerForModel(model), model };
     }
   }
   for (const model of allCatalogModels()) {
-    const needle = model.replace(/\s+/g, "");
-    if (compact.includes(needle) || text.includes(model)) {
+    if (text.includes(model) || modelNeedles(model).some((needle) => compact.includes(needle))) {
       return { maker: makerForModel(model), model };
     }
   }

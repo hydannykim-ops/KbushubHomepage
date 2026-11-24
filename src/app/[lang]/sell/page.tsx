@@ -38,7 +38,7 @@ export default async function SellPage({
   // Domestic purchase intake only — hide for overseas languages.
   if (lang !== "ko") {
     return (
-      <div className="page-tone -mx-4 px-4 py-10" data-tone="sell">
+      <div className="page-tone px-5 py-10 sm:px-6" data-tone="sell">
         <div className="mx-auto max-w-xl">
           <p className="tone-text text-xs font-semibold tracking-[0.16em]">K-BUS HUB</p>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink">{seo.h1 ?? text.sellTitle}</h1>
@@ -52,7 +52,7 @@ export default async function SellPage({
   }
 
   return (
-    <div className="page-tone -mx-4 px-4 py-10" data-tone="sell">
+    <div className="page-tone px-5 py-10 sm:px-6" data-tone="sell">
       <div className="mx-auto grid max-w-xl gap-8">
         <div>
           <p className="tone-text text-xs font-semibold tracking-[0.16em]">K-BUS HUB</p>
