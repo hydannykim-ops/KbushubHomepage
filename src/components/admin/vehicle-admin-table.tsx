@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { notifyAdminSaved } from "@/components/admin/saved-toast";
 import { VehicleStatusButton } from "@/components/admin/vehicle-status-button";
 import { usdFromKrw } from "@/lib/domain/money";
+import { seoulDateTime } from "@/lib/domain/seoul-time";
 import type { SaleStatus } from "@/lib/domain/types";
 
 export type VehicleAdminRow = {
@@ -21,6 +22,7 @@ export type VehicleAdminRow = {
   domesticPriceKrw: number | null;
   coverPhotoId: string | null;
   statusLabel: string;
+  createdAt: string;
 };
 
 const bulkStatuses: Array<{ value: SaleStatus; label: string }> = [
@@ -127,6 +129,7 @@ export function VehicleAdminTable({ vehicles }: { vehicles: VehicleAdminRow[] })
               <th className="px-3 py-2">사진</th>
               <th className="px-3 py-2">매물번호</th>
               <th className="px-3 py-2">모델</th>
+              <th className="px-3 py-2">업로드</th>
               <th className="px-3 py-2">상태</th>
               <th className="px-3 py-2">출처</th>
               <th className="px-3 py-2">판매자</th>
@@ -168,6 +171,9 @@ export function VehicleAdminTable({ vehicles }: { vehicles: VehicleAdminRow[] })
                       <Link href={href} className="text-ink hover:text-primary">
                         {vehicle.maker} {vehicle.model}
                       </Link>
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-2 tabular-nums text-muted" title="한국 시간">
+                      {seoulDateTime(vehicle.createdAt)}
                     </td>
                     <td className="px-3 py-2">{vehicle.statusLabel}</td>
                     <td className="px-3 py-2">{vehicle.listingSource === "dealer" ? "딜러" : "회사"}</td>
@@ -233,7 +239,7 @@ export function VehicleAdminTable({ vehicles }: { vehicles: VehicleAdminRow[] })
               })
             ) : (
               <tr>
-                <td colSpan={10} className="px-3 py-8 text-center text-muted">
+                <td colSpan={11} className="px-3 py-8 text-center text-muted">
                   표시할 매물이 없습니다.
                 </td>
               </tr>
