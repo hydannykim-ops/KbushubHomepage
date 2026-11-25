@@ -116,7 +116,7 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       suggestions: ["매물 보기", "견적 문의"],
     },
     contact: {
-      text: "K-BUS HUB · 전화/WhatsApp +82 10 3452 1321 · 사업자등록번호 445-08-03206 · 경기도 오산시 역광장로 46-1, 206호. 이메일은 도메인 등록 후 안내합니다.",
+      text: "K-BUS HUB · 전화 010-4943-4488 · WhatsApp +82 10 3452 1321 · 사업자등록번호 445-08-03206 · 경기도 오산시 역광장로 46-1, 206호. 이메일은 도메인 등록 후 안내합니다.",
       links: [
         { href: "/inquiry", label: "문의 폼" },
         { href: "/privacy", label: "개인정보 안내" }],
@@ -189,7 +189,7 @@ const replies: Record<Lang, Record<IntentId, ChatReply>> = {
       suggestions: ["Browse inventory", "Ask for a quote"],
     },
     contact: {
-      text: "K-BUS HUB · Phone/WhatsApp +82 10 3452 1321 · Business Reg. No. 445-08-03206 · 206, 46-1 Yeokgwangjang-ro, Osan-si. Email will be listed after the domain is ready.",
+      text: "K-BUS HUB · Phone 010-4943-4488 · WhatsApp +82 10 3452 1321 · Business Reg. No. 445-08-03206 · 206, 46-1 Yeokgwangjang-ro, Osan-si. Email will be listed after the domain is ready.",
       links: [
         { href: "/inquiry", label: "Inquiry form" },
         { href: "/privacy", label: "Privacy" }],
